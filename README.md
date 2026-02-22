@@ -10,7 +10,7 @@
 
 <p align="center">
   <b>An experimental, full-featured MTProto Python client library for Telegram.</b><br>
-  Built from scratch. Async-first. Lightweight.
+  Built from scratch. Async-first. Lightweight. Telethon-style API.
 </p>
 
 ---
@@ -25,8 +25,10 @@
 
 - 🔐 **Full MTProto implementation** — low-level Telegram protocol support
 - ⚡ **Async-first** — built entirely on `asyncio`
+- 🔄 **Sync & Async support** — use whichever style you prefer
 - 🗄️ **Session persistence** — via `aiosqlite`
 - 🔒 **Encryption** — powered by `pyaes` and `pycryptodome`
+- 🤖 **Bot & User client** — supports both bot tokens and phone login
 - 🪶 **Lightweight** — minimal dependencies, maximum control
 - 🐍 **Python 3.10+** — uses modern Python features
 
@@ -50,24 +52,157 @@ pip install -e .
 
 ## 🚀 Quick Start
 
-```python
-from tglib import Client
+Get your `api_id` and `api_hash` from [my.telegram.org](https://my.telegram.org).  
+**Never hardcode credentials — use environment variables!**
 
-client = Client(
-    api_id=YOUR_API_ID,
-    api_hash="YOUR_API_HASH",
-    session="my_session"
+```bash
+export API_ID=your_api_id
+export API_HASH=your_api_hash
+```
+
+---
+
+## 📖 Usage Styles
+
+TGLib supports three usage styles, just like Telethon.
+
+### 1. Async (recommended)
+
+```python
+import asyncio
+import os
+from tglib import TelegramClient
+
+client = TelegramClient(
+    session="my_session",
+    api_id=int(os.environ["API_ID"]),
+    api_hash=os.environ["API_HASH"],
 )
 
 async def main():
-    await client.start()
+    await client.start(phone="+1234567890")
     me = await client.get_me()
     print(f"Logged in as: {me.first_name}")
+    await client.disconnect()
 
-client.run(main())
+asyncio.run(main())
 ```
 
-> Get your `api_id` and `api_hash` from [my.telegram.org](https://my.telegram.org)
+---
+
+### 2. Async Context Manager (cleanest)
+
+```python
+import asyncio
+import os
+from tglib import TelegramClient
+
+async def main():
+    async with TelegramClient(
+        session="my_session",
+        api_id=int(os.environ["API_ID"]),
+        api_hash=os.environ["API_HASH"],
+    ) as client:
+        me = await client.get_me()
+        print(f"Logged in as: {me.first_name}")
+
+asyncio.run(main())
+```
+
+---
+
+### 3. Sync (beginner-friendly, no asyncio needed)
+
+```python
+import os
+from tglib import TelegramClient
+
+with TelegramClient(
+    session="my_session",
+    api_id=int(os.environ["API_ID"]),
+    api_hash=os.environ["API_HASH"],
+) as client:
+    me = client.run(client.get_me())
+    print(f"Logged in as: {me.first_name}")
+```
+
+---
+
+## 🤖 Bot Example
+
+```python
+import asyncio
+import os
+from tglib import TelegramClient
+
+client = TelegramClient(
+    session="bot_session",
+    api_id=int(os.environ["API_ID"]),
+    api_hash=os.environ["API_HASH"],
+)
+
+@client.on(None)  # handle all updates
+async def handler(update):
+    print(update)
+
+async def main():
+    await client.start(bot_token=os.environ["BOT_TOKEN"])
+    print("Bot is running...")
+    await client.run_until_disconnected()
+
+asyncio.run(main())
+```
+
+---
+
+## 📡 Sending Messages
+
+```python
+# Send a plain message
+await client.send_message("username", "Hello from TGLib!")
+
+# Send with markdown
+await client.send_message("username", "**Bold** and *italic*", parse_mode="md")
+
+# Send with HTML
+await client.send_message("username", "<b>Bold</b> text", parse_mode="html")
+
+# Reply to a message
+await client.send_message("username", "Replying!", reply_to=message_id)
+```
+
+---
+
+## 📥 Receiving Messages
+
+```python
+async def main():
+    await client.start(phone="+1234567890")
+
+    # Get recent messages
+    messages = await client.get_messages("username", limit=10)
+    for msg in messages.messages:
+        print(msg.message)
+
+    # Get dialogs
+    dialogs = await client.get_dialogs(limit=20)
+
+asyncio.run(main())
+```
+
+---
+
+## 🔄 run_until_disconnected
+
+Keep your client or bot alive until manually stopped (`Ctrl+C`):
+
+```python
+# Async
+await client.run_until_disconnected()
+
+# Sync
+client.run(client.run_until_disconnected())
+```
 
 ---
 
@@ -86,11 +221,16 @@ client.run(main())
 ```
 TGLib/
 ├── tglib/
-│   ├── __init__.py       # Entry point
-│   ├── client/           # Client logic
-│   ├── crypto/           # Encryption & MTProto
-│   ├── network/          # TCP transport
-│   └── types/            # Telegram types
+│   ├── __init__.py          # Entry point
+│   ├── client.py            # Main TelegramClient
+│   ├── crypto/              # Encryption & MTProto crypto
+│   ├── network/             # TCP transport & MTProto sender
+│   ├── sessions/            # SQLite & Memory sessions
+│   ├── tl/                  # TL schema types & functions
+│   │   ├── types/           # Telegram object types
+│   │   └── functions/       # Telegram API functions
+│   ├── errors/              # RPC & custom errors
+│   └── helpers.py           # Utility functions
 ├── setup.py
 └── README.md
 ```
@@ -135,6 +275,4 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ---
 
-<p align="center">
-  Made with ❤️ and Python
-</p>
+<p align="center">Made with ❤️ and Python</p>
