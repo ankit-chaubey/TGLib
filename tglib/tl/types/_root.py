@@ -7089,7 +7089,7 @@ class Chat(TLObject):
     CONSTRUCTOR_ID = 0x41cbf256
     SUBCLASS_OF_ID = 0xc5af5d94
 
-    def __init__(self, id: int, title: str, photo: 'TypeChatPhoto', participants_count: int, date: Optional[datetime], version: int, creator: Optional[bool] = None, left: Optional[bool] = None, deactivated: Optional[bool] = None, call_active: Optional[bool] = None, call_not_empty: Optional[bool] = None, noforwards: Optional[bool] = None, migrated_to: Optional['TypeInputChannel'] = None, admin_rights: Optional['TypeChatAdminRights'] = None, default_banned_rights: Optional['TypeChatBannedRights'] = None):
+    def __init__(self, id: int, title: str, photo: 'TypeChatPhoto', participants_count: int, date: Optional[datetime], version: int, creator: Optional[bool] = None, kicked: Optional[bool] = None, left: Optional[bool] = None, deactivated: Optional[bool] = None, call_active: Optional[bool] = None, call_not_empty: Optional[bool] = None, noforwards: Optional[bool] = None, migrated_to: Optional['TypeInputChannel'] = None, admin_rights: Optional['TypeChatAdminRights'] = None, default_banned_rights: Optional['TypeChatBannedRights'] = None):
         self.id = id
         self.title = title
         self.photo = photo
@@ -7097,6 +7097,7 @@ class Chat(TLObject):
         self.date = date
         self.version = version
         self.creator = creator
+        self.kicked = kicked
         self.left = left
         self.deactivated = deactivated
         self.call_active = call_active
@@ -7116,6 +7117,7 @@ class Chat(TLObject):
             'date': self.date,
             'version': self.version,
             'creator': self.creator,
+            'kicked': self.kicked,
             'left': self.left,
             'deactivated': self.deactivated,
             'call_active': self.call_active,
@@ -7133,6 +7135,8 @@ class Chat(TLObject):
         flags = 0
         if self.creator:
             flags |= (1 << 0)
+        if self.kicked:
+            flags |= (1 << 1)
         if self.left:
             flags |= (1 << 2)
         if self.deactivated:
@@ -7169,6 +7173,7 @@ class Chat(TLObject):
         _args = {}
         flags = reader.read_int(signed=False)
         _args['creator'] = bool(flags & (1 << 0))
+        _args['kicked'] = bool(flags & (1 << 1))
         _args['left'] = bool(flags & (1 << 2))
         _args['deactivated'] = bool(flags & (1 << 5))
         _args['call_active'] = bool(flags & (1 << 23))
@@ -11860,10 +11865,11 @@ class ExportedChatlistInvite(TLObject):
     CONSTRUCTOR_ID = 0x0c5181ac
     SUBCLASS_OF_ID = 0x7711f8ff
 
-    def __init__(self, title: str, url: str, peers: List['TypePeer']):
+    def __init__(self, title: str, url: str, peers: List['TypePeer'], revoked: Optional[bool] = None):
         self.title = title
         self.url = url
         self.peers = peers
+        self.revoked = revoked
 
     def to_dict(self):
         return {
@@ -11871,12 +11877,16 @@ class ExportedChatlistInvite(TLObject):
             'title': self.title,
             'url': self.url,
             'peers': self.peers,
+            'revoked': self.revoked,
         }
 
     def _bytes(self) -> bytes:
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.revoked:
+            flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
         buf.write(TLObject.serialize_bytes(self.title))
         buf.write(TLObject.serialize_bytes(self.url))
@@ -11890,6 +11900,7 @@ class ExportedChatlistInvite(TLObject):
     def from_reader(cls, reader):
         _args = {}
         flags = reader.read_int(signed=False)
+        _args['revoked'] = bool(flags & (1 << 0))
         _val_title = reader.tgread_string()
         _args['title'] = _val_title
         _val_url = reader.tgread_string()
@@ -12201,8 +12212,7 @@ class ForumTopic(TLObject):
     CONSTRUCTOR_ID = 0xcdff0eca
     SUBCLASS_OF_ID = 0x8d182203
 
-    def __init__(self, id: int, date: Optional[datetime], peer: 'TypePeer', title: str, icon_color: int, top_message: int, read_inbox_max_id: int, read_outbox_max_id: int, unread_count: int, unread_mentions_count: int, unread_reactions_count: int, from_id: 'TypePeer', notify_settings: 'TypePeerNotifySettings', my: Optional[bool] = None, closed: Optional[bool] = None, pinned: Optional[bool] = None, short: Optional[bool] = None, hidden: Optional[bool] = None, title_missing: Optional[bool] = None, icon_emoji_id: Optional[int] = None, draft: Optional['TypeDraftMessage'] = None):
-        self.id = id
+    def __init__(self, date: Optional[datetime], peer: 'TypePeer', title: str, icon_color: int, top_message: int, read_inbox_max_id: int, read_outbox_max_id: int, unread_count: int, unread_mentions_count: int, unread_reactions_count: int, from_id: 'TypePeer', notify_settings: 'TypePeerNotifySettings', my: Optional[bool] = None, closed: Optional[bool] = None, pinned: Optional[bool] = None, short: Optional[bool] = None, hidden: Optional[bool] = None, title_missing: Optional[bool] = None, id: Optional[int] = None, icon_emoji_id: Optional[int] = None, draft: Optional['TypeDraftMessage'] = None):
         self.date = date
         self.peer = peer
         self.title = title
@@ -12221,13 +12231,13 @@ class ForumTopic(TLObject):
         self.short = short
         self.hidden = hidden
         self.title_missing = title_missing
+        self.id = id
         self.icon_emoji_id = icon_emoji_id
         self.draft = draft
 
     def to_dict(self):
         return {
             '_': 'ForumTopic',
-            'id': self.id,
             'date': self.date,
             'peer': self.peer,
             'title': self.title,
@@ -12246,6 +12256,7 @@ class ForumTopic(TLObject):
             'short': self.short,
             'hidden': self.hidden,
             'title_missing': self.title_missing,
+            'id': self.id,
             'icon_emoji_id': self.icon_emoji_id,
             'draft': self.draft,
         }
@@ -12267,12 +12278,15 @@ class ForumTopic(TLObject):
             flags |= (1 << 6)
         if self.title_missing:
             flags |= (1 << 7)
+        if self.id is not None:
+            flags |= (1 << 7)
         if self.icon_emoji_id is not None:
             flags |= (1 << 0)
         if self.draft is not None:
             flags |= (1 << 4)
         buf.write(struct.pack('<I', flags))
-        buf.write(struct.pack('<i', self.id))
+        if self.id is not None:
+            buf.write(struct.pack('<i', self.id))
         buf.write(TLObject.serialize_datetime(self.date))
         buf.write(bytes(self.peer))
         buf.write(TLObject.serialize_bytes(self.title))
@@ -12301,8 +12315,11 @@ class ForumTopic(TLObject):
         _args['short'] = bool(flags & (1 << 5))
         _args['hidden'] = bool(flags & (1 << 6))
         _args['title_missing'] = bool(flags & (1 << 7))
-        _val_id = reader.read_int()
-        _args['id'] = _val_id
+        if flags & (1 << 7):
+            _val_id = reader.read_int()
+            _args['id'] = _val_id
+        else:
+            _args['id'] = None
         _val_date = reader.tgread_date()
         _args['date'] = _val_date
         _val_peer = reader.tgread_object()
@@ -12941,10 +12958,11 @@ class GroupCallDonor(TLObject):
     CONSTRUCTOR_ID = 0xee430c85
     SUBCLASS_OF_ID = 0x14f28bb0
 
-    def __init__(self, stars: int, top: Optional[bool] = None, my: Optional[bool] = None, peer_id: Optional['TypePeer'] = None):
+    def __init__(self, stars: int, top: Optional[bool] = None, my: Optional[bool] = None, anonymous: Optional[bool] = None, peer_id: Optional['TypePeer'] = None):
         self.stars = stars
         self.top = top
         self.my = my
+        self.anonymous = anonymous
         self.peer_id = peer_id
 
     def to_dict(self):
@@ -12953,6 +12971,7 @@ class GroupCallDonor(TLObject):
             'stars': self.stars,
             'top': self.top,
             'my': self.my,
+            'anonymous': self.anonymous,
             'peer_id': self.peer_id,
         }
 
@@ -12965,6 +12984,8 @@ class GroupCallDonor(TLObject):
             flags |= (1 << 0)
         if self.my:
             flags |= (1 << 1)
+        if self.anonymous:
+            flags |= (1 << 2)
         if self.peer_id is not None:
             flags |= (1 << 3)
         buf.write(struct.pack('<I', flags))
@@ -12979,6 +13000,7 @@ class GroupCallDonor(TLObject):
         flags = reader.read_int(signed=False)
         _args['top'] = bool(flags & (1 << 0))
         _args['my'] = bool(flags & (1 << 1))
+        _args['anonymous'] = bool(flags & (1 << 2))
         if flags & (1 << 3):
             _val_peer_id = reader.tgread_object()
             _args['peer_id'] = _val_peer_id
@@ -16955,79 +16977,6 @@ class InputInvoiceStars(TLObject):
 
 class InputKeyboardButtonRequestPeer(TLObject):
     """TL type: inputKeyboardButtonRequestPeer"""
-    CONSTRUCTOR_ID = 0x02b78156
-    SUBCLASS_OF_ID = 0x0bad74a3
-
-    def __init__(self, text: str, button_id: int, peer_type: 'TypeRequestPeerType', max_quantity: int, name_requested: Optional[bool] = None, username_requested: Optional[bool] = None, photo_requested: Optional[bool] = None, style: Optional['TypeKeyboardButtonStyle'] = None):
-        self.text = text
-        self.button_id = button_id
-        self.peer_type = peer_type
-        self.max_quantity = max_quantity
-        self.name_requested = name_requested
-        self.username_requested = username_requested
-        self.photo_requested = photo_requested
-        self.style = style
-
-    def to_dict(self):
-        return {
-            '_': 'InputKeyboardButtonRequestPeer',
-            'text': self.text,
-            'button_id': self.button_id,
-            'peer_type': self.peer_type,
-            'max_quantity': self.max_quantity,
-            'name_requested': self.name_requested,
-            'username_requested': self.username_requested,
-            'photo_requested': self.photo_requested,
-            'style': self.style,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.name_requested:
-            flags |= (1 << 0)
-        if self.username_requested:
-            flags |= (1 << 1)
-        if self.photo_requested:
-            flags |= (1 << 2)
-        if self.style is not None:
-            flags |= (1 << 10)
-        buf.write(struct.pack('<I', flags))
-        if self.style is not None:
-            buf.write(bytes(self.style))
-        buf.write(TLObject.serialize_bytes(self.text))
-        buf.write(struct.pack('<i', self.button_id))
-        buf.write(bytes(self.peer_type))
-        buf.write(struct.pack('<i', self.max_quantity))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['name_requested'] = bool(flags & (1 << 0))
-        _args['username_requested'] = bool(flags & (1 << 1))
-        _args['photo_requested'] = bool(flags & (1 << 2))
-        if flags & (1 << 10):
-            _val_style = reader.tgread_object()
-            _args['style'] = _val_style
-        else:
-            _args['style'] = None
-        _val_text = reader.tgread_string()
-        _args['text'] = _val_text
-        _val_button_id = reader.read_int()
-        _args['button_id'] = _val_button_id
-        _val_peer_type = reader.tgread_object()
-        _args['peer_type'] = _val_peer_type
-        _val_max_quantity = reader.read_int()
-        _args['max_quantity'] = _val_max_quantity
-        return cls(**_args)
-
-
-class InputKeyboardButtonRequestPeer(TLObject):
-    """TL type: inputKeyboardButtonRequestPeer"""
     CONSTRUCTOR_ID = 0xc9662d05
     SUBCLASS_OF_ID = 0x0bad74a3
 
@@ -17093,12 +17042,12 @@ class InputKeyboardButtonUrlAuth(TLObject):
     CONSTRUCTOR_ID = 0x68013e72
     SUBCLASS_OF_ID = 0x0bad74a3
 
-    def __init__(self, text: str, url: str, bot: 'TypeInputUser', request_write_access: Optional[bool] = None, style: Optional['TypeKeyboardButtonStyle'] = None, fwd_text: Optional[str] = None):
+    def __init__(self, text: str, url: str, bot: 'TypeInputUser', style: Optional['TypeKeyboardButtonStyle'] = None, request_write_access: Optional[bool] = None, fwd_text: Optional[str] = None):
         self.text = text
         self.url = url
         self.bot = bot
-        self.request_write_access = request_write_access
         self.style = style
+        self.request_write_access = request_write_access
         self.fwd_text = fwd_text
 
     def to_dict(self):
@@ -17107,8 +17056,8 @@ class InputKeyboardButtonUrlAuth(TLObject):
             'text': self.text,
             'url': self.url,
             'bot': self.bot,
-            'request_write_access': self.request_write_access,
             'style': self.style,
+            'request_write_access': self.request_write_access,
             'fwd_text': self.fwd_text,
         }
 
@@ -17117,10 +17066,10 @@ class InputKeyboardButtonUrlAuth(TLObject):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
-        if self.request_write_access:
-            flags |= (1 << 0)
         if self.style is not None:
             flags |= (1 << 10)
+        if self.request_write_access:
+            flags |= (1 << 0)
         if self.fwd_text is not None:
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
@@ -17137,12 +17086,12 @@ class InputKeyboardButtonUrlAuth(TLObject):
     def from_reader(cls, reader):
         _args = {}
         flags = reader.read_int(signed=False)
-        _args['request_write_access'] = bool(flags & (1 << 0))
         if flags & (1 << 10):
             _val_style = reader.tgread_object()
             _args['style'] = _val_style
         else:
             _args['style'] = None
+        _args['request_write_access'] = bool(flags & (1 << 0))
         _val_text = reader.tgread_string()
         _args['text'] = _val_text
         if flags & (1 << 1):
@@ -17162,16 +17111,16 @@ class InputKeyboardButtonUserProfile(TLObject):
     CONSTRUCTOR_ID = 0x7d5e07c7
     SUBCLASS_OF_ID = 0x0bad74a3
 
-    def __init__(self, text: str, user_id: 'TypeInputUser', style: Optional['TypeKeyboardButtonStyle'] = None):
+    def __init__(self, text: str, input_user: 'TypeInputUser', style: Optional['TypeKeyboardButtonStyle'] = None):
         self.text = text
-        self.user_id = user_id
+        self.input_user = input_user
         self.style = style
 
     def to_dict(self):
         return {
             '_': 'InputKeyboardButtonUserProfile',
             'text': self.text,
-            'user_id': self.user_id,
+            'input_user': self.input_user,
             'style': self.style,
         }
 
@@ -17186,7 +17135,7 @@ class InputKeyboardButtonUserProfile(TLObject):
         if self.style is not None:
             buf.write(bytes(self.style))
         buf.write(TLObject.serialize_bytes(self.text))
-        buf.write(bytes(self.user_id))
+        buf.write(bytes(self.input_user))
         return buf.getvalue()
 
     @classmethod
@@ -17200,8 +17149,8 @@ class InputKeyboardButtonUserProfile(TLObject):
             _args['style'] = None
         _val_text = reader.tgread_string()
         _args['text'] = _val_text
-        _val_user_id = reader.tgread_object()
-        _args['user_id'] = _val_user_id
+        _val_input_user = reader.tgread_object()
+        _args['input_user'] = _val_input_user
         return cls(**_args)
 
 
@@ -24205,11 +24154,11 @@ class KeyboardButtonSwitchInline(TLObject):
     CONSTRUCTOR_ID = 0x991399fc
     SUBCLASS_OF_ID = 0x0bad74a3
 
-    def __init__(self, text: str, query: str, same_peer: Optional[bool] = None, style: Optional['TypeKeyboardButtonStyle'] = None, peer_types: Optional[List['TypeInlineQueryPeerType']] = None):
+    def __init__(self, text: str, query: str, style: Optional['TypeKeyboardButtonStyle'] = None, same_peer: Optional[bool] = None, peer_types: Optional[List['TypeInlineQueryPeerType']] = None):
         self.text = text
         self.query = query
-        self.same_peer = same_peer
         self.style = style
+        self.same_peer = same_peer
         self.peer_types = peer_types
 
     def to_dict(self):
@@ -24217,8 +24166,8 @@ class KeyboardButtonSwitchInline(TLObject):
             '_': 'KeyboardButtonSwitchInline',
             'text': self.text,
             'query': self.query,
-            'same_peer': self.same_peer,
             'style': self.style,
+            'same_peer': self.same_peer,
             'peer_types': self.peer_types,
         }
 
@@ -24227,10 +24176,10 @@ class KeyboardButtonSwitchInline(TLObject):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
-        if self.same_peer:
-            flags |= (1 << 0)
         if self.style is not None:
             flags |= (1 << 10)
+        if self.same_peer:
+            flags |= (1 << 0)
         if self.peer_types is not None:
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
@@ -24249,12 +24198,12 @@ class KeyboardButtonSwitchInline(TLObject):
     def from_reader(cls, reader):
         _args = {}
         flags = reader.read_int(signed=False)
-        _args['same_peer'] = bool(flags & (1 << 0))
         if flags & (1 << 10):
             _val_style = reader.tgread_object()
             _args['style'] = _val_style
         else:
             _args['style'] = None
+        _args['same_peer'] = bool(flags & (1 << 0))
         _val_text = reader.tgread_string()
         _args['text'] = _val_text
         _val_query = reader.tgread_string()
@@ -27722,14 +27671,15 @@ class MessageActionStarGift(TLObject):
     CONSTRUCTOR_ID = 0xea2c31d3
     SUBCLASS_OF_ID = 0x8680d126
 
-    def __init__(self, gift: 'TypeStarGift', name_hidden: Optional[bool] = None, saved: Optional[bool] = None, converted: Optional[bool] = None, upgraded: Optional[bool] = None, refunded: Optional[bool] = None, can_upgrade: Optional[bool] = None, prepaid_upgrade: Optional[bool] = None, upgrade_separate: Optional[bool] = None, auction_acquired: Optional[bool] = None, message: Optional['TypeTextWithEntities'] = None, convert_stars: Optional[int] = None, upgrade_msg_id: Optional[int] = None, upgrade_stars: Optional[int] = None, from_id: Optional['TypePeer'] = None, peer: Optional['TypePeer'] = None, saved_id: Optional[int] = None, prepaid_upgrade_hash: Optional[str] = None, gift_msg_id: Optional[int] = None, to_id: Optional['TypePeer'] = None, gift_num: Optional[int] = None):
+    def __init__(self, gift: 'TypeStarGift', name_hidden: Optional[bool] = None, saved: Optional[bool] = None, converted: Optional[bool] = None, upgraded: Optional[bool] = None, transferred: Optional[bool] = None, can_upgrade: Optional[bool] = None, refunded: Optional[bool] = None, prepaid_upgrade: Optional[bool] = None, upgrade_separate: Optional[bool] = None, auction_acquired: Optional[bool] = None, message: Optional['TypeTextWithEntities'] = None, convert_stars: Optional[int] = None, upgrade_msg_id: Optional[int] = None, upgrade_stars: Optional[int] = None, from_id: Optional['TypePeer'] = None, peer: Optional['TypePeer'] = None, saved_id: Optional[int] = None, prepaid_upgrade_hash: Optional[str] = None, gift_msg_id: Optional[int] = None, to_id: Optional['TypePeer'] = None, gift_num: Optional[int] = None):
         self.gift = gift
         self.name_hidden = name_hidden
         self.saved = saved
         self.converted = converted
         self.upgraded = upgraded
-        self.refunded = refunded
+        self.transferred = transferred
         self.can_upgrade = can_upgrade
+        self.refunded = refunded
         self.prepaid_upgrade = prepaid_upgrade
         self.upgrade_separate = upgrade_separate
         self.auction_acquired = auction_acquired
@@ -27753,8 +27703,9 @@ class MessageActionStarGift(TLObject):
             'saved': self.saved,
             'converted': self.converted,
             'upgraded': self.upgraded,
-            'refunded': self.refunded,
+            'transferred': self.transferred,
             'can_upgrade': self.can_upgrade,
+            'refunded': self.refunded,
             'prepaid_upgrade': self.prepaid_upgrade,
             'upgrade_separate': self.upgrade_separate,
             'auction_acquired': self.auction_acquired,
@@ -27786,10 +27737,12 @@ class MessageActionStarGift(TLObject):
             flags |= (1 << 5)
         if self.upgrade_msg_id is not None:
             flags |= (1 << 5)
-        if self.refunded:
-            flags |= (1 << 9)
+        if self.transferred:
+            flags |= (1 << 6)
         if self.can_upgrade:
             flags |= (1 << 10)
+        if self.refunded:
+            flags |= (1 << 9)
         if self.prepaid_upgrade:
             flags |= (1 << 13)
         if self.upgrade_separate:
@@ -27850,8 +27803,9 @@ class MessageActionStarGift(TLObject):
         _args['saved'] = bool(flags & (1 << 2))
         _args['converted'] = bool(flags & (1 << 3))
         _args['upgraded'] = bool(flags & (1 << 5))
-        _args['refunded'] = bool(flags & (1 << 9))
+        _args['transferred'] = bool(flags & (1 << 6))
         _args['can_upgrade'] = bool(flags & (1 << 10))
+        _args['refunded'] = bool(flags & (1 << 9))
         _args['prepaid_upgrade'] = bool(flags & (1 << 13))
         _args['upgrade_separate'] = bool(flags & (1 << 16))
         _args['auction_acquired'] = bool(flags & (1 << 17))
@@ -27920,7 +27874,7 @@ class MessageActionStarGiftPurchaseOffer(TLObject):
     CONSTRUCTOR_ID = 0x774278d4
     SUBCLASS_OF_ID = 0x8680d126
 
-    def __init__(self, gift: 'TypeStarGift', price: 'TypeStarsAmount', expires_at: Optional[datetime], accepted: Optional[bool] = None, declined: Optional[bool] = None):
+    def __init__(self, gift: 'TypeStarGift', price: 'TypeStarsAmount', expires_at: Optional[datetime], accepted: Optional[int] = None, declined: Optional[bool] = None):
         self.gift = gift
         self.price = price
         self.expires_at = expires_at
@@ -27942,11 +27896,13 @@ class MessageActionStarGiftPurchaseOffer(TLObject):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
-        if self.accepted:
+        if self.accepted is not None:
             flags |= (1 << 0)
         if self.declined:
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
+        if self.accepted is not None:
+            buf.write(struct.pack('<i', self.accepted))
         buf.write(bytes(self.gift))
         buf.write(bytes(self.price))
         buf.write(TLObject.serialize_datetime(self.expires_at))
@@ -27956,7 +27912,11 @@ class MessageActionStarGiftPurchaseOffer(TLObject):
     def from_reader(cls, reader):
         _args = {}
         flags = reader.read_int(signed=False)
-        _args['accepted'] = bool(flags & (1 << 0))
+        if flags & (1 << 0):
+            _val_accepted = reader.read_int()
+            _args['accepted'] = _val_accepted
+        else:
+            _args['accepted'] = None
         _args['declined'] = bool(flags & (1 << 1))
         _val_gift = reader.tgread_object()
         _args['gift'] = _val_gift
@@ -28014,7 +27974,7 @@ class MessageActionStarGiftUnique(TLObject):
     CONSTRUCTOR_ID = 0xe6c31522
     SUBCLASS_OF_ID = 0x8680d126
 
-    def __init__(self, gift: 'TypeStarGift', upgrade: Optional[bool] = None, transferred: Optional[bool] = None, saved: Optional[bool] = None, refunded: Optional[bool] = None, prepaid_upgrade: Optional[bool] = None, assigned: Optional[bool] = None, from_offer: Optional[bool] = None, craft: Optional[bool] = None, can_export_at: Optional[int] = None, transfer_stars: Optional[int] = None, from_id: Optional['TypePeer'] = None, peer: Optional['TypePeer'] = None, saved_id: Optional[int] = None, resale_amount: Optional['TypeStarsAmount'] = None, can_transfer_at: Optional[int] = None, can_resell_at: Optional[int] = None, drop_original_details_stars: Optional[int] = None, can_craft_at: Optional[int] = None):
+    def __init__(self, gift: 'TypeStarGift', upgrade: Optional[bool] = None, transferred: Optional[bool] = None, saved: Optional[bool] = None, refunded: Optional[bool] = None, prepaid_upgrade: Optional[bool] = None, assigned: Optional[bool] = None, from_offer: Optional[bool] = None, can_export_at: Optional[int] = None, transfer_stars: Optional[int] = None, from_id: Optional['TypePeer'] = None, peer: Optional['TypePeer'] = None, saved_id: Optional[int] = None, resale_amount: Optional['TypeStarsAmount'] = None, can_transfer_at: Optional[int] = None, can_resell_at: Optional[int] = None, drop_original_details_stars: Optional[int] = None, can_craft_at: Optional[int] = None):
         self.gift = gift
         self.upgrade = upgrade
         self.transferred = transferred
@@ -28023,7 +27983,6 @@ class MessageActionStarGiftUnique(TLObject):
         self.prepaid_upgrade = prepaid_upgrade
         self.assigned = assigned
         self.from_offer = from_offer
-        self.craft = craft
         self.can_export_at = can_export_at
         self.transfer_stars = transfer_stars
         self.from_id = from_id
@@ -28046,7 +28005,6 @@ class MessageActionStarGiftUnique(TLObject):
             'prepaid_upgrade': self.prepaid_upgrade,
             'assigned': self.assigned,
             'from_offer': self.from_offer,
-            'craft': self.craft,
             'can_export_at': self.can_export_at,
             'transfer_stars': self.transfer_stars,
             'from_id': self.from_id,
@@ -28078,8 +28036,6 @@ class MessageActionStarGiftUnique(TLObject):
             flags |= (1 << 13)
         if self.from_offer:
             flags |= (1 << 14)
-        if self.craft:
-            flags |= (1 << 16)
         if self.can_export_at is not None:
             flags |= (1 << 3)
         if self.transfer_stars is not None:
@@ -28135,7 +28091,6 @@ class MessageActionStarGiftUnique(TLObject):
         _args['prepaid_upgrade'] = bool(flags & (1 << 11))
         _args['assigned'] = bool(flags & (1 << 13))
         _args['from_offer'] = bool(flags & (1 << 14))
-        _args['craft'] = bool(flags & (1 << 16))
         _val_gift = reader.tgread_object()
         _args['gift'] = _val_gift
         if flags & (1 << 3):
@@ -38609,18 +38564,18 @@ class RequestPeerTypeBroadcast(TLObject):
     CONSTRUCTOR_ID = 0x339bef6c
     SUBCLASS_OF_ID = 0xe9a0e814
 
-    def __init__(self, creator: Optional[bool] = None, has_username: Optional[bool] = None, user_admin_rights: Optional['TypeChatAdminRights'] = None, bot_admin_rights: Optional['TypeChatAdminRights'] = None):
+    def __init__(self, creator: Optional[bool] = None, user_admin_rights: Optional['TypeChatAdminRights'] = None, has_username: Optional[bool] = None, bot_admin_rights: Optional['TypeChatAdminRights'] = None):
         self.creator = creator
-        self.has_username = has_username
         self.user_admin_rights = user_admin_rights
+        self.has_username = has_username
         self.bot_admin_rights = bot_admin_rights
 
     def to_dict(self):
         return {
             '_': 'RequestPeerTypeBroadcast',
             'creator': self.creator,
-            'has_username': self.has_username,
             'user_admin_rights': self.user_admin_rights,
+            'has_username': self.has_username,
             'bot_admin_rights': self.bot_admin_rights,
         }
 
@@ -38631,17 +38586,17 @@ class RequestPeerTypeBroadcast(TLObject):
         flags = 0
         if self.creator:
             flags |= (1 << 0)
-        if self.has_username is not None:
-            flags |= (1 << 3)
         if self.user_admin_rights is not None:
             flags |= (1 << 1)
+        if self.has_username is not None:
+            flags |= (1 << 3)
         if self.bot_admin_rights is not None:
             flags |= (1 << 2)
         buf.write(struct.pack('<I', flags))
-        if self.has_username is not None:
-            buf.write(struct.pack('<I', 0x997275b5 if self.has_username else 0xbc799737))
         if self.user_admin_rights is not None:
             buf.write(bytes(self.user_admin_rights))
+        if self.has_username is not None:
+            buf.write(struct.pack('<I', 0x997275b5 if self.has_username else 0xbc799737))
         if self.bot_admin_rights is not None:
             buf.write(bytes(self.bot_admin_rights))
         return buf.getvalue()
@@ -38651,16 +38606,16 @@ class RequestPeerTypeBroadcast(TLObject):
         _args = {}
         flags = reader.read_int(signed=False)
         _args['creator'] = bool(flags & (1 << 0))
-        if flags & (1 << 3):
-            _val_has_username = reader.tgread_bool()
-            _args['has_username'] = _val_has_username
-        else:
-            _args['has_username'] = None
         if flags & (1 << 1):
             _val_user_admin_rights = reader.tgread_object()
             _args['user_admin_rights'] = _val_user_admin_rights
         else:
             _args['user_admin_rights'] = None
+        if flags & (1 << 3):
+            _val_has_username = reader.tgread_bool()
+            _args['has_username'] = _val_has_username
+        else:
+            _args['has_username'] = None
         if flags & (1 << 2):
             _val_bot_admin_rights = reader.tgread_object()
             _args['bot_admin_rights'] = _val_bot_admin_rights
@@ -38674,23 +38629,23 @@ class RequestPeerTypeChat(TLObject):
     CONSTRUCTOR_ID = 0xc9f06e1b
     SUBCLASS_OF_ID = 0xe9a0e814
 
-    def __init__(self, creator: Optional[bool] = None, bot_participant: Optional[bool] = None, has_username: Optional[bool] = None, forum: Optional[bool] = None, user_admin_rights: Optional['TypeChatAdminRights'] = None, bot_admin_rights: Optional['TypeChatAdminRights'] = None):
+    def __init__(self, creator: Optional[bool] = None, user_admin_rights: Optional['TypeChatAdminRights'] = None, bot_participant: Optional[bool] = None, bot_admin_rights: Optional['TypeChatAdminRights'] = None, has_username: Optional[bool] = None, forum: Optional[bool] = None):
         self.creator = creator
+        self.user_admin_rights = user_admin_rights
         self.bot_participant = bot_participant
+        self.bot_admin_rights = bot_admin_rights
         self.has_username = has_username
         self.forum = forum
-        self.user_admin_rights = user_admin_rights
-        self.bot_admin_rights = bot_admin_rights
 
     def to_dict(self):
         return {
             '_': 'RequestPeerTypeChat',
             'creator': self.creator,
+            'user_admin_rights': self.user_admin_rights,
             'bot_participant': self.bot_participant,
+            'bot_admin_rights': self.bot_admin_rights,
             'has_username': self.has_username,
             'forum': self.forum,
-            'user_admin_rights': self.user_admin_rights,
-            'bot_admin_rights': self.bot_admin_rights,
         }
 
     def _bytes(self) -> bytes:
@@ -38700,25 +38655,25 @@ class RequestPeerTypeChat(TLObject):
         flags = 0
         if self.creator:
             flags |= (1 << 0)
+        if self.user_admin_rights is not None:
+            flags |= (1 << 1)
         if self.bot_participant:
             flags |= (1 << 5)
+        if self.bot_admin_rights is not None:
+            flags |= (1 << 2)
         if self.has_username is not None:
             flags |= (1 << 3)
         if self.forum is not None:
             flags |= (1 << 4)
-        if self.user_admin_rights is not None:
-            flags |= (1 << 1)
-        if self.bot_admin_rights is not None:
-            flags |= (1 << 2)
         buf.write(struct.pack('<I', flags))
-        if self.has_username is not None:
-            buf.write(struct.pack('<I', 0x997275b5 if self.has_username else 0xbc799737))
-        if self.forum is not None:
-            buf.write(struct.pack('<I', 0x997275b5 if self.forum else 0xbc799737))
         if self.user_admin_rights is not None:
             buf.write(bytes(self.user_admin_rights))
         if self.bot_admin_rights is not None:
             buf.write(bytes(self.bot_admin_rights))
+        if self.has_username is not None:
+            buf.write(struct.pack('<I', 0x997275b5 if self.has_username else 0xbc799737))
+        if self.forum is not None:
+            buf.write(struct.pack('<I', 0x997275b5 if self.forum else 0xbc799737))
         return buf.getvalue()
 
     @classmethod
@@ -38726,7 +38681,17 @@ class RequestPeerTypeChat(TLObject):
         _args = {}
         flags = reader.read_int(signed=False)
         _args['creator'] = bool(flags & (1 << 0))
+        if flags & (1 << 1):
+            _val_user_admin_rights = reader.tgread_object()
+            _args['user_admin_rights'] = _val_user_admin_rights
+        else:
+            _args['user_admin_rights'] = None
         _args['bot_participant'] = bool(flags & (1 << 5))
+        if flags & (1 << 2):
+            _val_bot_admin_rights = reader.tgread_object()
+            _args['bot_admin_rights'] = _val_bot_admin_rights
+        else:
+            _args['bot_admin_rights'] = None
         if flags & (1 << 3):
             _val_has_username = reader.tgread_bool()
             _args['has_username'] = _val_has_username
@@ -38737,16 +38702,6 @@ class RequestPeerTypeChat(TLObject):
             _args['forum'] = _val_forum
         else:
             _args['forum'] = None
-        if flags & (1 << 1):
-            _val_user_admin_rights = reader.tgread_object()
-            _args['user_admin_rights'] = _val_user_admin_rights
-        else:
-            _args['user_admin_rights'] = None
-        if flags & (1 << 2):
-            _val_bot_admin_rights = reader.tgread_object()
-            _args['bot_admin_rights'] = _val_bot_admin_rights
-        else:
-            _args['bot_admin_rights'] = None
         return cls(**_args)
 
 
@@ -41792,7 +41747,7 @@ class StarGift(TLObject):
     CONSTRUCTOR_ID = 0x313a9547
     SUBCLASS_OF_ID = 0xc31c590b
 
-    def __init__(self, id: int, sticker: 'TypeDocument', stars: int, convert_stars: int, limited: Optional[bool] = None, sold_out: Optional[bool] = None, birthday: Optional[bool] = None, require_premium: Optional[bool] = None, limited_per_user: Optional[bool] = None, peer_color_available: Optional[bool] = None, auction: Optional[bool] = None, availability_remains: Optional[int] = None, availability_total: Optional[int] = None, availability_resale: Optional[int] = None, first_sale_date: Optional[datetime] = None, last_sale_date: Optional[datetime] = None, upgrade_stars: Optional[int] = None, resell_min_stars: Optional[int] = None, title: Optional[str] = None, released_by: Optional['TypePeer'] = None, per_user_total: Optional[int] = None, per_user_remains: Optional[int] = None, locked_until_date: Optional[datetime] = None, auction_slug: Optional[str] = None, gifts_per_round: Optional[int] = None, auction_start_date: Optional[datetime] = None, upgrade_variants: Optional[int] = None, background: Optional['TypeStarGiftBackground'] = None):
+    def __init__(self, id: int, sticker: 'TypeDocument', stars: int, convert_stars: int, limited: Optional[bool] = None, sold_out: Optional[bool] = None, birthday: Optional[bool] = None, can_upgrade: Optional[bool] = None, require_premium: Optional[bool] = None, limited_per_user: Optional[bool] = None, peer_color_available: Optional[bool] = None, auction: Optional[bool] = None, availability_remains: Optional[int] = None, availability_total: Optional[int] = None, availability_resale: Optional[int] = None, first_sale_date: Optional[datetime] = None, last_sale_date: Optional[datetime] = None, upgrade_stars: Optional[int] = None, resell_min_stars: Optional[int] = None, title: Optional[str] = None, released_by: Optional['TypePeer'] = None, per_user_total: Optional[int] = None, per_user_remains: Optional[int] = None, locked_until_date: Optional[datetime] = None, auction_slug: Optional[str] = None, gifts_per_round: Optional[int] = None, auction_start_date: Optional[datetime] = None, upgrade_variants: Optional[int] = None, background: Optional['TypeStarGiftBackground'] = None):
         self.id = id
         self.sticker = sticker
         self.stars = stars
@@ -41800,6 +41755,7 @@ class StarGift(TLObject):
         self.limited = limited
         self.sold_out = sold_out
         self.birthday = birthday
+        self.can_upgrade = can_upgrade
         self.require_premium = require_premium
         self.limited_per_user = limited_per_user
         self.peer_color_available = peer_color_available
@@ -41832,6 +41788,7 @@ class StarGift(TLObject):
             'limited': self.limited,
             'sold_out': self.sold_out,
             'birthday': self.birthday,
+            'can_upgrade': self.can_upgrade,
             'require_premium': self.require_premium,
             'limited_per_user': self.limited_per_user,
             'peer_color_available': self.peer_color_available,
@@ -41874,6 +41831,10 @@ class StarGift(TLObject):
             flags |= (1 << 1)
         if self.birthday:
             flags |= (1 << 2)
+        if self.can_upgrade:
+            flags |= (1 << 3)
+        if self.upgrade_stars is not None:
+            flags |= (1 << 3)
         if self.require_premium:
             flags |= (1 << 7)
         if self.limited_per_user:
@@ -41896,8 +41857,6 @@ class StarGift(TLObject):
             flags |= (1 << 4)
         if self.resell_min_stars is not None:
             flags |= (1 << 4)
-        if self.upgrade_stars is not None:
-            flags |= (1 << 3)
         if self.title is not None:
             flags |= (1 << 5)
         if self.released_by is not None:
@@ -41956,6 +41915,7 @@ class StarGift(TLObject):
         _args['limited'] = bool(flags & (1 << 0))
         _args['sold_out'] = bool(flags & (1 << 1))
         _args['birthday'] = bool(flags & (1 << 2))
+        _args['can_upgrade'] = bool(flags & (1 << 3))
         _args['require_premium'] = bool(flags & (1 << 7))
         _args['limited_per_user'] = bool(flags & (1 << 8))
         _args['peer_color_available'] = bool(flags & (1 << 10))
@@ -44016,7 +43976,7 @@ class StarsTransaction(TLObject):
     CONSTRUCTOR_ID = 0x13659eb0
     SUBCLASS_OF_ID = 0x86884772
 
-    def __init__(self, id: str, amount: 'TypeStarsAmount', date: Optional[datetime], peer: 'TypeStarsTransactionPeer', refund: Optional[bool] = None, pending: Optional[bool] = None, failed: Optional[bool] = None, gift: Optional[bool] = None, reaction: Optional[bool] = None, stargift_upgrade: Optional[bool] = None, business_transfer: Optional[bool] = None, stargift_resale: Optional[bool] = None, posts_search: Optional[bool] = None, stargift_prepaid_upgrade: Optional[bool] = None, stargift_drop_original_details: Optional[bool] = None, phonegroup_message: Optional[bool] = None, stargift_auction_bid: Optional[bool] = None, offer: Optional[bool] = None, title: Optional[str] = None, description: Optional[str] = None, photo: Optional['TypeWebDocument'] = None, transaction_date: Optional[datetime] = None, transaction_url: Optional[str] = None, bot_payload: Optional[bytes] = None, msg_id: Optional[int] = None, extended_media: Optional[List['TypeMessageMedia']] = None, subscription_period: Optional[int] = None, giveaway_post_id: Optional[int] = None, stargift: Optional['TypeStarGift'] = None, floodskip_number: Optional[int] = None, starref_commission_permille: Optional[int] = None, starref_peer: Optional['TypePeer'] = None, starref_amount: Optional['TypeStarsAmount'] = None, paid_messages: Optional[int] = None, premium_gift_months: Optional[int] = None, ads_proceeds_from_date: Optional[datetime] = None, ads_proceeds_to_date: Optional[datetime] = None):
+    def __init__(self, id: str, amount: 'TypeStarsAmount', date: Optional[datetime], peer: 'TypeStarsTransactionPeer', refund: Optional[bool] = None, pending: Optional[bool] = None, failed: Optional[bool] = None, gift: Optional[bool] = None, reaction: Optional[bool] = None, subscription: Optional[bool] = None, floodskip: Optional[bool] = None, stargift_upgrade: Optional[bool] = None, paid_message: Optional[bool] = None, premium_gift: Optional[bool] = None, business_transfer: Optional[bool] = None, stargift_resale: Optional[bool] = None, posts_search: Optional[bool] = None, stargift_prepaid_upgrade: Optional[bool] = None, stargift_drop_original_details: Optional[bool] = None, phonegroup_message: Optional[bool] = None, stargift_auction_bid: Optional[bool] = None, offer: Optional[bool] = None, title: Optional[str] = None, description: Optional[str] = None, photo: Optional['TypeWebDocument'] = None, transaction_date: Optional[datetime] = None, transaction_url: Optional[str] = None, bot_payload: Optional[bytes] = None, msg_id: Optional[int] = None, extended_media: Optional[List['TypeMessageMedia']] = None, subscription_period: Optional[int] = None, giveaway_post_id: Optional[int] = None, stargift: Optional['TypeStarGift'] = None, floodskip_number: Optional[int] = None, starref_commission_permille: Optional[int] = None, starref_peer: Optional['TypePeer'] = None, starref_amount: Optional['TypeStarsAmount'] = None, paid_messages: Optional[int] = None, premium_gift_months: Optional[int] = None, ads_proceeds_from_date: Optional[datetime] = None, ads_proceeds_to_date: Optional[datetime] = None):
         self.id = id
         self.amount = amount
         self.date = date
@@ -44026,7 +43986,11 @@ class StarsTransaction(TLObject):
         self.failed = failed
         self.gift = gift
         self.reaction = reaction
+        self.subscription = subscription
+        self.floodskip = floodskip
         self.stargift_upgrade = stargift_upgrade
+        self.paid_message = paid_message
+        self.premium_gift = premium_gift
         self.business_transfer = business_transfer
         self.stargift_resale = stargift_resale
         self.posts_search = posts_search
@@ -44067,7 +44031,11 @@ class StarsTransaction(TLObject):
             'failed': self.failed,
             'gift': self.gift,
             'reaction': self.reaction,
+            'subscription': self.subscription,
+            'floodskip': self.floodskip,
             'stargift_upgrade': self.stargift_upgrade,
+            'paid_message': self.paid_message,
+            'premium_gift': self.premium_gift,
             'business_transfer': self.business_transfer,
             'stargift_resale': self.stargift_resale,
             'posts_search': self.posts_search,
@@ -44112,8 +44080,24 @@ class StarsTransaction(TLObject):
             flags |= (1 << 10)
         if self.reaction:
             flags |= (1 << 11)
+        if self.subscription:
+            flags |= (1 << 12)
+        if self.subscription_period is not None:
+            flags |= (1 << 12)
+        if self.floodskip:
+            flags |= (1 << 15)
+        if self.floodskip_number is not None:
+            flags |= (1 << 15)
         if self.stargift_upgrade:
             flags |= (1 << 18)
+        if self.paid_message:
+            flags |= (1 << 19)
+        if self.paid_messages is not None:
+            flags |= (1 << 19)
+        if self.premium_gift:
+            flags |= (1 << 20)
+        if self.premium_gift_months is not None:
+            flags |= (1 << 20)
         if self.business_transfer:
             flags |= (1 << 21)
         if self.stargift_resale:
@@ -44146,24 +44130,16 @@ class StarsTransaction(TLObject):
             flags |= (1 << 8)
         if self.extended_media is not None:
             flags |= (1 << 9)
-        if self.subscription_period is not None:
-            flags |= (1 << 12)
         if self.giveaway_post_id is not None:
             flags |= (1 << 13)
         if self.stargift is not None:
             flags |= (1 << 14)
-        if self.floodskip_number is not None:
-            flags |= (1 << 15)
         if self.starref_commission_permille is not None:
             flags |= (1 << 16)
         if self.starref_peer is not None:
             flags |= (1 << 17)
         if self.starref_amount is not None:
             flags |= (1 << 17)
-        if self.paid_messages is not None:
-            flags |= (1 << 19)
-        if self.premium_gift_months is not None:
-            flags |= (1 << 20)
         if self.ads_proceeds_from_date is not None:
             flags |= (1 << 23)
         if self.ads_proceeds_to_date is not None:
@@ -44225,7 +44201,11 @@ class StarsTransaction(TLObject):
         _args['failed'] = bool(flags & (1 << 6))
         _args['gift'] = bool(flags & (1 << 10))
         _args['reaction'] = bool(flags & (1 << 11))
+        _args['subscription'] = bool(flags & (1 << 12))
+        _args['floodskip'] = bool(flags & (1 << 15))
         _args['stargift_upgrade'] = bool(flags & (1 << 18))
+        _args['paid_message'] = bool(flags & (1 << 19))
+        _args['premium_gift'] = bool(flags & (1 << 20))
         _args['business_transfer'] = bool(flags & (1 << 21))
         _args['stargift_resale'] = bool(flags & (1 << 22))
         _args['posts_search'] = bool(flags & (1 << 24))
