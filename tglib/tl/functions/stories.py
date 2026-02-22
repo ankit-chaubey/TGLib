@@ -244,19 +244,19 @@ class EditStoryRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.media_areas)))
             for item in self.media_areas:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.caption is not None:
             buf.write(TLObject.serialize_bytes(self.caption))
         if self.entities is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.privacy_rules is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.privacy_rules)))
             for item in self.privacy_rules:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -539,7 +539,7 @@ class GetPeerMaxIdsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -1244,19 +1244,19 @@ class SendStoryRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.privacy_rules)))
         for item in self.privacy_rules:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.media_areas is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.media_areas)))
             for item in self.media_areas:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.caption is not None:
             buf.write(TLObject.serialize_bytes(self.caption))
         if self.entities is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         buf.write(struct.pack('<q', self.random_id))
         if self.period is not None:
             buf.write(struct.pack('<i', self.period))
@@ -1400,14 +1400,14 @@ class StartLiveRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.privacy_rules)))
         for item in self.privacy_rules:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.caption is not None:
             buf.write(TLObject.serialize_bytes(self.caption))
         if self.entities is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         buf.write(struct.pack('<q', self.random_id))
         if self.messages_enabled is not None:
             buf.write(struct.pack('<I', 0x997275b5 if self.messages_enabled else 0xbc799737))

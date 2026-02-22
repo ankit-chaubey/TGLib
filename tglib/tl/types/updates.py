@@ -46,19 +46,19 @@ class ChannelDifference(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.new_messages)))
         for item in self.new_messages:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.other_updates)))
         for item in self.other_updates:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.timeout is not None:
             buf.write(struct.pack('<i', self.timeout))
         return buf.getvalue()
@@ -192,15 +192,15 @@ class ChannelDifferenceTooLong(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.messages)))
         for item in self.messages:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.timeout is not None:
             buf.write(struct.pack('<i', self.timeout))
         return buf.getvalue()
@@ -272,23 +272,23 @@ class Difference(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.new_messages)))
         for item in self.new_messages:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.new_encrypted_messages)))
         for item in self.new_encrypted_messages:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.other_updates)))
         for item in self.other_updates:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(bytes(self.state))
         return buf.getvalue()
 
@@ -400,23 +400,23 @@ class DifferenceSlice(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.new_messages)))
         for item in self.new_messages:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.new_encrypted_messages)))
         for item in self.new_encrypted_messages:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.other_updates)))
         for item in self.other_updates:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(bytes(self.intermediate_state))
         return buf.getvalue()
 

@@ -57,7 +57,7 @@ class GetRequirementsToContactRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -141,7 +141,7 @@ class GetSavedMusicByIdRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.documents)))
         for item in self.documents:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -180,7 +180,7 @@ class GetUsersRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -220,7 +220,7 @@ class SetSecureValueErrorsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.errors)))
         for item in self.errors:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod

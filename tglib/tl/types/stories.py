@@ -30,7 +30,7 @@ class Albums(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.albums)))
         for item in self.albums:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -111,15 +111,15 @@ class AllStories(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.peer_stories)))
         for item in self.peer_stories:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(bytes(self.stealth_mode))
         return buf.getvalue()
 
@@ -257,15 +257,15 @@ class FoundStories(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.stories)))
         for item in self.stories:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.next_offset is not None:
             buf.write(TLObject.serialize_bytes(self.next_offset))
         return buf.getvalue()
@@ -331,11 +331,11 @@ class PeerStories(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -394,15 +394,15 @@ class Stories(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.stories)))
         for item in self.stories:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.pinned_to_top is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.pinned_to_top)))
@@ -484,15 +484,15 @@ class StoryReactionsList(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.reactions)))
         for item in self.reactions:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.next_offset is not None:
             buf.write(TLObject.serialize_bytes(self.next_offset))
         return buf.getvalue()
@@ -555,11 +555,11 @@ class StoryViews(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.views)))
         for item in self.views:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -625,15 +625,15 @@ class StoryViewsList(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.views)))
         for item in self.views:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.next_offset is not None:
             buf.write(TLObject.serialize_bytes(self.next_offset))
         return buf.getvalue()

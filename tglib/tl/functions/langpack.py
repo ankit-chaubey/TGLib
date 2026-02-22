@@ -170,7 +170,7 @@ class GetStringsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.keys)))
         for item in self.keys:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         return buf.getvalue()
 
     @classmethod

@@ -90,12 +90,12 @@ class AttachMenuBot(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.icons)))
         for item in self.icons:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.peer_types is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.peer_types)))
             for item in self.peer_types:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -164,7 +164,7 @@ class AttachMenuBotIcon(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.colors)))
             for item in self.colors:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -248,11 +248,11 @@ class AttachMenuBots(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.bots)))
         for item in self.bots:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -301,7 +301,7 @@ class AttachMenuBotsBot(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -1790,7 +1790,7 @@ class BotInfo(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.commands)))
             for item in self.commands:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.menu_button is not None:
             buf.write(bytes(self.menu_button))
         if self.privacy_policy_url is not None:
@@ -1982,7 +1982,7 @@ class BotInlineMessageMediaAuto(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.reply_markup is not None:
             buf.write(bytes(self.reply_markup))
         return buf.getvalue()
@@ -2349,7 +2349,7 @@ class BotInlineMessageMediaWebPage(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.reply_markup is not None:
             buf.write(bytes(self.reply_markup))
         return buf.getvalue()
@@ -2426,7 +2426,7 @@ class BotInlineMessageText(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.reply_markup is not None:
             buf.write(bytes(self.reply_markup))
         return buf.getvalue()
@@ -3117,7 +3117,7 @@ class BusinessChatLink(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.title is not None:
             buf.write(TLObject.serialize_bytes(self.title))
         return buf.getvalue()
@@ -3415,7 +3415,7 @@ class BusinessWorkHours(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.weekly_open)))
         for item in self.weekly_open:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -3456,7 +3456,7 @@ class CdnConfig(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.public_keys)))
         for item in self.public_keys:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -3724,7 +3724,7 @@ class Channel(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.restriction_reason)))
             for item in self.restriction_reason:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.admin_rights is not None:
             buf.write(bytes(self.admin_rights))
         if self.banned_rights is not None:
@@ -3737,7 +3737,7 @@ class Channel(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.usernames)))
             for item in self.usernames:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.stories_max_id is not None:
             buf.write(bytes(self.stories_max_id))
         if self.color is not None:
@@ -4440,11 +4440,11 @@ class ChannelAdminLogEventActionChangeUsernames(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.prev_value)))
         for item in self.prev_value:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.new_value)))
         for item in self.new_value:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -6068,7 +6068,7 @@ class ChannelFull(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.bot_info)))
         for item in self.bot_info:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', self.pts))
         if self.participants_count is not None:
             buf.write(struct.pack('<i', self.participants_count))
@@ -6112,7 +6112,7 @@ class ChannelFull(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.pending_suggestions)))
             for item in self.pending_suggestions:
-                buf.write(TLObject.serialize_bytes(self.item))
+                buf.write(TLObject.serialize_bytes(item))
         if self.groupcall_default_join_as is not None:
             buf.write(bytes(self.groupcall_default_join_as))
         if self.theme_emoticon is not None:
@@ -6477,7 +6477,7 @@ class ChannelMessagesFilter(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.ranges)))
         for item in self.ranges:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -7629,7 +7629,7 @@ class ChatFull(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.bot_info)))
             for item in self.bot_info:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.pinned_msg_id is not None:
             buf.write(struct.pack('<i', self.pinned_msg_id))
         if self.folder_id is not None:
@@ -7840,7 +7840,7 @@ class ChatInvite(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.participants)))
             for item in self.participants:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.subscription_pricing is not None:
             buf.write(bytes(self.subscription_pricing))
         if self.subscription_form_id is not None:
@@ -8366,7 +8366,7 @@ class ChatParticipants(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.participants)))
         for item in self.participants:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', self.version))
         return buf.getvalue()
 
@@ -8584,7 +8584,7 @@ class ChatReactionsSome(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.reactions)))
         for item in self.reactions:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -8653,7 +8653,7 @@ class ChatThemeUniqueGift(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.theme_settings)))
         for item in self.theme_settings:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -8727,7 +8727,7 @@ class CodeSettings(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.logout_tokens)))
             for item in self.logout_tokens:
-                buf.write(TLObject.serialize_bytes(self.item))
+                buf.write(TLObject.serialize_bytes(item))
         if self.token is not None:
             buf.write(TLObject.serialize_bytes(self.token))
         if self.app_sandbox is not None:
@@ -8914,7 +8914,7 @@ class Config(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.dc_options)))
         for item in self.dc_options:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(TLObject.serialize_bytes(self.dc_txt_domain_name))
         buf.write(struct.pack('<i', self.chat_size_max))
         buf.write(struct.pack('<i', self.megagroup_size_max))
@@ -9659,15 +9659,15 @@ class DialogFilter(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.pinned_peers)))
         for item in self.pinned_peers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.include_peers)))
         for item in self.include_peers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.exclude_peers)))
         for item in self.exclude_peers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.emoticon is not None:
             buf.write(TLObject.serialize_bytes(self.emoticon))
         if self.color is not None:
@@ -9772,11 +9772,11 @@ class DialogFilterChatlist(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.pinned_peers)))
         for item in self.pinned_peers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.include_peers)))
         for item in self.include_peers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.emoticon is not None:
             buf.write(TLObject.serialize_bytes(self.emoticon))
         if self.color is not None:
@@ -10107,17 +10107,17 @@ class Document(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.attributes)))
         for item in self.attributes:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.thumbs is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.thumbs)))
             for item in self.thumbs:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.video_thumbs is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.video_thumbs)))
             for item in self.video_thumbs:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -10626,7 +10626,7 @@ class DraftMessage(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.media is not None:
             buf.write(bytes(self.media))
         if self.effect is not None:
@@ -10912,7 +10912,7 @@ class EmojiGroup(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.emoticons)))
         for item in self.emoticons:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -10959,7 +10959,7 @@ class EmojiGroupGreeting(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.emoticons)))
         for item in self.emoticons:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -11037,7 +11037,7 @@ class EmojiKeyword(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.emoticons)))
         for item in self.emoticons:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -11079,7 +11079,7 @@ class EmojiKeywordDeleted(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.emoticons)))
         for item in self.emoticons:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -11127,7 +11127,7 @@ class EmojiKeywordsDifference(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.keywords)))
         for item in self.keywords:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -11859,7 +11859,7 @@ class ExportedChatlistInvite(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.peers)))
         for item in self.peers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -13229,7 +13229,7 @@ class GroupCallParticipantVideo(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.source_groups)))
         for item in self.source_groups:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.audio_source is not None:
             buf.write(struct.pack('<i', self.audio_source))
         return buf.getvalue()
@@ -13892,7 +13892,7 @@ class InputBotInlineMessageMediaAuto(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.reply_markup is not None:
             buf.write(bytes(self.reply_markup))
         return buf.getvalue()
@@ -14255,7 +14255,7 @@ class InputBotInlineMessageMediaWebPage(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.reply_markup is not None:
             buf.write(bytes(self.reply_markup))
         return buf.getvalue()
@@ -14331,7 +14331,7 @@ class InputBotInlineMessageText(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.reply_markup is not None:
             buf.write(bytes(self.reply_markup))
         return buf.getvalue()
@@ -14708,12 +14708,12 @@ class InputBusinessBotRecipients(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.users)))
             for item in self.users:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.exclude_users is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.exclude_users)))
             for item in self.exclude_users:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -14781,7 +14781,7 @@ class InputBusinessChatLink(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.title is not None:
             buf.write(TLObject.serialize_bytes(self.title))
         return buf.getvalue()
@@ -14943,7 +14943,7 @@ class InputBusinessRecipients(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.users)))
             for item in self.users:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -17757,7 +17757,7 @@ class InputMediaPaidMedia(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.extended_media)))
         for item in self.extended_media:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.payload is not None:
             buf.write(TLObject.serialize_bytes(self.payload))
         return buf.getvalue()
@@ -17914,14 +17914,14 @@ class InputMediaPoll(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.correct_answers)))
             for item in self.correct_answers:
-                buf.write(TLObject.serialize_bytes(self.item))
+                buf.write(TLObject.serialize_bytes(item))
         if self.solution is not None:
             buf.write(TLObject.serialize_bytes(self.solution))
         if self.solution_entities is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.solution_entities)))
             for item in self.solution_entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -18121,14 +18121,14 @@ class InputMediaUploadedDocument(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.attributes)))
         for item in self.attributes:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.thumb is not None:
             buf.write(bytes(self.thumb))
         if self.stickers is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.stickers)))
             for item in self.stickers:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.video_cover is not None:
             buf.write(bytes(self.video_cover))
         if self.video_timestamp is not None:
@@ -18225,7 +18225,7 @@ class InputMediaUploadedPhoto(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.stickers)))
             for item in self.stickers:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.ttl_seconds is not None:
             buf.write(struct.pack('<i', self.ttl_seconds))
         return buf.getvalue()
@@ -20526,7 +20526,7 @@ class InputPrivacyValueAllowUsers(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -20672,7 +20672,7 @@ class InputPrivacyValueDisallowUsers(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -20805,7 +20805,7 @@ class InputReplyToMessage(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.quote_entities)))
             for item in self.quote_entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.quote_offset is not None:
             buf.write(struct.pack('<i', self.quote_offset))
         if self.monoforum_peer_id is not None:
@@ -21436,12 +21436,12 @@ class InputSecureValue(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.translation)))
             for item in self.translation:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.files is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.files)))
             for item in self.files:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.plain_data is not None:
             buf.write(bytes(self.plain_data))
         return buf.getvalue()
@@ -21535,7 +21535,7 @@ class InputSingleMedia(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -22241,7 +22241,7 @@ class InputStorePaymentPremiumGiftCode(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(TLObject.serialize_bytes(self.currency))
         buf.write(struct.pack('<q', self.amount))
         if self.boost_peer is not None:
@@ -22334,12 +22334,12 @@ class InputStorePaymentPremiumGiveaway(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.additional_peers)))
             for item in self.additional_peers:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.countries_iso2 is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.countries_iso2)))
             for item in self.countries_iso2:
-                buf.write(TLObject.serialize_bytes(self.item))
+                buf.write(TLObject.serialize_bytes(item))
         if self.prize_description is not None:
             buf.write(TLObject.serialize_bytes(self.prize_description))
         buf.write(struct.pack('<q', self.random_id))
@@ -22532,12 +22532,12 @@ class InputStorePaymentStarsGiveaway(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.additional_peers)))
             for item in self.additional_peers:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.countries_iso2 is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.countries_iso2)))
             for item in self.countries_iso2:
-                buf.write(TLObject.serialize_bytes(self.item))
+                buf.write(TLObject.serialize_bytes(item))
         if self.prize_description is not None:
             buf.write(TLObject.serialize_bytes(self.prize_description))
         buf.write(struct.pack('<q', self.random_id))
@@ -23066,7 +23066,7 @@ class InputWebDocument(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.attributes)))
         for item in self.attributes:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -23315,7 +23315,7 @@ class Invoice(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.prices)))
         for item in self.prices:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.max_tip_amount is not None:
             buf.write(struct.pack('<q', self.max_tip_amount))
         if self.suggested_tip_amounts is not None:
@@ -23400,7 +23400,7 @@ class JsonArray(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.value)))
         for item in self.value:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -23519,7 +23519,7 @@ class JsonObject(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.value)))
         for item in self.value:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -24047,7 +24047,7 @@ class KeyboardButtonRow(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.buttons)))
         for item in self.buttons:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -24206,7 +24206,7 @@ class KeyboardButtonSwitchInline(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.peer_types)))
             for item in self.peer_types:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -24508,7 +24508,7 @@ class LangPackDifference(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.strings)))
         for item in self.strings:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -25405,7 +25405,7 @@ class Message(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.views is not None:
             buf.write(struct.pack('<i', self.views))
         if self.forwards is not None:
@@ -25424,7 +25424,7 @@ class Message(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.restriction_reason)))
             for item in self.restriction_reason:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.ttl_period is not None:
             buf.write(struct.pack('<i', self.ttl_period))
         if self.quick_reply_shortcut_id is not None:
@@ -26120,7 +26120,7 @@ class MessageActionConferenceCall(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.other_participants)))
             for item in self.other_participants:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -27394,7 +27394,7 @@ class MessageActionRequestedPeer(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.peers)))
         for item in self.peers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -27436,7 +27436,7 @@ class MessageActionRequestedPeerSentMe(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.peers)))
         for item in self.peers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -27499,7 +27499,7 @@ class MessageActionSecureValuesSent(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.types)))
         for item in self.types:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -27538,7 +27538,7 @@ class MessageActionSecureValuesSentMe(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.values)))
         for item in self.values:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(bytes(self.credentials))
         return buf.getvalue()
 
@@ -28378,7 +28378,7 @@ class MessageActionTodoAppendTasks(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.list)))
         for item in self.list:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -29844,7 +29844,7 @@ class MessageMediaDocument(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.alt_documents)))
             for item in self.alt_documents:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.video_cover is not None:
             buf.write(bytes(self.video_cover))
         if self.video_timestamp is not None:
@@ -30094,7 +30094,7 @@ class MessageMediaGiveaway(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.countries_iso2)))
             for item in self.countries_iso2:
-                buf.write(TLObject.serialize_bytes(self.item))
+                buf.write(TLObject.serialize_bytes(item))
         if self.prize_description is not None:
             buf.write(TLObject.serialize_bytes(self.prize_description))
         if self.months is not None:
@@ -30386,7 +30386,7 @@ class MessageMediaPaidMedia(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.extended_media)))
         for item in self.extended_media:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -30574,7 +30574,7 @@ class MessageMediaToDo(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.completions)))
             for item in self.completions:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -30919,7 +30919,7 @@ class MessagePeerVoteMultiple(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.options)))
         for item in self.options:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         buf.write(struct.pack('<i', self.date))
         return buf.getvalue()
 
@@ -31017,17 +31017,17 @@ class MessageReactions(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.results)))
         for item in self.results:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.recent_reactions is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.recent_reactions)))
             for item in self.recent_reactions:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.top_reactors is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.top_reactors)))
             for item in self.top_reactors:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -31171,7 +31171,7 @@ class MessageReplies(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.recent_repliers)))
             for item in self.recent_repliers:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.channel_id is not None:
             buf.write(struct.pack('<q', self.channel_id))
         if self.max_id is not None:
@@ -31299,7 +31299,7 @@ class MessageReplyHeader(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.quote_entities)))
             for item in self.quote_entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.quote_offset is not None:
             buf.write(struct.pack('<i', self.quote_offset))
         if self.todo_item_id is not None:
@@ -32175,15 +32175,15 @@ class Page(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.blocks)))
         for item in self.blocks:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.photos)))
         for item in self.photos:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.documents)))
         for item in self.documents:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.views is not None:
             buf.write(struct.pack('<i', self.views))
         return buf.getvalue()
@@ -32409,7 +32409,7 @@ class PageBlockCollage(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.items)))
         for item in self.items:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(bytes(self.caption))
         return buf.getvalue()
 
@@ -32486,7 +32486,7 @@ class PageBlockDetails(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.blocks)))
         for item in self.blocks:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(bytes(self.title))
         return buf.getvalue()
 
@@ -32664,7 +32664,7 @@ class PageBlockEmbedPost(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.blocks)))
         for item in self.blocks:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(bytes(self.caption))
         return buf.getvalue()
 
@@ -32801,7 +32801,7 @@ class PageBlockList(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.items)))
         for item in self.items:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -32887,7 +32887,7 @@ class PageBlockOrderedList(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.items)))
         for item in self.items:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -33081,7 +33081,7 @@ class PageBlockRelatedArticles(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.articles)))
         for item in self.articles:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -33122,7 +33122,7 @@ class PageBlockSlideshow(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.items)))
         for item in self.items:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(bytes(self.caption))
         return buf.getvalue()
 
@@ -33233,7 +33233,7 @@ class PageBlockTable(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.rows)))
         for item in self.rows:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -33409,7 +33409,7 @@ class PageListItemBlocks(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.blocks)))
         for item in self.blocks:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -33478,7 +33478,7 @@ class PageListOrderedItemBlocks(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.blocks)))
         for item in self.blocks:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -33728,7 +33728,7 @@ class PageTableRow(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.cells)))
         for item in self.cells:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -34791,7 +34791,7 @@ class PeerStories(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.stories)))
         for item in self.stories:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.max_read_id is not None:
             buf.write(struct.pack('<i', self.max_read_id))
         return buf.getvalue()
@@ -34955,7 +34955,7 @@ class PhoneCall(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.connections)))
         for item in self.connections:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', self.start_date))
         if self.custom_parameters is not None:
             buf.write(bytes(self.custom_parameters))
@@ -35328,7 +35328,7 @@ class PhoneCallProtocol(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.library_versions)))
         for item in self.library_versions:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -35660,13 +35660,13 @@ class Photo(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.sizes)))
         for item in self.sizes:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', self.dc_id))
         if self.video_sizes is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.video_sizes)))
             for item in self.video_sizes:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -36023,7 +36023,7 @@ class Poll(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.answers)))
         for item in self.answers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.close_period is not None:
             buf.write(struct.pack('<i', self.close_period))
         if self.close_date is not None:
@@ -36187,21 +36187,21 @@ class PollResults(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.results)))
             for item in self.results:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.total_voters is not None:
             buf.write(struct.pack('<i', self.total_voters))
         if self.recent_voters is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.recent_voters)))
             for item in self.recent_voters:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.solution is not None:
             buf.write(TLObject.serialize_bytes(self.solution))
         if self.solution_entities is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.solution_entities)))
             for item in self.solution_entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -38266,7 +38266,7 @@ class ReplyInlineMarkup(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.rows)))
         for item in self.rows:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -38405,7 +38405,7 @@ class ReplyKeyboardMarkup(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.rows)))
         for item in self.rows:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.placeholder is not None:
             buf.write(TLObject.serialize_bytes(self.placeholder))
         return buf.getvalue()
@@ -38494,7 +38494,7 @@ class ReportResultChooseOption(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.options)))
         for item in self.options:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -39924,7 +39924,7 @@ class SecureRequiredTypeOneOf(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.types)))
         for item in self.types:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -40043,12 +40043,12 @@ class SecureValue(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.translation)))
             for item in self.translation:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.files is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.files)))
             for item in self.files:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.plain_data is not None:
             buf.write(bytes(self.plain_data))
         return buf.getvalue()
@@ -40257,7 +40257,7 @@ class SecureValueErrorFiles(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.file_hash)))
         for item in self.file_hash:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         buf.write(TLObject.serialize_bytes(self.text))
         return buf.getvalue()
 
@@ -40460,7 +40460,7 @@ class SecureValueErrorTranslationFiles(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.file_hash)))
         for item in self.file_hash:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         buf.write(TLObject.serialize_bytes(self.text))
         return buf.getvalue()
 
@@ -41383,7 +41383,7 @@ class ShippingOption(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.prices)))
         for item in self.prices:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -41541,7 +41541,7 @@ class SponsoredMessage(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.photo is not None:
             buf.write(bytes(self.photo))
         if self.media is not None:
@@ -42657,7 +42657,7 @@ class StarGiftAuctionState(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.bid_levels)))
         for item in self.bid_levels:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.top_bidders)))
         for item in self.top_bidders:
@@ -42670,7 +42670,7 @@ class StarGiftAuctionState(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.rounds)))
         for item in self.rounds:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -43101,7 +43101,7 @@ class StarGiftUnique(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.attributes)))
         for item in self.attributes:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', self.availability_issued))
         buf.write(struct.pack('<i', self.availability_total))
         if self.owner_id is not None:
@@ -43116,7 +43116,7 @@ class StarGiftUnique(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.resell_amount)))
             for item in self.resell_amount:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.released_by is not None:
             buf.write(bytes(self.released_by))
         if self.value_amount is not None:
@@ -43488,7 +43488,7 @@ class StarsGiveawayOption(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.winners)))
         for item in self.winners:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.store_product is not None:
             buf.write(TLObject.serialize_bytes(self.store_product))
         return buf.getvalue()
@@ -44081,7 +44081,7 @@ class StarsTransaction(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.extended_media)))
             for item in self.extended_media:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.subscription_period is not None:
             buf.write(struct.pack('<i', self.subscription_period))
         if self.giveaway_post_id is not None:
@@ -44805,7 +44805,7 @@ class StickerKeyword(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.keyword)))
         for item in self.keyword:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -44951,7 +44951,7 @@ class StickerSet(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.thumbs)))
             for item in self.thumbs:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.thumb_dc_id is not None:
             buf.write(struct.pack('<i', self.thumb_dc_id))
         if self.thumb_version is not None:
@@ -45078,15 +45078,15 @@ class StickerSetFullCovered(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.packs)))
         for item in self.packs:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.keywords)))
         for item in self.keywords:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.documents)))
         for item in self.documents:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -45142,7 +45142,7 @@ class StickerSetMultiCovered(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.covers)))
         for item in self.covers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -45474,17 +45474,17 @@ class StoryItem(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.media_areas is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.media_areas)))
             for item in self.media_areas:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.privacy is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.privacy)))
             for item in self.privacy:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.views is not None:
             buf.write(bytes(self.views))
         if self.sent_reaction is not None:
@@ -45962,7 +45962,7 @@ class StoryViews(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.reactions)))
             for item in self.reactions:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.reactions_count is not None:
             buf.write(struct.pack('<i', self.reactions_count))
         if self.recent_viewers is not None:
@@ -46155,7 +46155,7 @@ class TextConcat(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.texts)))
         for item in self.texts:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -46597,7 +46597,7 @@ class TextWithEntities(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.entities)))
         for item in self.entities:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -46679,7 +46679,7 @@ class Theme(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.settings)))
             for item in self.settings:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.emoticon is not None:
             buf.write(TLObject.serialize_bytes(self.emoticon))
         if self.installs_count is not None:
@@ -46958,7 +46958,7 @@ class TodoList(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.list)))
         for item in self.list:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -47232,7 +47232,7 @@ class TopPeerCategoryPeers(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.peers)))
         for item in self.peers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -47552,7 +47552,7 @@ class UpdateBotCommands(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.commands)))
         for item in self.commands:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -47881,11 +47881,11 @@ class UpdateBotMessageReaction(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.old_reactions)))
         for item in self.old_reactions:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.new_reactions)))
         for item in self.new_reactions:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', self.qts))
         return buf.getvalue()
 
@@ -47951,7 +47951,7 @@ class UpdateBotMessageReactions(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.reactions)))
         for item in self.reactions:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', self.qts))
         return buf.getvalue()
 
@@ -49310,7 +49310,7 @@ class UpdateDcOptions(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.dc_options)))
         for item in self.dc_options:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -50119,7 +50119,7 @@ class UpdateFolderPeers(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.folder_peers)))
         for item in self.folder_peers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', self.pts))
         buf.write(struct.pack('<i', self.pts_count))
         return buf.getvalue()
@@ -50252,7 +50252,7 @@ class UpdateGroupCallChainBlocks(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.blocks)))
         for item in self.blocks:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         buf.write(struct.pack('<i', self.next_offset))
         return buf.getvalue()
 
@@ -50411,7 +50411,7 @@ class UpdateGroupCallParticipants(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.participants)))
         for item in self.participants:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', self.version))
         return buf.getvalue()
 
@@ -50610,7 +50610,7 @@ class UpdateMessageExtendedMedia(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.extended_media)))
         for item in self.extended_media:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -50741,7 +50741,7 @@ class UpdateMessagePollVote(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.options)))
         for item in self.options:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         buf.write(struct.pack('<i', self.qts))
         return buf.getvalue()
 
@@ -51383,7 +51383,7 @@ class UpdatePeerLocated(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.peers)))
         for item in self.peers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -51683,7 +51683,7 @@ class UpdatePinnedDialogs(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.order)))
             for item in self.order:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -51887,7 +51887,7 @@ class UpdatePinnedSavedDialogs(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.order)))
             for item in self.order:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -51931,7 +51931,7 @@ class UpdatePrivacy(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.rules)))
         for item in self.rules:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -51994,7 +51994,7 @@ class UpdateQuickReplies(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.quick_replies)))
         for item in self.quick_replies:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -52864,7 +52864,7 @@ class UpdateServiceNotification(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.entities)))
         for item in self.entities:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.inbox_date is not None:
             buf.write(struct.pack('<i', self.inbox_date))
         return buf.getvalue()
@@ -53015,7 +53015,7 @@ class UpdateShortChatMessage(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.ttl_period is not None:
             buf.write(struct.pack('<i', self.ttl_period))
         return buf.getvalue()
@@ -53157,7 +53157,7 @@ class UpdateShortMessage(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.ttl_period is not None:
             buf.write(struct.pack('<i', self.ttl_period))
         return buf.getvalue()
@@ -53267,7 +53267,7 @@ class UpdateShortSentMessage(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.ttl_period is not None:
             buf.write(struct.pack('<i', self.ttl_period))
         return buf.getvalue()
@@ -53892,7 +53892,7 @@ class UpdateUserName(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.usernames)))
         for item in self.usernames:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -54127,15 +54127,15 @@ class Updates(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.updates)))
         for item in self.updates:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', self.date))
         buf.write(struct.pack('<i', self.seq))
         return buf.getvalue()
@@ -54202,15 +54202,15 @@ class UpdatesCombined(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.updates)))
         for item in self.updates:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', self.date))
         buf.write(struct.pack('<i', self.seq_start))
         buf.write(struct.pack('<i', self.seq))
@@ -54643,7 +54643,7 @@ class User(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.restriction_reason)))
             for item in self.restriction_reason:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.bot_inline_placeholder is not None:
             buf.write(TLObject.serialize_bytes(self.bot_inline_placeholder))
         if self.lang_code is not None:
@@ -54654,7 +54654,7 @@ class User(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.usernames)))
             for item in self.usernames:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.stories_max_id is not None:
             buf.write(bytes(self.stories_max_id))
         if self.color is not None:
@@ -56152,7 +56152,7 @@ class WebDocument(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.attributes)))
         for item in self.attributes:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -56206,7 +56206,7 @@ class WebDocumentNoProxy(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.attributes)))
         for item in self.attributes:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -56348,7 +56348,7 @@ class WebPage(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.attributes)))
             for item in self.attributes:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -56498,7 +56498,7 @@ class WebPageAttributeStarGiftCollection(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.icons)))
         for item in self.icons:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -56545,7 +56545,7 @@ class WebPageAttributeStickerSet(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.stickers)))
         for item in self.stickers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -56642,7 +56642,7 @@ class WebPageAttributeTheme(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.documents)))
             for item in self.documents:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.settings is not None:
             buf.write(bytes(self.settings))
         return buf.getvalue()

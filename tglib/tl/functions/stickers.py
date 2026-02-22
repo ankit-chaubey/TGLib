@@ -221,7 +221,7 @@ class CreateStickerSetRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.stickers)))
         for item in self.stickers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.thumb is not None:
             buf.write(bytes(self.thumb))
         if self.software is not None:

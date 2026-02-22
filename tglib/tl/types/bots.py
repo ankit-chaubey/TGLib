@@ -72,7 +72,7 @@ class PopularAppBots(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.next_offset is not None:
             buf.write(TLObject.serialize_bytes(self.next_offset))
         return buf.getvalue()
@@ -119,11 +119,11 @@ class PreviewInfo(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.media)))
         for item in self.media:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.lang_codes)))
         for item in self.lang_codes:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         return buf.getvalue()
 
     @classmethod

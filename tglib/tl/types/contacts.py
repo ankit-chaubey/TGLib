@@ -31,15 +31,15 @@ class Blocked(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.blocked)))
         for item in self.blocked:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -97,15 +97,15 @@ class BlockedSlice(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.blocked)))
         for item in self.blocked:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -160,11 +160,11 @@ class ContactBirthdays(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.contacts)))
         for item in self.contacts:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -212,12 +212,12 @@ class Contacts(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.contacts)))
         for item in self.contacts:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', self.saved_count))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -293,19 +293,19 @@ class Found(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.my_results)))
         for item in self.my_results:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.results)))
         for item in self.results:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -369,11 +369,11 @@ class ImportedContacts(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.imported)))
         for item in self.imported:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.popular_invites)))
         for item in self.popular_invites:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.retry_contacts)))
         for item in self.retry_contacts:
@@ -381,7 +381,7 @@ class ImportedContacts(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -444,11 +444,11 @@ class ResolvedPeer(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -498,15 +498,15 @@ class SponsoredPeers(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.peers)))
         for item in self.peers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -585,15 +585,15 @@ class TopPeers(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.categories)))
         for item in self.categories:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod

@@ -39,7 +39,7 @@ class AcceptAuthorizationRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.value_hashes)))
         for item in self.value_hashes:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(bytes(self.credentials))
         return buf.getvalue()
 
@@ -369,7 +369,7 @@ class CreateThemeRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.settings)))
             for item in self.settings:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -568,7 +568,7 @@ class DeleteSecureValueRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.types)))
         for item in self.types:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -1240,7 +1240,7 @@ class GetMultiWallPapersRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.wallpapers)))
         for item in self.wallpapers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -1614,7 +1614,7 @@ class GetSecureValueRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.types)))
         for item in self.types:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -2063,7 +2063,7 @@ class InvalidateSignInCodesRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.codes)))
         for item in self.codes:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -2194,7 +2194,7 @@ class ReorderUsernamesRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.order)))
         for item in self.order:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -3126,7 +3126,7 @@ class SetPrivacyRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.rules)))
         for item in self.rules:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -3999,7 +3999,7 @@ class UpdateThemeRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.settings)))
             for item in self.settings:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod

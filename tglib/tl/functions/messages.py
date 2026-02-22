@@ -189,7 +189,7 @@ class AppendTodoListRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.list)))
         for item in self.list:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -476,7 +476,7 @@ class CreateChatRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(TLObject.serialize_bytes(self.title))
         if self.ttl_period is not None:
             buf.write(struct.pack('<i', self.ttl_period))
@@ -1592,7 +1592,7 @@ class EditInlineBotMessageRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -1701,7 +1701,7 @@ class EditMessageRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.schedule_date is not None:
             buf.write(struct.pack('<i', self.schedule_date))
         if self.schedule_repeat_period is not None:
@@ -2616,7 +2616,7 @@ class GetChatInviteImportersRequest(TLRequest):
             flags |= (1 << 2)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
-        buf.write(struct.pack('<i', self.offset_date))
+        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
         buf.write(bytes(self.offset_user))
         buf.write(struct.pack('<i', self.limit))
         if self.link is not None:
@@ -2950,7 +2950,7 @@ class GetDialogsRequest(TLRequest):
         if self.folder_id is not None:
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
-        buf.write(struct.pack('<i', self.offset_date))
+        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
         buf.write(struct.pack('<i', self.offset_id))
         buf.write(bytes(self.offset_peer))
         buf.write(struct.pack('<i', self.limit))
@@ -3192,7 +3192,7 @@ class GetEmojiKeywordsLanguagesRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.lang_codes)))
         for item in self.lang_codes:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -3425,7 +3425,7 @@ class GetExportedChatInvitesRequest(TLRequest):
         buf.write(bytes(self.admin_id))
         buf.write(struct.pack('<i', self.limit))
         if self.offset_date is not None:
-            buf.write(struct.pack('<i', self.offset_date))
+            buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
         if self.offset_link is not None:
             buf.write(TLObject.serialize_bytes(self.offset_link))
         return buf.getvalue()
@@ -3658,7 +3658,7 @@ class GetForumTopicsRequest(TLRequest):
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
-        buf.write(struct.pack('<i', self.offset_date))
+        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
         buf.write(struct.pack('<i', self.offset_id))
         buf.write(struct.pack('<i', self.offset_topic))
         buf.write(struct.pack('<i', self.limit))
@@ -3832,7 +3832,7 @@ class GetHistoryRequest(TLRequest):
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         buf.write(bytes(self.peer))
         buf.write(struct.pack('<i', self.offset_id))
-        buf.write(struct.pack('<i', self.offset_date))
+        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
         buf.write(struct.pack('<i', self.add_offset))
         buf.write(struct.pack('<i', self.limit))
         buf.write(struct.pack('<i', self.max_id))
@@ -4136,7 +4136,7 @@ class GetMessagesRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -4422,7 +4422,7 @@ class GetPeerDialogsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.peers)))
         for item in self.peers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -4884,7 +4884,7 @@ class GetRepliesRequest(TLRequest):
         buf.write(bytes(self.peer))
         buf.write(struct.pack('<i', self.msg_id))
         buf.write(struct.pack('<i', self.offset_id))
-        buf.write(struct.pack('<i', self.offset_date))
+        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
         buf.write(struct.pack('<i', self.add_offset))
         buf.write(struct.pack('<i', self.limit))
         buf.write(struct.pack('<i', self.max_id))
@@ -4952,7 +4952,7 @@ class GetSavedDialogsRequest(TLRequest):
         if self.parent_peer is not None:
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
-        buf.write(struct.pack('<i', self.offset_date))
+        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
         buf.write(struct.pack('<i', self.offset_id))
         buf.write(bytes(self.offset_peer))
         buf.write(struct.pack('<i', self.limit))
@@ -5011,7 +5011,7 @@ class GetSavedDialogsByIdRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.ids)))
         for item in self.ids:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.parent_peer is not None:
             buf.write(bytes(self.parent_peer))
         return buf.getvalue()
@@ -5104,7 +5104,7 @@ class GetSavedHistoryRequest(TLRequest):
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
         buf.write(struct.pack('<i', self.offset_id))
-        buf.write(struct.pack('<i', self.offset_date))
+        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
         buf.write(struct.pack('<i', self.add_offset))
         buf.write(struct.pack('<i', self.limit))
         buf.write(struct.pack('<i', self.max_id))
@@ -5295,7 +5295,7 @@ class GetSearchCountersRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.filters)))
         for item in self.filters:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.saved_peer_id is not None:
             buf.write(bytes(self.saved_peer_id))
         if self.top_msg_id is not None:
@@ -5361,7 +5361,7 @@ class GetSearchResultsCalendarRequest(TLRequest):
         buf.write(bytes(self.peer))
         buf.write(bytes(self.filter))
         buf.write(struct.pack('<i', self.offset_id))
-        buf.write(struct.pack('<i', self.offset_date))
+        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
         if self.saved_peer_id is not None:
             buf.write(bytes(self.saved_peer_id))
         return buf.getvalue()
@@ -5889,7 +5889,7 @@ class GetWebPagePreviewRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -6766,7 +6766,7 @@ class ReorderPinnedDialogsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.order)))
         for item in self.order:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -6863,7 +6863,7 @@ class ReorderPinnedSavedDialogsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.order)))
         for item in self.order:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -7759,7 +7759,7 @@ class SaveDraftRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.media is not None:
             buf.write(bytes(self.media))
         if self.effect is not None:
@@ -7877,7 +7877,7 @@ class SavePreparedInlineMessageRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.peer_types)))
             for item in self.peer_types:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -8018,7 +8018,7 @@ class SearchRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.saved_reaction)))
             for item in self.saved_reaction:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.top_msg_id is not None:
             buf.write(struct.pack('<i', self.top_msg_id))
         return buf.getvalue()
@@ -8366,7 +8366,7 @@ class SearchStickersRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.lang_code)))
         for item in self.lang_code:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         buf.write(struct.pack('<i', self.offset))
         buf.write(struct.pack('<i', self.limit))
         buf.write(struct.pack('<q', self.hash))
@@ -8427,7 +8427,7 @@ class SendBotRequestedPeerRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.requested_peers)))
         for item in self.requested_peers:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -8815,7 +8815,7 @@ class SendMediaRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.schedule_date is not None:
             buf.write(struct.pack('<i', self.schedule_date))
         if self.schedule_repeat_period is not None:
@@ -9016,7 +9016,7 @@ class SendMessageRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.schedule_date is not None:
             buf.write(struct.pack('<i', self.schedule_date))
         if self.schedule_repeat_period is not None:
@@ -9187,7 +9187,7 @@ class SendMultiMediaRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.multi_media)))
         for item in self.multi_media:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.reply_to is not None:
             buf.write(bytes(self.reply_to))
         if self.schedule_date is not None:
@@ -9413,7 +9413,7 @@ class SendReactionRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.reaction)))
             for item in self.reaction:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -9547,7 +9547,7 @@ class SendVoteRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.options)))
         for item in self.options:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -9792,7 +9792,7 @@ class SetBotShippingResultsRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.shipping_options)))
             for item in self.shipping_options:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -10218,7 +10218,7 @@ class SetInlineBotResultsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.results)))
         for item in self.results:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', self.cache_time))
         if self.next_offset is not None:
             buf.write(TLObject.serialize_bytes(self.next_offset))
@@ -10808,7 +10808,7 @@ class ToggleStickerSetsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.stickersets)))
         for item in self.stickersets:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -11028,7 +11028,7 @@ class TranslateTextRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.text)))
             for item in self.text:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod

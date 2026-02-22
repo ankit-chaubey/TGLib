@@ -75,7 +75,7 @@ class TelegramClient:
 
         self._dc_id = self.session.dc_id or dc_id
         self._sender = None
-        self._updates_queue = asyncio.Queue()
+        self._updates_queue = None        # lazy — created on first connect()
         self._updates_handlers = []
         self._auto_reconnect = auto_reconnect
         self._retries = retries
@@ -107,6 +107,9 @@ class TelegramClient:
         """Connect to Telegram and establish an encrypted session."""
         if self._connected:
             return
+
+        if self._updates_queue is None:
+            self._updates_queue = asyncio.Queue()
 
         conn = make_connection(self._dc_id, test=self._test_mode,
                                loggers=self._loggers)
@@ -295,10 +298,10 @@ class TelegramClient:
 
     async def get_me(self):
         """Return the User object for the current logged-in account."""
-        from .tl.functions.users import GetFullUserRequest
+        from .tl.functions.users import GetUsersRequest
         from .tl.types import InputUserSelf
-        result = await self(GetFullUserRequest(id=InputUserSelf()))
-        return result.users[0] if hasattr(result, 'users') else result.user
+        result = await self(GetUsersRequest(id=[InputUserSelf()]))
+        return result[0] if result else None
 
     async def get_entity(self, entity):
         """
@@ -454,7 +457,7 @@ class TelegramClient:
             peer=peer,
             limit=limit,
             offset_id=offset_id,
-            offset_date=None,
+            offset_date=0,
             add_offset=0,
             min_id=min_id,
             max_id=max_id,
@@ -466,13 +469,17 @@ class TelegramClient:
         from .tl.functions.messages import GetDialogsRequest
         from .tl.types import InputPeerEmpty
 
-        return await self(GetDialogsRequest(
-            offset_date=None,
+        result = await self(GetDialogsRequest(
+            offset_date=0,
             offset_id=0,
             offset_peer=InputPeerEmpty(),
             limit=limit,
             hash=0,
         ))
+        if result is None:
+            __log__.warning('get_dialogs: server returned unknown type (schema out of date)')
+            return None
+        return result
 
     async def get_participants(self, entity, limit: int = 200):
         """Get participants of a group/channel."""

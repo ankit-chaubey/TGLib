@@ -402,7 +402,7 @@ class CraftStarGiftRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.stargift)))
         for item in self.stargift:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -445,7 +445,7 @@ class CreateStarGiftCollectionRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.stargift)))
         for item in self.stargift:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -698,7 +698,7 @@ class GetConnectedStarRefBotsRequest(TLRequest):
         buf.write(bytes(self.peer))
         buf.write(struct.pack('<i', self.limit))
         if self.offset_date is not None:
-            buf.write(struct.pack('<i', self.offset_date))
+            buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
         if self.offset_link is not None:
             buf.write(TLObject.serialize_bytes(self.offset_link))
         return buf.getvalue()
@@ -965,7 +965,7 @@ class GetResaleStarGiftsRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.attributes)))
             for item in self.attributes:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -1044,7 +1044,7 @@ class GetSavedStarGiftRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.stargift)))
         for item in self.stargift:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -1797,7 +1797,7 @@ class GetStarsTransactionsByIdRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -2388,7 +2388,7 @@ class ToggleStarGiftsPinnedToTopRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.stargift)))
         for item in self.stargift:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -2486,17 +2486,17 @@ class UpdateStarGiftCollectionRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.delete_stargift)))
             for item in self.delete_stargift:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.add_stargift is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.add_stargift)))
             for item in self.add_stargift:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         if self.order is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.order)))
             for item in self.order:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod

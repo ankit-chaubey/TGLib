@@ -112,7 +112,7 @@ class AppUpdate(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.entities)))
         for item in self.entities:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.document is not None:
             buf.write(bytes(self.document))
         if self.url is not None:
@@ -180,7 +180,7 @@ class CountriesList(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.countries)))
         for item in self.countries:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', self.hash))
         return buf.getvalue()
 
@@ -260,7 +260,7 @@ class Country(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.country_codes)))
         for item in self.country_codes:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.name is not None:
             buf.write(TLObject.serialize_bytes(self.name))
         return buf.getvalue()
@@ -322,12 +322,12 @@ class CountryCode(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.prefixes)))
             for item in self.prefixes:
-                buf.write(TLObject.serialize_bytes(self.item))
+                buf.write(TLObject.serialize_bytes(item))
         if self.patterns is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.patterns)))
             for item in self.patterns:
-                buf.write(TLObject.serialize_bytes(self.item))
+                buf.write(TLObject.serialize_bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -392,7 +392,7 @@ class DeepLinkInfo(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
-                buf.write(bytes(self.item))
+                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -755,7 +755,7 @@ class PeerColors(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.colors)))
         for item in self.colors:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -829,23 +829,23 @@ class PremiumPromo(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.status_entities)))
         for item in self.status_entities:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.video_sections)))
         for item in self.video_sections:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.videos)))
         for item in self.videos:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.period_options)))
         for item in self.period_options:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -943,19 +943,19 @@ class PromoData(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.pending_suggestions)))
         for item in self.pending_suggestions:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.dismissed_suggestions)))
         for item in self.dismissed_suggestions:
-            buf.write(TLObject.serialize_bytes(self.item))
+            buf.write(TLObject.serialize_bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.peer is not None:
             buf.write(bytes(self.peer))
         if self.psa_type is not None:
@@ -1078,15 +1078,15 @@ class RecentMeUrls(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.urls)))
         for item in self.urls:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -1216,7 +1216,7 @@ class TermsOfService(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.entities)))
         for item in self.entities:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         if self.min_age_confirm is not None:
             buf.write(struct.pack('<i', self.min_age_confirm))
         return buf.getvalue()
@@ -1331,7 +1331,7 @@ class TimezonesList(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.timezones)))
         for item in self.timezones:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(struct.pack('<i', self.hash))
         return buf.getvalue()
 
@@ -1402,7 +1402,7 @@ class UserInfo(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.entities)))
         for item in self.entities:
-            buf.write(bytes(self.item))
+            buf.write(bytes(item))
         buf.write(TLObject.serialize_bytes(self.author))
         buf.write(struct.pack('<i', self.date))
         return buf.getvalue()

@@ -9,6 +9,21 @@ from datetime import datetime, timedelta, timezone
 _EPOCH = datetime(*time.gmtime(0)[:6], tzinfo=timezone.utc)
 
 
+class RawObject:
+    """
+    Fallback object for unknown TL constructors.
+    Allows TGLib to work with newer Telegram layers without hanging.
+    Instead of crashing, unknown types are wrapped here — your code
+    can check: if isinstance(result, RawObject): ...
+    """
+    def __init__(self, constructor_id: int, data: bytes):
+        self.CONSTRUCTOR_ID = constructor_id
+        self.data = data
+
+    def __repr__(self):
+        return f'RawObject(constructor_id=0x{self.CONSTRUCTOR_ID:08x}, data_len={len(self.data)})'
+
+
 class BinaryReader:
     """Efficient binary data reader for MTProto protocol."""
 
@@ -131,14 +146,11 @@ class BinaryReader:
             return clazz.from_reader(self)
 
         # Unknown constructor — Telegram is running a newer layer than our schema.
-        # Raise TypeNotFoundError so the caller (mtprotosender) can log at DEBUG
-        # level and discard the enclosing message frame cleanly.  The remaining
-        # bytes in this reader belong only to the current MTProto message frame,
-        # so consuming them here does NOT affect subsequent message frames.
+        # Raise TypeNotFoundError so the RPC handler can resolve the future
+        # gracefully with a RawObject instead of leaving it hanging.
         self.seek(-4)
         from ..errors import TypeNotFoundError
-        error = TypeNotFoundError(constructor_id, self.read())
-        raise error
+        raise TypeNotFoundError(constructor_id, self.read())
 
     def tgread_vector(self) -> list:
         if self.read_int(signed=False) != 0x1cb5c415:

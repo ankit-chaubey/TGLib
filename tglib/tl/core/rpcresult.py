@@ -72,6 +72,9 @@ class RpcResult(TLObject):
 
     @classmethod
     def from_reader(cls, reader):
+        from ...errors import TypeNotFoundError
+        from ...extensions.binaryreader import RawObject
+
         req_msg_id = reader.read_long()
         inner_code = reader.read_int(signed=False)
 
@@ -85,10 +88,18 @@ class RpcResult(TLObject):
             unpacked = gzip.decompress(packed_data)
             from ...extensions import BinaryReader
             with BinaryReader(unpacked) as inner:
-                result = cls(req_msg_id, inner.tgread_object())
+                try:
+                    body = inner.tgread_object()
+                except TypeNotFoundError as e:
+                    body = RawObject(e.invalid_constructor_id, e.remaining)
+            result = cls(req_msg_id, body)
         else:
             reader.seek(-4)
-            result = cls(req_msg_id, reader.tgread_object())
+            try:
+                body = reader.tgread_object()
+            except TypeNotFoundError as e:
+                body = RawObject(e.invalid_constructor_id, e.remaining)
+            result = cls(req_msg_id, body)
 
         return result
 

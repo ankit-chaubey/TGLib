@@ -48,7 +48,7 @@ class MTProtoSender:
         self._connection = None
         self._user_connected = False
         self._reconnecting = False
-        self._disconnected = asyncio.get_event_loop().create_future()
+        self._disconnected = None  # lazy — created when event loop is running
 
         self.auth_key = auth_key or AuthKey(None)
         self._state = MTProtoState(self.auth_key, loggers=self._loggers)
@@ -116,6 +116,8 @@ class MTProtoSender:
     # ── Internal connection management ────────────────────────────────────
 
     async def _connect(self):
+        if self._disconnected is None or self._disconnected.done():
+            self._disconnected = asyncio.get_event_loop().create_future()
         await self._connection.connect()
 
         # Generate auth key if needed
@@ -197,12 +199,10 @@ class MTProtoSender:
                 self._log.error('Security error: %s', e)
                 break
             except TypeNotFoundError as e:
-                # Telegram server is on a newer layer than our TL schema.
-                # The enclosing MTProto frame is already consumed so stream
-                # sync is preserved.  Log at DEBUG to keep output clean.
+                # Unknown top-level update (not an RPC result) — safely skip it.
+                # The full frame was already received so stream sync is preserved.
                 self._log.debug(
-                    'Skipping unknown TL constructor 0x%08x '
-                    '(schema needs update for Telegram layer 225+)',
+                    'Unknown top-level TL constructor 0x%08x — skipping update',
                     e.invalid_constructor_id
                 )
             except Exception as e:
