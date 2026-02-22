@@ -133,7 +133,7 @@ class AppUpdate(TLObject):
         _val_text = reader.tgread_string()
         _args['text'] = _val_text
         reader.read_int(signed=False)  # skip vector id
-        _count_entities = reader.read_int()
+        _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_entities = []
         for _ in range(_count_entities):
             _item_entities = reader.tgread_object()
@@ -188,7 +188,7 @@ class CountriesList(TLObject):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_countries = reader.read_int()
+        _count_countries = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_countries = []
         for _ in range(_count_countries):
             _item_countries = reader.tgread_object()
@@ -257,12 +257,12 @@ class Country(TLObject):
         buf.write(struct.pack('<I', flags))
         buf.write(TLObject.serialize_bytes(self.iso2))
         buf.write(TLObject.serialize_bytes(self.default_name))
+        if self.name is not None:
+            buf.write(TLObject.serialize_bytes(self.name))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.country_codes)))
         for item in self.country_codes:
             buf.write(bytes(item))
-        if self.name is not None:
-            buf.write(TLObject.serialize_bytes(self.name))
         return buf.getvalue()
 
     @classmethod
@@ -280,7 +280,7 @@ class Country(TLObject):
         else:
             _args['name'] = None
         reader.read_int(signed=False)  # skip vector id
-        _count_country_codes = reader.read_int()
+        _count_country_codes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_country_codes = []
         for _ in range(_count_country_codes):
             _item_country_codes = reader.tgread_object()
@@ -338,7 +338,7 @@ class CountryCode(TLObject):
         _args['country_code'] = _val_country_code
         if flags & (1 << 0):
             reader.read_int(signed=False)  # skip vector id
-            _count_prefixes = reader.read_int()
+            _count_prefixes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_prefixes = []
             for _ in range(_count_prefixes):
                 _item_prefixes = reader.tgread_string()
@@ -348,7 +348,7 @@ class CountryCode(TLObject):
             _args['prefixes'] = None
         if flags & (1 << 1):
             reader.read_int(signed=False)  # skip vector id
-            _count_patterns = reader.read_int()
+            _count_patterns = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_patterns = []
             for _ in range(_count_patterns):
                 _item_patterns = reader.tgread_string()
@@ -404,7 +404,7 @@ class DeepLinkInfo(TLObject):
         _args['message'] = _val_message
         if flags & (1 << 1):
             reader.read_int(signed=False)  # skip vector id
-            _count_entities = reader.read_int()
+            _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
                 _item_entities = reader.tgread_object()
@@ -656,36 +656,36 @@ class PeerColorProfileSet(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.palette_colors)))
         for item in self.palette_colors:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.bg_colors)))
         for item in self.bg_colors:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.story_colors)))
         for item in self.story_colors:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_palette_colors = reader.read_int()
+        _count_palette_colors = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_palette_colors = []
         for _ in range(_count_palette_colors):
             _item_palette_colors = reader.read_int()
             _list_palette_colors.append(_item_palette_colors)
         _args['palette_colors'] = _list_palette_colors
         reader.read_int(signed=False)  # skip vector id
-        _count_bg_colors = reader.read_int()
+        _count_bg_colors = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_bg_colors = []
         for _ in range(_count_bg_colors):
             _item_bg_colors = reader.read_int()
             _list_bg_colors.append(_item_bg_colors)
         _args['bg_colors'] = _list_bg_colors
         reader.read_int(signed=False)  # skip vector id
-        _count_story_colors = reader.read_int()
+        _count_story_colors = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_story_colors = []
         for _ in range(_count_story_colors):
             _item_story_colors = reader.read_int()
@@ -715,14 +715,14 @@ class PeerColorSet(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.colors)))
         for item in self.colors:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_colors = reader.read_int()
+        _count_colors = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_colors = []
         for _ in range(_count_colors):
             _item_colors = reader.read_int()
@@ -764,7 +764,7 @@ class PeerColors(TLObject):
         _val_hash = reader.read_int()
         _args['hash'] = _val_hash
         reader.read_int(signed=False)  # skip vector id
-        _count_colors = reader.read_int()
+        _count_colors = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_colors = []
         for _ in range(_count_colors):
             _item_colors = reader.tgread_object()
@@ -854,35 +854,35 @@ class PremiumPromo(TLObject):
         _val_status_text = reader.tgread_string()
         _args['status_text'] = _val_status_text
         reader.read_int(signed=False)  # skip vector id
-        _count_status_entities = reader.read_int()
+        _count_status_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_status_entities = []
         for _ in range(_count_status_entities):
             _item_status_entities = reader.tgread_object()
             _list_status_entities.append(_item_status_entities)
         _args['status_entities'] = _list_status_entities
         reader.read_int(signed=False)  # skip vector id
-        _count_video_sections = reader.read_int()
+        _count_video_sections = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_video_sections = []
         for _ in range(_count_video_sections):
             _item_video_sections = reader.tgread_string()
             _list_video_sections.append(_item_video_sections)
         _args['video_sections'] = _list_video_sections
         reader.read_int(signed=False)  # skip vector id
-        _count_videos = reader.read_int()
+        _count_videos = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_videos = []
         for _ in range(_count_videos):
             _item_videos = reader.tgread_object()
             _list_videos.append(_item_videos)
         _args['videos'] = _list_videos
         reader.read_int(signed=False)  # skip vector id
-        _count_period_options = reader.read_int()
+        _count_period_options = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_period_options = []
         for _ in range(_count_period_options):
             _item_period_options = reader.tgread_object()
             _list_period_options.append(_item_period_options)
         _args['period_options'] = _list_period_options
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -939,7 +939,13 @@ class PromoData(TLObject):
         if self.custom_pending_suggestion is not None:
             flags |= (1 << 4)
         buf.write(struct.pack('<I', flags))
-        buf.write(struct.pack('<i', self.expires))
+        buf.write(TLObject.serialize_datetime(self.expires))
+        if self.peer is not None:
+            buf.write(bytes(self.peer))
+        if self.psa_type is not None:
+            buf.write(TLObject.serialize_bytes(self.psa_type))
+        if self.psa_message is not None:
+            buf.write(TLObject.serialize_bytes(self.psa_message))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.pending_suggestions)))
         for item in self.pending_suggestions:
@@ -948,6 +954,8 @@ class PromoData(TLObject):
         buf.write(struct.pack('<i', len(self.dismissed_suggestions)))
         for item in self.dismissed_suggestions:
             buf.write(TLObject.serialize_bytes(item))
+        if self.custom_pending_suggestion is not None:
+            buf.write(bytes(self.custom_pending_suggestion))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
@@ -956,14 +964,6 @@ class PromoData(TLObject):
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
             buf.write(bytes(item))
-        if self.peer is not None:
-            buf.write(bytes(self.peer))
-        if self.psa_type is not None:
-            buf.write(TLObject.serialize_bytes(self.psa_type))
-        if self.psa_message is not None:
-            buf.write(TLObject.serialize_bytes(self.psa_message))
-        if self.custom_pending_suggestion is not None:
-            buf.write(bytes(self.custom_pending_suggestion))
         return buf.getvalue()
 
     @classmethod
@@ -971,7 +971,7 @@ class PromoData(TLObject):
         _args = {}
         flags = reader.read_int(signed=False)
         _args['proxy'] = bool(flags & (1 << 0))
-        _val_expires = reader.read_int()
+        _val_expires = reader.tgread_date()
         _args['expires'] = _val_expires
         if flags & (1 << 3):
             _val_peer = reader.tgread_object()
@@ -989,14 +989,14 @@ class PromoData(TLObject):
         else:
             _args['psa_message'] = None
         reader.read_int(signed=False)  # skip vector id
-        _count_pending_suggestions = reader.read_int()
+        _count_pending_suggestions = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_pending_suggestions = []
         for _ in range(_count_pending_suggestions):
             _item_pending_suggestions = reader.tgread_string()
             _list_pending_suggestions.append(_item_pending_suggestions)
         _args['pending_suggestions'] = _list_pending_suggestions
         reader.read_int(signed=False)  # skip vector id
-        _count_dismissed_suggestions = reader.read_int()
+        _count_dismissed_suggestions = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_dismissed_suggestions = []
         for _ in range(_count_dismissed_suggestions):
             _item_dismissed_suggestions = reader.tgread_string()
@@ -1008,14 +1008,14 @@ class PromoData(TLObject):
         else:
             _args['custom_pending_suggestion'] = None
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -1042,13 +1042,13 @@ class PromoDataEmpty(TLObject):
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(struct.pack('<i', self.expires))
+        buf.write(TLObject.serialize_datetime(self.expires))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        _val_expires = reader.read_int()
+        _val_expires = reader.tgread_date()
         _args['expires'] = _val_expires
         return cls(**_args)
 
@@ -1093,21 +1093,21 @@ class RecentMeUrls(TLObject):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_urls = reader.read_int()
+        _count_urls = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_urls = []
         for _ in range(_count_urls):
             _item_urls = reader.tgread_object()
             _list_urls.append(_item_urls)
         _args['urls'] = _list_urls
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -1231,7 +1231,7 @@ class TermsOfService(TLObject):
         _val_text = reader.tgread_string()
         _args['text'] = _val_text
         reader.read_int(signed=False)  # skip vector id
-        _count_entities = reader.read_int()
+        _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_entities = []
         for _ in range(_count_entities):
             _item_entities = reader.tgread_object()
@@ -1265,14 +1265,14 @@ class TermsOfServiceUpdate(TLObject):
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(struct.pack('<i', self.expires))
+        buf.write(TLObject.serialize_datetime(self.expires))
         buf.write(bytes(self.terms_of_service))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        _val_expires = reader.read_int()
+        _val_expires = reader.tgread_date()
         _args['expires'] = _val_expires
         _val_terms_of_service = reader.tgread_object()
         _args['terms_of_service'] = _val_terms_of_service
@@ -1297,13 +1297,13 @@ class TermsOfServiceUpdateEmpty(TLObject):
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(struct.pack('<i', self.expires))
+        buf.write(TLObject.serialize_datetime(self.expires))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        _val_expires = reader.read_int()
+        _val_expires = reader.tgread_date()
         _args['expires'] = _val_expires
         return cls(**_args)
 
@@ -1339,7 +1339,7 @@ class TimezonesList(TLObject):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_timezones = reader.read_int()
+        _count_timezones = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_timezones = []
         for _ in range(_count_timezones):
             _item_timezones = reader.tgread_object()
@@ -1404,7 +1404,7 @@ class UserInfo(TLObject):
         for item in self.entities:
             buf.write(bytes(item))
         buf.write(TLObject.serialize_bytes(self.author))
-        buf.write(struct.pack('<i', self.date))
+        buf.write(TLObject.serialize_datetime(self.date))
         return buf.getvalue()
 
     @classmethod
@@ -1413,7 +1413,7 @@ class UserInfo(TLObject):
         _val_message = reader.tgread_string()
         _args['message'] = _val_message
         reader.read_int(signed=False)  # skip vector id
-        _count_entities = reader.read_int()
+        _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_entities = []
         for _ in range(_count_entities):
             _item_entities = reader.tgread_object()
@@ -1421,7 +1421,7 @@ class UserInfo(TLObject):
         _args['entities'] = _list_entities
         _val_author = reader.tgread_string()
         _args['author'] = _val_author
-        _val_date = reader.read_int()
+        _val_date = reader.tgread_date()
         _args['date'] = _val_date
         return cls(**_args)
 

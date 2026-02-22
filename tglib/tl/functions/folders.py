@@ -64,7 +64,7 @@ class EditPeerFoldersRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_folder_peers = reader.read_int()
+        _count_folder_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_folder_peers = []
         for _ in range(_count_folder_peers):
             _item_folder_peers = reader.tgread_object()

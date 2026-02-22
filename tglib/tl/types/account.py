@@ -61,28 +61,28 @@ class AuthorizationForm(TLObject):
         _args = {}
         flags = reader.read_int(signed=False)
         reader.read_int(signed=False)  # skip vector id
-        _count_required_types = reader.read_int()
+        _count_required_types = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_required_types = []
         for _ in range(_count_required_types):
             _item_required_types = reader.tgread_object()
             _list_required_types.append(_item_required_types)
         _args['required_types'] = _list_required_types
         reader.read_int(signed=False)  # skip vector id
-        _count_values = reader.read_int()
+        _count_values = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_values = []
         for _ in range(_count_values):
             _item_values = reader.tgread_object()
             _list_values.append(_item_values)
         _args['values'] = _list_values
         reader.read_int(signed=False)  # skip vector id
-        _count_errors = reader.read_int()
+        _count_errors = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_errors = []
         for _ in range(_count_errors):
             _item_errors = reader.tgread_object()
             _list_errors.append(_item_errors)
         _args['errors'] = _list_errors
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -129,7 +129,7 @@ class Authorizations(TLObject):
         _val_authorization_ttl_days = reader.read_int()
         _args['authorization_ttl_days'] = _val_authorization_ttl_days
         reader.read_int(signed=False)  # skip vector id
-        _count_authorizations = reader.read_int()
+        _count_authorizations = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_authorizations = []
         for _ in range(_count_authorizations):
             _item_authorizations = reader.tgread_object()
@@ -232,21 +232,21 @@ class AutoSaveSettings(TLObject):
         _val_broadcasts_settings = reader.tgread_object()
         _args['broadcasts_settings'] = _val_broadcasts_settings
         reader.read_int(signed=False)  # skip vector id
-        _count_exceptions = reader.read_int()
+        _count_exceptions = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_exceptions = []
         for _ in range(_count_exceptions):
             _item_exceptions = reader.tgread_object()
             _list_exceptions.append(_item_exceptions)
         _args['exceptions'] = _list_exceptions
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -295,21 +295,21 @@ class BusinessChatLinks(TLObject):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_links = reader.read_int()
+        _count_links = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_links = []
         for _ in range(_count_links):
             _item_links = reader.tgread_object()
             _list_links.append(_item_links)
         _args['links'] = _list_links
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -372,21 +372,21 @@ class ChatThemes(TLObject):
         _val_hash = reader.read_long()
         _args['hash'] = _val_hash
         reader.read_int(signed=False)  # skip vector id
-        _count_themes = reader.read_int()
+        _count_themes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_themes = []
         for _ in range(_count_themes):
             _item_themes = reader.tgread_object()
             _list_themes.append(_item_themes)
         _args['themes'] = _list_themes
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -458,14 +458,14 @@ class ConnectedBots(TLObject):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_connected_bots = reader.read_int()
+        _count_connected_bots = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_connected_bots = []
         for _ in range(_count_connected_bots):
             _item_connected_bots = reader.tgread_object()
             _list_connected_bots.append(_item_connected_bots)
         _args['connected_bots'] = _list_connected_bots
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -607,7 +607,7 @@ class EmojiStatuses(TLObject):
         _val_hash = reader.read_long()
         _args['hash'] = _val_hash
         reader.read_int(signed=False)  # skip vector id
-        _count_statuses = reader.read_int()
+        _count_statuses = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_statuses = []
         for _ in range(_count_statuses):
             _item_statuses = reader.tgread_object()
@@ -726,7 +726,7 @@ class Passkeys(TLObject):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_passkeys = reader.read_int()
+        _count_passkeys = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_passkeys = []
         for _ in range(_count_passkeys):
             _item_passkeys = reader.tgread_object()
@@ -782,6 +782,12 @@ class Password(TLObject):
             flags |= (1 << 0)
         if self.has_secure_values:
             flags |= (1 << 1)
+        if self.has_password:
+            flags |= (1 << 2)
+        if self.current_algo is not None:
+            flags |= (1 << 2)
+        if self.srp_B is not None:
+            flags |= (1 << 2)
         if self.srp_id is not None:
             flags |= (1 << 2)
         if self.hint is not None:
@@ -793,9 +799,6 @@ class Password(TLObject):
         if self.login_email_pattern is not None:
             flags |= (1 << 6)
         buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.new_algo))
-        buf.write(bytes(self.new_secure_algo))
-        buf.write(TLObject.serialize_bytes(self.secure_random))
         if self.current_algo is not None:
             buf.write(bytes(self.current_algo))
         if self.srp_B is not None:
@@ -806,8 +809,11 @@ class Password(TLObject):
             buf.write(TLObject.serialize_bytes(self.hint))
         if self.email_unconfirmed_pattern is not None:
             buf.write(TLObject.serialize_bytes(self.email_unconfirmed_pattern))
+        buf.write(bytes(self.new_algo))
+        buf.write(bytes(self.new_secure_algo))
+        buf.write(TLObject.serialize_bytes(self.secure_random))
         if self.pending_reset_date is not None:
-            buf.write(struct.pack('<i', self.pending_reset_date))
+            buf.write(TLObject.serialize_datetime(self.pending_reset_date))
         if self.login_email_pattern is not None:
             buf.write(TLObject.serialize_bytes(self.login_email_pattern))
         return buf.getvalue()
@@ -851,7 +857,7 @@ class Password(TLObject):
         _val_secure_random = reader.tgread_bytes()
         _args['secure_random'] = _val_secure_random
         if flags & (1 << 5):
-            _val_pending_reset_date = reader.read_int()
+            _val_pending_reset_date = reader.tgread_date()
             _args['pending_reset_date'] = _val_pending_reset_date
         else:
             _args['pending_reset_date'] = None
@@ -890,6 +896,10 @@ class PasswordInputSettings(TLObject):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
+        if self.new_algo is not None:
+            flags |= (1 << 0)
+        if self.new_password_hash is not None:
+            flags |= (1 << 0)
         if self.hint is not None:
             flags |= (1 << 0)
         if self.email is not None:
@@ -1030,21 +1040,21 @@ class PrivacyRules(TLObject):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_rules = reader.read_int()
+        _count_rules = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_rules = []
         for _ in range(_count_rules):
             _item_rules = reader.tgread_object()
             _list_rules.append(_item_rules)
         _args['rules'] = _list_rules
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -1071,13 +1081,13 @@ class ResetPasswordFailedWait(TLObject):
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(struct.pack('<i', self.retry_date))
+        buf.write(TLObject.serialize_datetime(self.retry_date))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        _val_retry_date = reader.read_int()
+        _val_retry_date = reader.tgread_date()
         _args['retry_date'] = _val_retry_date
         return cls(**_args)
 
@@ -1124,13 +1134,13 @@ class ResetPasswordRequestedWait(TLObject):
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(struct.pack('<i', self.until_date))
+        buf.write(TLObject.serialize_datetime(self.until_date))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        _val_until_date = reader.read_int()
+        _val_until_date = reader.tgread_date()
         _args['until_date'] = _val_until_date
         return cls(**_args)
 
@@ -1167,6 +1177,11 @@ class ResolvedBusinessChatLinks(TLObject):
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
         buf.write(TLObject.serialize_bytes(self.message))
+        if self.entities is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.entities)))
+            for item in self.entities:
+                buf.write(bytes(item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
@@ -1175,11 +1190,6 @@ class ResolvedBusinessChatLinks(TLObject):
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
             buf.write(bytes(item))
-        if self.entities is not None:
-            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-            buf.write(struct.pack('<i', len(self.entities)))
-            for item in self.entities:
-                buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -1192,7 +1202,7 @@ class ResolvedBusinessChatLinks(TLObject):
         _args['message'] = _val_message
         if flags & (1 << 0):
             reader.read_int(signed=False)  # skip vector id
-            _count_entities = reader.read_int()
+            _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
                 _item_entities = reader.tgread_object()
@@ -1201,14 +1211,14 @@ class ResolvedBusinessChatLinks(TLObject):
         else:
             _args['entities'] = None
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -1238,14 +1248,14 @@ class SavedMusicIds(TLObject):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.ids)))
         for item in self.ids:
-            buf.write(struct.pack('<q', self.item))
+            buf.write(struct.pack('<q', item))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_ids = reader.read_int()
+        _count_ids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_ids = []
         for _ in range(_count_ids):
             _item_ids = reader.read_long()
@@ -1364,7 +1374,7 @@ class SavedRingtones(TLObject):
         _val_hash = reader.read_long()
         _args['hash'] = _val_hash
         reader.read_int(signed=False)  # skip vector id
-        _count_ringtones = reader.read_int()
+        _count_ringtones = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_ringtones = []
         for _ in range(_count_ringtones):
             _item_ringtones = reader.tgread_object()
@@ -1493,7 +1503,7 @@ class Themes(TLObject):
         _val_hash = reader.read_long()
         _args['hash'] = _val_hash
         reader.read_int(signed=False)  # skip vector id
-        _count_themes = reader.read_int()
+        _count_themes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_themes = []
         for _ in range(_count_themes):
             _item_themes = reader.tgread_object()
@@ -1547,7 +1557,7 @@ class TmpPassword(TLObject):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         buf.write(TLObject.serialize_bytes(self.tmp_password))
-        buf.write(struct.pack('<i', self.valid_until))
+        buf.write(TLObject.serialize_datetime(self.valid_until))
         return buf.getvalue()
 
     @classmethod
@@ -1555,7 +1565,7 @@ class TmpPassword(TLObject):
         _args = {}
         _val_tmp_password = reader.tgread_bytes()
         _args['tmp_password'] = _val_tmp_password
-        _val_valid_until = reader.read_int()
+        _val_valid_until = reader.tgread_date()
         _args['valid_until'] = _val_valid_until
         return cls(**_args)
 
@@ -1593,7 +1603,7 @@ class WallPapers(TLObject):
         _val_hash = reader.read_long()
         _args['hash'] = _val_hash
         reader.read_int(signed=False)  # skip vector id
-        _count_wallpapers = reader.read_int()
+        _count_wallpapers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_wallpapers = []
         for _ in range(_count_wallpapers):
             _item_wallpapers = reader.tgread_object()
@@ -1660,14 +1670,14 @@ class WebAuthorizations(TLObject):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_authorizations = reader.read_int()
+        _count_authorizations = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_authorizations = []
         for _ in range(_count_authorizations):
             _item_authorizations = reader.tgread_object()
             _list_authorizations.append(_item_authorizations)
         _args['authorizations'] = _list_authorizations
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()

@@ -565,6 +565,28 @@ class MsgsAck(TLObject):
         return {'_': 'MsgsAck', 'msg_ids': self.msg_ids}
 
 
+class MsgResendReq(TLObject):
+    """msg_resend_req#7d861a08 msg_ids:Vector<long> = MsgResendReq;
+    Sent by client to request server to re-send missed messages (BUG 7 fix)."""
+    CONSTRUCTOR_ID = 0x7d861a08
+
+    def __init__(self, msg_ids):
+        self.msg_ids = msg_ids
+
+    @classmethod
+    def from_reader(cls, reader):
+        assert reader.read_int(signed=False) == 0x1cb5c415  # Vector
+        count = reader.read_int()
+        return cls(msg_ids=[reader.read_long() for _ in range(count)])
+
+    def _bytes(self):
+        return (struct.pack('<III', self.CONSTRUCTOR_ID, 0x1cb5c415, len(self.msg_ids))
+                + b''.join(struct.pack('<q', m) for m in self.msg_ids))
+
+    def to_dict(self):
+        return {'_': 'MsgResendReq', 'msg_ids': self.msg_ids}
+
+
 class BadMsgNotification(TLObject):
     """bad_msg_notification#a7eff811 bad_msg_id:long bad_msg_seqno:int error_code:int = BadMsgNotification;"""
     CONSTRUCTOR_ID = 0xa7eff811
@@ -789,6 +811,7 @@ HANDSHAKE_TYPES = {
     # Runtime protocol service types
     Pong.CONSTRUCTOR_ID:                     Pong,
     MsgsAck.CONSTRUCTOR_ID:                 MsgsAck,
+    MsgResendReq.CONSTRUCTOR_ID:            MsgResendReq,
     BadMsgNotification.CONSTRUCTOR_ID:       BadMsgNotification,
     BadServerSalt.CONSTRUCTOR_ID:            BadServerSalt,
     NewSessionCreated.CONSTRUCTOR_ID:        NewSessionCreated,

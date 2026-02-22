@@ -215,7 +215,7 @@ class DeletePreviewMediaRequest(TLRequest):
         _val_lang_code = reader.tgread_string()
         _args['lang_code'] = _val_lang_code
         reader.read_int(signed=False)  # skip vector id
-        _count_media = reader.read_int()
+        _count_media = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_media = []
         for _ in range(_count_media):
             _item_media = reader.tgread_object()
@@ -350,9 +350,9 @@ class GetBotInfoRequest(TLRequest):
         if self.bot is not None:
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
-        buf.write(TLObject.serialize_bytes(self.lang_code))
         if self.bot is not None:
             buf.write(bytes(self.bot))
+        buf.write(TLObject.serialize_bytes(self.lang_code))
         return buf.getvalue()
 
     @classmethod
@@ -601,7 +601,7 @@ class ReorderPreviewMediasRequest(TLRequest):
         _val_lang_code = reader.tgread_string()
         _args['lang_code'] = _val_lang_code
         reader.read_int(signed=False)  # skip vector id
-        _count_order = reader.read_int()
+        _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
             _item_order = reader.tgread_object()
@@ -643,7 +643,7 @@ class ReorderUsernamesRequest(TLRequest):
         _val_bot = reader.tgread_object()
         _args['bot'] = _val_bot
         reader.read_int(signed=False)  # skip vector id
-        _count_order = reader.read_int()
+        _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
             _item_order = reader.tgread_string()
@@ -787,7 +787,7 @@ class SetBotCommandsRequest(TLRequest):
         _val_lang_code = reader.tgread_string()
         _args['lang_code'] = _val_lang_code
         reader.read_int(signed=False)  # skip vector id
-        _count_commands = reader.read_int()
+        _count_commands = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_commands = []
         for _ in range(_count_commands):
             _item_commands = reader.tgread_object()
@@ -861,9 +861,9 @@ class SetBotInfoRequest(TLRequest):
         if self.description is not None:
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
-        buf.write(TLObject.serialize_bytes(self.lang_code))
         if self.bot is not None:
             buf.write(bytes(self.bot))
+        buf.write(TLObject.serialize_bytes(self.lang_code))
         if self.name is not None:
             buf.write(TLObject.serialize_bytes(self.name))
         if self.about is not None:
@@ -967,9 +967,9 @@ class SetCustomVerificationRequest(TLRequest):
         if self.custom_description is not None:
             flags |= (1 << 2)
         buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
         if self.bot is not None:
             buf.write(bytes(self.bot))
+        buf.write(bytes(self.peer))
         if self.custom_description is not None:
             buf.write(TLObject.serialize_bytes(self.custom_description))
         return buf.getvalue()

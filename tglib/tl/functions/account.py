@@ -53,7 +53,7 @@ class AcceptAuthorizationRequest(TLRequest):
         _val_public_key = reader.tgread_string()
         _args['public_key'] = _val_public_key
         reader.read_int(signed=False)  # skip vector id
-        _count_value_hashes = reader.read_int()
+        _count_value_hashes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_value_hashes = []
         for _ in range(_count_value_hashes):
             _item_value_hashes = reader.tgread_object()
@@ -387,7 +387,7 @@ class CreateThemeRequest(TLRequest):
             _args['document'] = None
         if flags & (1 << 3):
             reader.read_int(signed=False)  # skip vector id
-            _count_settings = reader.read_int()
+            _count_settings = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_settings = []
             for _ in range(_count_settings):
                 _item_settings = reader.tgread_object()
@@ -575,7 +575,7 @@ class DeleteSecureValueRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_types = reader.read_int()
+        _count_types = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_types = []
         for _ in range(_count_types):
             _item_types = reader.tgread_object()
@@ -1247,7 +1247,7 @@ class GetMultiWallPapersRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_wallpapers = reader.read_int()
+        _count_wallpapers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_wallpapers = []
         for _ in range(_count_wallpapers):
             _item_wallpapers = reader.tgread_object()
@@ -1357,9 +1357,9 @@ class GetPaidMessagesRevenueRequest(TLRequest):
         if self.parent_peer is not None:
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.user_id))
         if self.parent_peer is not None:
             buf.write(bytes(self.parent_peer))
+        buf.write(bytes(self.user_id))
         return buf.getvalue()
 
     @classmethod
@@ -1621,7 +1621,7 @@ class GetSecureValueRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_types = reader.read_int()
+        _count_types = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_types = []
         for _ in range(_count_types):
             _item_types = reader.tgread_object()
@@ -1918,6 +1918,8 @@ class InitTakeoutSessionRequest(TLRequest):
             flags |= (1 << 3)
         if self.message_channels:
             flags |= (1 << 4)
+        if self.files:
+            flags |= (1 << 5)
         if self.file_max_size is not None:
             flags |= (1 << 5)
         buf.write(struct.pack('<I', flags))
@@ -2070,7 +2072,7 @@ class InvalidateSignInCodesRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_codes = reader.read_int()
+        _count_codes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_codes = []
         for _ in range(_count_codes):
             _item_codes = reader.tgread_string()
@@ -2118,7 +2120,7 @@ class RegisterDeviceRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.other_uids)))
         for item in self.other_uids:
-            buf.write(struct.pack('<q', self.item))
+            buf.write(struct.pack('<q', item))
         return buf.getvalue()
 
     @classmethod
@@ -2135,7 +2137,7 @@ class RegisterDeviceRequest(TLRequest):
         _val_secret = reader.tgread_bytes()
         _args['secret'] = _val_secret
         reader.read_int(signed=False)  # skip vector id
-        _count_other_uids = reader.read_int()
+        _count_other_uids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_other_uids = []
         for _ in range(_count_other_uids):
             _item_other_uids = reader.read_long()
@@ -2201,7 +2203,7 @@ class ReorderUsernamesRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_order = reader.read_int()
+        _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
             _item_order = reader.tgread_string()
@@ -2578,9 +2580,9 @@ class SaveAutoSaveSettingsRequest(TLRequest):
         if self.peer is not None:
             flags |= (1 << 3)
         buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.settings))
         if self.peer is not None:
             buf.write(bytes(self.peer))
+        buf.write(bytes(self.settings))
         return buf.getvalue()
 
     @classmethod
@@ -3135,7 +3137,7 @@ class SetPrivacyRequest(TLRequest):
         _val_key = reader.tgread_object()
         _args['key'] = _val_key
         reader.read_int(signed=False)  # skip vector id
-        _count_rules = reader.read_int()
+        _count_rules = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_rules = []
         for _ in range(_count_rules):
             _item_rules = reader.tgread_object()
@@ -3239,9 +3241,9 @@ class ToggleNoPaidMessagesExceptionRequest(TLRequest):
         if self.parent_peer is not None:
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.user_id))
         if self.parent_peer is not None:
             buf.write(bytes(self.parent_peer))
+        buf.write(bytes(self.user_id))
         return buf.getvalue()
 
     @classmethod
@@ -3350,7 +3352,7 @@ class UnregisterDeviceRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.other_uids)))
         for item in self.other_uids:
-            buf.write(struct.pack('<q', self.item))
+            buf.write(struct.pack('<q', item))
         return buf.getvalue()
 
     @classmethod
@@ -3361,7 +3363,7 @@ class UnregisterDeviceRequest(TLRequest):
         _val_token = reader.tgread_string()
         _args['token'] = _val_token
         reader.read_int(signed=False)  # skip vector id
-        _count_other_uids = reader.read_int()
+        _count_other_uids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_other_uids = []
         for _ in range(_count_other_uids):
             _item_other_uids = reader.read_long()
@@ -3682,10 +3684,10 @@ class UpdateConnectedBotRequest(TLRequest):
         if self.rights is not None:
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.bot))
-        buf.write(bytes(self.recipients))
         if self.rights is not None:
             buf.write(bytes(self.rights))
+        buf.write(bytes(self.bot))
+        buf.write(bytes(self.recipients))
         return buf.getvalue()
 
     @classmethod
@@ -4027,7 +4029,7 @@ class UpdateThemeRequest(TLRequest):
             _args['document'] = None
         if flags & (1 << 3):
             reader.read_int(signed=False)  # skip vector id
-            _count_settings = reader.read_int()
+            _count_settings = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_settings = []
             for _ in range(_count_settings):
                 _item_settings = reader.tgread_object()
@@ -4135,10 +4137,10 @@ class UploadThemeRequest(TLRequest):
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.file))
-        buf.write(TLObject.serialize_bytes(self.file_name))
-        buf.write(TLObject.serialize_bytes(self.mime_type))
         if self.thumb is not None:
             buf.write(bytes(self.thumb))
+        buf.write(TLObject.serialize_bytes(self.file_name))
+        buf.write(TLObject.serialize_bytes(self.mime_type))
         return buf.getvalue()
 
     @classmethod

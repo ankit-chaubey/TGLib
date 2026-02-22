@@ -181,7 +181,7 @@ class GetStringsRequest(TLRequest):
         _val_lang_code = reader.tgread_string()
         _args['lang_code'] = _val_lang_code
         reader.read_int(signed=False)  # skip vector id
-        _count_keys = reader.read_int()
+        _count_keys = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_keys = []
         for _ in range(_count_keys):
             _item_keys = reader.tgread_string()

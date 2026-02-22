@@ -35,7 +35,7 @@ class DeletePhotosRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.tgread_object()
@@ -116,9 +116,9 @@ class UpdateProfilePhotoRequest(TLRequest):
         if self.bot is not None:
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.id))
         if self.bot is not None:
             buf.write(bytes(self.bot))
+        buf.write(bytes(self.id))
         return buf.getvalue()
 
     @classmethod

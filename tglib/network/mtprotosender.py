@@ -223,6 +223,19 @@ class MTProtoSender:
                     await self._connection.connect()
                     self._reconnecting = False
                     self._log.info('Reconnected')
+
+                    # FIX BUG 8: after reconnect the old msg_ids are invalid (new session).
+                    # Cancel all pending futures so callers get an error immediately,
+                    # then re-queue the underlying requests so they can be retried.
+                    pending = list(self._pending_state.values())
+                    self._pending_state.clear()
+                    for state in pending:
+                        if not state.future.done():
+                            state.future.cancel()
+                        # Re-queue request with a fresh state so the send loop retries it
+                        new_state = RequestState(state.request)
+                        self._send_queue.append(new_state)
+
                     # Restart both loops so the connection is fully usable again
                     self._send_loop_handle = asyncio.ensure_future(self._send_loop())
                     self._recv_loop_handle = asyncio.ensure_future(self._recv_loop())
@@ -308,8 +321,13 @@ class MTProtoSender:
         pass  # Acknowledgements don't require action
 
     async def _handle_msg_detailed_info(self, message: TLMessage):
-        # Server is telling us about a message we might have missed; request a resend
-        self._pending_ack.add(message.obj.answer_msg_id)
+        # FIX BUG 7: server is telling us about a missed message — request a resend.
+        # Previously this was incorrectly adding to _pending_ack, which tells the server
+        # we already have the message (exactly the opposite of what we want).
+        from ..tl.mtproto_types import MsgResendReq
+        resend = MsgResendReq(msg_ids=[message.obj.answer_msg_id])
+        state = RequestState(resend)
+        self._send_queue.append(state)
 
     def _send_ack(self, msg_ids):
         from ..tl.mtproto_types import MsgsAck

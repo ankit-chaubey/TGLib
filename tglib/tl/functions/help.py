@@ -108,7 +108,7 @@ class EditUserInfoRequest(TLRequest):
         _val_message = reader.tgread_string()
         _args['message'] = _val_message
         reader.read_int(signed=False)  # skip vector id
-        _count_entities = reader.read_int()
+        _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_entities = []
         for _ in range(_count_entities):
             _item_entities = reader.tgread_object()
@@ -685,7 +685,7 @@ class SaveAppLogRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_events = reader.read_int()
+        _count_events = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_events = []
         for _ in range(_count_events):
             _item_events = reader.tgread_object()

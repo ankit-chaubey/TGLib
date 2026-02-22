@@ -62,7 +62,7 @@ class BindTempAuthKeyRequest(TLRequest):
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         buf.write(struct.pack('<q', self.perm_auth_key_id))
         buf.write(struct.pack('<q', self.nonce))
-        buf.write(struct.pack('<i', self.expires_at))
+        buf.write(TLObject.serialize_datetime(self.expires_at))
         buf.write(TLObject.serialize_bytes(self.encrypted_message))
         return buf.getvalue()
 
@@ -73,7 +73,7 @@ class BindTempAuthKeyRequest(TLRequest):
         _args['perm_auth_key_id'] = _val_perm_auth_key_id
         _val_nonce = reader.read_long()
         _args['nonce'] = _val_nonce
-        _val_expires_at = reader.read_int()
+        _val_expires_at = reader.tgread_date()
         _args['expires_at'] = _val_expires_at
         _val_encrypted_message = reader.tgread_bytes()
         _args['encrypted_message'] = _val_encrypted_message
@@ -232,14 +232,14 @@ class DropTempAuthKeysRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.except_auth_keys)))
         for item in self.except_auth_keys:
-            buf.write(struct.pack('<q', self.item))
+            buf.write(struct.pack('<q', item))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_except_auth_keys = reader.read_int()
+        _count_except_auth_keys = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_except_auth_keys = []
         for _ in range(_count_except_auth_keys):
             _item_except_auth_keys = reader.read_long()
@@ -304,7 +304,7 @@ class ExportLoginTokenRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.except_ids)))
         for item in self.except_ids:
-            buf.write(struct.pack('<q', self.item))
+            buf.write(struct.pack('<q', item))
         return buf.getvalue()
 
     @classmethod
@@ -315,7 +315,7 @@ class ExportLoginTokenRequest(TLRequest):
         _val_api_hash = reader.tgread_string()
         _args['api_hash'] = _val_api_hash
         reader.read_int(signed=False)  # skip vector id
-        _count_except_ids = reader.read_int()
+        _count_except_ids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_except_ids = []
         for _ in range(_count_except_ids):
             _item_except_ids = reader.read_long()
@@ -347,6 +347,8 @@ class FinishPasskeyLoginRequest(TLRequest):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
+        if self.from_dc_id is not None:
+            flags |= (1 << 0)
         if self.from_auth_key_id is not None:
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))

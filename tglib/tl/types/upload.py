@@ -151,7 +151,7 @@ class FileCdnRedirect(TLObject):
         _val_encryption_iv = reader.tgread_bytes()
         _args['encryption_iv'] = _val_encryption_iv
         reader.read_int(signed=False)  # skip vector id
-        _count_file_hashes = reader.read_int()
+        _count_file_hashes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_file_hashes = []
         for _ in range(_count_file_hashes):
             _item_file_hashes = reader.tgread_object()

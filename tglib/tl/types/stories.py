@@ -39,7 +39,7 @@ class Albums(TLObject):
         _val_hash = reader.read_long()
         _args['hash'] = _val_hash
         reader.read_int(signed=False)  # skip vector id
-        _count_albums = reader.read_int()
+        _count_albums = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_albums = []
         for _ in range(_count_albums):
             _item_albums = reader.tgread_object()
@@ -133,21 +133,21 @@ class AllStories(TLObject):
         _val_state = reader.tgread_string()
         _args['state'] = _val_state
         reader.read_int(signed=False)  # skip vector id
-        _count_peer_stories = reader.read_int()
+        _count_peer_stories = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_peer_stories = []
         for _ in range(_count_peer_stories):
             _item_peer_stories = reader.tgread_object()
             _list_peer_stories.append(_item_peer_stories)
         _args['peer_stories'] = _list_peer_stories
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -258,6 +258,8 @@ class FoundStories(TLObject):
         buf.write(struct.pack('<i', len(self.stories)))
         for item in self.stories:
             buf.write(bytes(item))
+        if self.next_offset is not None:
+            buf.write(TLObject.serialize_bytes(self.next_offset))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
@@ -266,8 +268,6 @@ class FoundStories(TLObject):
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
             buf.write(bytes(item))
-        if self.next_offset is not None:
-            buf.write(TLObject.serialize_bytes(self.next_offset))
         return buf.getvalue()
 
     @classmethod
@@ -277,7 +277,7 @@ class FoundStories(TLObject):
         _val_count = reader.read_int()
         _args['count'] = _val_count
         reader.read_int(signed=False)  # skip vector id
-        _count_stories = reader.read_int()
+        _count_stories = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_stories = []
         for _ in range(_count_stories):
             _item_stories = reader.tgread_object()
@@ -289,14 +289,14 @@ class FoundStories(TLObject):
         else:
             _args['next_offset'] = None
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -344,14 +344,14 @@ class PeerStories(TLObject):
         _val_stories = reader.tgread_object()
         _args['stories'] = _val_stories
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -395,6 +395,11 @@ class Stories(TLObject):
         buf.write(struct.pack('<i', len(self.stories)))
         for item in self.stories:
             buf.write(bytes(item))
+        if self.pinned_to_top is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.pinned_to_top)))
+            for item in self.pinned_to_top:
+                buf.write(struct.pack('<i', item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.chats)))
         for item in self.chats:
@@ -403,11 +408,6 @@ class Stories(TLObject):
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
             buf.write(bytes(item))
-        if self.pinned_to_top is not None:
-            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-            buf.write(struct.pack('<i', len(self.pinned_to_top)))
-            for item in self.pinned_to_top:
-                buf.write(struct.pack('<i', self.item))
         return buf.getvalue()
 
     @classmethod
@@ -417,7 +417,7 @@ class Stories(TLObject):
         _val_count = reader.read_int()
         _args['count'] = _val_count
         reader.read_int(signed=False)  # skip vector id
-        _count_stories = reader.read_int()
+        _count_stories = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_stories = []
         for _ in range(_count_stories):
             _item_stories = reader.tgread_object()
@@ -425,7 +425,7 @@ class Stories(TLObject):
         _args['stories'] = _list_stories
         if flags & (1 << 0):
             reader.read_int(signed=False)  # skip vector id
-            _count_pinned_to_top = reader.read_int()
+            _count_pinned_to_top = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_pinned_to_top = []
             for _ in range(_count_pinned_to_top):
                 _item_pinned_to_top = reader.read_int()
@@ -434,14 +434,14 @@ class Stories(TLObject):
         else:
             _args['pinned_to_top'] = None
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -504,21 +504,21 @@ class StoryReactionsList(TLObject):
         _val_count = reader.read_int()
         _args['count'] = _val_count
         reader.read_int(signed=False)  # skip vector id
-        _count_reactions = reader.read_int()
+        _count_reactions = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_reactions = []
         for _ in range(_count_reactions):
             _item_reactions = reader.tgread_object()
             _list_reactions.append(_item_reactions)
         _args['reactions'] = _list_reactions
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -566,14 +566,14 @@ class StoryViews(TLObject):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_views = reader.read_int()
+        _count_views = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_views = []
         for _ in range(_count_views):
             _item_views = reader.tgread_object()
             _list_views.append(_item_views)
         _args['views'] = _list_views
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -651,21 +651,21 @@ class StoryViewsList(TLObject):
         _val_reactions_count = reader.read_int()
         _args['reactions_count'] = _val_reactions_count
         reader.read_int(signed=False)  # skip vector id
-        _count_views = reader.read_int()
+        _count_views = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_views = []
         for _ in range(_count_views):
             _item_views = reader.tgread_object()
             _list_views.append(_item_views)
         _args['views'] = _list_views
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()

@@ -56,11 +56,11 @@ class InitConnectionRequest(TLRequest):
         buf.write(TLObject.serialize_bytes(self.system_lang_code))
         buf.write(TLObject.serialize_bytes(self.lang_pack))
         buf.write(TLObject.serialize_bytes(self.lang_code))
-        buf.write(bytes(self.query))
         if self.proxy is not None:
             buf.write(bytes(self.proxy))
         if self.params is not None:
             buf.write(bytes(self.params))
+        buf.write(bytes(self.query))
         return buf.getvalue()
 
     @classmethod
@@ -153,7 +153,7 @@ class InvokeAfterMsgsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.msg_ids)))
         for item in self.msg_ids:
-            buf.write(struct.pack('<q', self.item))
+            buf.write(struct.pack('<q', item))
         buf.write(bytes(self.query))
         return buf.getvalue()
 
@@ -161,7 +161,7 @@ class InvokeAfterMsgsRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_msg_ids = reader.read_int()
+        _count_msg_ids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_msg_ids = []
         for _ in range(_count_msg_ids):
             _item_msg_ids = reader.read_long()

@@ -39,7 +39,7 @@ class Photo(TLObject):
         _val_photo = reader.tgread_object()
         _args['photo'] = _val_photo
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -82,14 +82,14 @@ class Photos(TLObject):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_photos = reader.read_int()
+        _count_photos = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_photos = []
         for _ in range(_count_photos):
             _item_photos = reader.tgread_object()
             _list_photos.append(_item_photos)
         _args['photos'] = _list_photos
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -137,14 +137,14 @@ class PhotosSlice(TLObject):
         _val_count = reader.read_int()
         _args['count'] = _val_count
         reader.read_int(signed=False)  # skip vector id
-        _count_photos = reader.read_int()
+        _count_photos = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_photos = []
         for _ in range(_count_photos):
             _item_photos = reader.tgread_object()
             _list_photos.append(_item_photos)
         _args['photos'] = _list_photos
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()

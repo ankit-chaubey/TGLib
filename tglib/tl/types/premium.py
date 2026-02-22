@@ -39,12 +39,12 @@ class BoostsList(TLObject):
         buf.write(struct.pack('<i', len(self.boosts)))
         for item in self.boosts:
             buf.write(bytes(item))
+        if self.next_offset is not None:
+            buf.write(TLObject.serialize_bytes(self.next_offset))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
             buf.write(bytes(item))
-        if self.next_offset is not None:
-            buf.write(TLObject.serialize_bytes(self.next_offset))
         return buf.getvalue()
 
     @classmethod
@@ -54,7 +54,7 @@ class BoostsList(TLObject):
         _val_count = reader.read_int()
         _args['count'] = _val_count
         reader.read_int(signed=False)  # skip vector id
-        _count_boosts = reader.read_int()
+        _count_boosts = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_boosts = []
         for _ in range(_count_boosts):
             _item_boosts = reader.tgread_object()
@@ -66,7 +66,7 @@ class BoostsList(TLObject):
         else:
             _args['next_offset'] = None
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -112,6 +112,8 @@ class BoostsStatus(TLObject):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
+        if self.my_boost:
+            flags |= (1 << 2)
         if self.my_boost_slots is not None:
             flags |= (1 << 2)
         if self.gift_boosts is not None:
@@ -126,13 +128,13 @@ class BoostsStatus(TLObject):
         buf.write(struct.pack('<i', self.level))
         buf.write(struct.pack('<i', self.current_level_boosts))
         buf.write(struct.pack('<i', self.boosts))
-        buf.write(TLObject.serialize_bytes(self.boost_url))
         if self.gift_boosts is not None:
             buf.write(struct.pack('<i', self.gift_boosts))
         if self.next_level_boosts is not None:
             buf.write(struct.pack('<i', self.next_level_boosts))
         if self.premium_audience is not None:
             buf.write(bytes(self.premium_audience))
+        buf.write(TLObject.serialize_bytes(self.boost_url))
         if self.prepaid_giveaways is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.prepaid_giveaways)))
@@ -142,7 +144,7 @@ class BoostsStatus(TLObject):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.my_boost_slots)))
             for item in self.my_boost_slots:
-                buf.write(struct.pack('<i', self.item))
+                buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -175,7 +177,7 @@ class BoostsStatus(TLObject):
         _args['boost_url'] = _val_boost_url
         if flags & (1 << 3):
             reader.read_int(signed=False)  # skip vector id
-            _count_prepaid_giveaways = reader.read_int()
+            _count_prepaid_giveaways = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_prepaid_giveaways = []
             for _ in range(_count_prepaid_giveaways):
                 _item_prepaid_giveaways = reader.tgread_object()
@@ -185,7 +187,7 @@ class BoostsStatus(TLObject):
             _args['prepaid_giveaways'] = None
         if flags & (1 << 2):
             reader.read_int(signed=False)  # skip vector id
-            _count_my_boost_slots = reader.read_int()
+            _count_my_boost_slots = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_my_boost_slots = []
             for _ in range(_count_my_boost_slots):
                 _item_my_boost_slots = reader.read_int()
@@ -236,21 +238,21 @@ class MyBoosts(TLObject):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_my_boosts = reader.read_int()
+        _count_my_boosts = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_my_boosts = []
         for _ in range(_count_my_boosts):
             _item_my_boosts = reader.tgread_object()
             _list_my_boosts.append(_item_my_boosts)
         _args['my_boosts'] = _list_my_boosts
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()

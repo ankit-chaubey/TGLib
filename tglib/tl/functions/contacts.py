@@ -211,7 +211,7 @@ class DeleteByPhonesRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_phones = reader.read_int()
+        _count_phones = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_phones = []
         for _ in range(_count_phones):
             _item_phones = reader.tgread_string()
@@ -248,7 +248,7 @@ class DeleteContactsRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.tgread_object()
@@ -278,14 +278,14 @@ class EditCloseFriendsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<q', self.item))
+            buf.write(struct.pack('<q', item))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_long()
@@ -675,14 +675,14 @@ class ImportCardRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.export_card)))
         for item in self.export_card:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_export_card = reader.read_int()
+        _count_export_card = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_export_card = []
         for _ in range(_count_export_card):
             _item_export_card = reader.read_int()
@@ -748,7 +748,7 @@ class ImportContactsRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_contacts = reader.read_int()
+        _count_contacts = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_contacts = []
         for _ in range(_count_contacts):
             _item_contacts = reader.tgread_object()
@@ -960,7 +960,7 @@ class SetBlockedRequest(TLRequest):
         flags = reader.read_int(signed=False)
         _args['my_stories_from'] = bool(flags & (1 << 0))
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.tgread_object()

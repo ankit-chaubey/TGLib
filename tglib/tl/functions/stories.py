@@ -100,7 +100,7 @@ class CreateAlbumRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.stories)))
         for item in self.stories:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -111,7 +111,7 @@ class CreateAlbumRequest(TLRequest):
         _val_title = reader.tgread_string()
         _args['title'] = _val_title
         reader.read_int(signed=False)  # skip vector id
-        _count_stories = reader.read_int()
+        _count_stories = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_stories = []
         for _ in range(_count_stories):
             _item_stories = reader.read_int()
@@ -178,7 +178,7 @@ class DeleteStoriesRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -187,7 +187,7 @@ class DeleteStoriesRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -231,6 +231,8 @@ class EditStoryRequest(TLRequest):
             flags |= (1 << 0)
         if self.media_areas is not None:
             flags |= (1 << 3)
+        if self.caption is not None:
+            flags |= (1 << 1)
         if self.entities is not None:
             flags |= (1 << 1)
         if self.privacy_rules is not None:
@@ -274,7 +276,7 @@ class EditStoryRequest(TLRequest):
             _args['media'] = None
         if flags & (1 << 3):
             reader.read_int(signed=False)  # skip vector id
-            _count_media_areas = reader.read_int()
+            _count_media_areas = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_media_areas = []
             for _ in range(_count_media_areas):
                 _item_media_areas = reader.tgread_object()
@@ -289,7 +291,7 @@ class EditStoryRequest(TLRequest):
             _args['caption'] = None
         if flags & (1 << 1):
             reader.read_int(signed=False)  # skip vector id
-            _count_entities = reader.read_int()
+            _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
                 _item_entities = reader.tgread_object()
@@ -299,7 +301,7 @@ class EditStoryRequest(TLRequest):
             _args['entities'] = None
         if flags & (1 << 2):
             reader.read_int(signed=False)  # skip vector id
-            _count_privacy_rules = reader.read_int()
+            _count_privacy_rules = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_privacy_rules = []
             for _ in range(_count_privacy_rules):
                 _item_privacy_rules = reader.tgread_object()
@@ -546,7 +548,7 @@ class GetPeerMaxIdsRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.tgread_object()
@@ -686,7 +688,7 @@ class GetStoriesByIdRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -695,7 +697,7 @@ class GetStoriesByIdRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -728,7 +730,7 @@ class GetStoriesViewsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -737,7 +739,7 @@ class GetStoriesViewsRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -784,11 +786,11 @@ class GetStoryReactionsListRequest(TLRequest):
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
         buf.write(struct.pack('<i', self.id))
-        buf.write(struct.pack('<i', self.limit))
         if self.reaction is not None:
             buf.write(bytes(self.reaction))
         if self.offset is not None:
             buf.write(TLObject.serialize_bytes(self.offset))
+        buf.write(struct.pack('<i', self.limit))
         return buf.getvalue()
 
     @classmethod
@@ -858,11 +860,11 @@ class GetStoryViewsListRequest(TLRequest):
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
+        if self.q is not None:
+            buf.write(TLObject.serialize_bytes(self.q))
         buf.write(struct.pack('<i', self.id))
         buf.write(TLObject.serialize_bytes(self.offset))
         buf.write(struct.pack('<i', self.limit))
-        if self.q is not None:
-            buf.write(TLObject.serialize_bytes(self.q))
         return buf.getvalue()
 
     @classmethod
@@ -912,7 +914,7 @@ class IncrementStoryViewsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -921,7 +923,7 @@ class IncrementStoryViewsRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -988,7 +990,7 @@ class ReorderAlbumsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.order)))
         for item in self.order:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -997,7 +999,7 @@ class ReorderAlbumsRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_order = reader.read_int()
+        _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
             _item_order = reader.read_int()
@@ -1034,7 +1036,7 @@ class ReportRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         buf.write(TLObject.serialize_bytes(self.option))
         buf.write(TLObject.serialize_bytes(self.message))
         return buf.getvalue()
@@ -1045,7 +1047,7 @@ class ReportRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -1092,14 +1094,14 @@ class SearchPostsRequest(TLRequest):
         if self.peer is not None:
             flags |= (1 << 2)
         buf.write(struct.pack('<I', flags))
-        buf.write(TLObject.serialize_bytes(self.offset))
-        buf.write(struct.pack('<i', self.limit))
         if self.hashtag is not None:
             buf.write(TLObject.serialize_bytes(self.hashtag))
         if self.area is not None:
             buf.write(bytes(self.area))
         if self.peer is not None:
             buf.write(bytes(self.peer))
+        buf.write(TLObject.serialize_bytes(self.offset))
+        buf.write(struct.pack('<i', self.limit))
         return buf.getvalue()
 
     @classmethod
@@ -1234,6 +1236,8 @@ class SendStoryRequest(TLRequest):
             flags |= (1 << 1)
         if self.period is not None:
             flags |= (1 << 3)
+        if self.fwd_from_id is not None:
+            flags |= (1 << 6)
         if self.fwd_from_story is not None:
             flags |= (1 << 6)
         if self.albums is not None:
@@ -1241,10 +1245,6 @@ class SendStoryRequest(TLRequest):
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
         buf.write(bytes(self.media))
-        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-        buf.write(struct.pack('<i', len(self.privacy_rules)))
-        for item in self.privacy_rules:
-            buf.write(bytes(item))
         if self.media_areas is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.media_areas)))
@@ -1257,6 +1257,10 @@ class SendStoryRequest(TLRequest):
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
                 buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.privacy_rules)))
+        for item in self.privacy_rules:
+            buf.write(bytes(item))
         buf.write(struct.pack('<q', self.random_id))
         if self.period is not None:
             buf.write(struct.pack('<i', self.period))
@@ -1268,7 +1272,7 @@ class SendStoryRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.albums)))
             for item in self.albums:
-                buf.write(struct.pack('<i', self.item))
+                buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -1284,7 +1288,7 @@ class SendStoryRequest(TLRequest):
         _args['media'] = _val_media
         if flags & (1 << 5):
             reader.read_int(signed=False)  # skip vector id
-            _count_media_areas = reader.read_int()
+            _count_media_areas = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_media_areas = []
             for _ in range(_count_media_areas):
                 _item_media_areas = reader.tgread_object()
@@ -1299,7 +1303,7 @@ class SendStoryRequest(TLRequest):
             _args['caption'] = None
         if flags & (1 << 1):
             reader.read_int(signed=False)  # skip vector id
-            _count_entities = reader.read_int()
+            _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
                 _item_entities = reader.tgread_object()
@@ -1308,7 +1312,7 @@ class SendStoryRequest(TLRequest):
         else:
             _args['entities'] = None
         reader.read_int(signed=False)  # skip vector id
-        _count_privacy_rules = reader.read_int()
+        _count_privacy_rules = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_privacy_rules = []
         for _ in range(_count_privacy_rules):
             _item_privacy_rules = reader.tgread_object()
@@ -1333,7 +1337,7 @@ class SendStoryRequest(TLRequest):
             _args['fwd_from_story'] = None
         if flags & (1 << 8):
             reader.read_int(signed=False)  # skip vector id
-            _count_albums = reader.read_int()
+            _count_albums = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_albums = []
             for _ in range(_count_albums):
                 _item_albums = reader.read_int()
@@ -1397,10 +1401,6 @@ class StartLiveRequest(TLRequest):
             flags |= (1 << 7)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
-        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-        buf.write(struct.pack('<i', len(self.privacy_rules)))
-        for item in self.privacy_rules:
-            buf.write(bytes(item))
         if self.caption is not None:
             buf.write(TLObject.serialize_bytes(self.caption))
         if self.entities is not None:
@@ -1408,6 +1408,10 @@ class StartLiveRequest(TLRequest):
             buf.write(struct.pack('<i', len(self.entities)))
             for item in self.entities:
                 buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.privacy_rules)))
+        for item in self.privacy_rules:
+            buf.write(bytes(item))
         buf.write(struct.pack('<q', self.random_id))
         if self.messages_enabled is not None:
             buf.write(struct.pack('<I', 0x997275b5 if self.messages_enabled else 0xbc799737))
@@ -1431,7 +1435,7 @@ class StartLiveRequest(TLRequest):
             _args['caption'] = None
         if flags & (1 << 1):
             reader.read_int(signed=False)  # skip vector id
-            _count_entities = reader.read_int()
+            _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
                 _item_entities = reader.tgread_object()
@@ -1440,7 +1444,7 @@ class StartLiveRequest(TLRequest):
         else:
             _args['entities'] = None
         reader.read_int(signed=False)  # skip vector id
-        _count_privacy_rules = reader.read_int()
+        _count_privacy_rules = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_privacy_rules = []
         for _ in range(_count_privacy_rules):
             _item_privacy_rules = reader.tgread_object()
@@ -1550,7 +1554,7 @@ class TogglePinnedRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         buf.write(struct.pack('<I', 0x997275b5 if self.pinned else 0xbc799737))
         return buf.getvalue()
 
@@ -1560,7 +1564,7 @@ class TogglePinnedRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -1595,7 +1599,7 @@ class TogglePinnedToTopRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -1604,7 +1608,7 @@ class TogglePinnedToTopRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -1659,17 +1663,17 @@ class UpdateAlbumRequest(TLRequest):
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.delete_stories)))
             for item in self.delete_stories:
-                buf.write(struct.pack('<i', self.item))
+                buf.write(struct.pack('<i', item))
         if self.add_stories is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.add_stories)))
             for item in self.add_stories:
-                buf.write(struct.pack('<i', self.item))
+                buf.write(struct.pack('<i', item))
         if self.order is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.order)))
             for item in self.order:
-                buf.write(struct.pack('<i', self.item))
+                buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -1687,7 +1691,7 @@ class UpdateAlbumRequest(TLRequest):
             _args['title'] = None
         if flags & (1 << 1):
             reader.read_int(signed=False)  # skip vector id
-            _count_delete_stories = reader.read_int()
+            _count_delete_stories = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_delete_stories = []
             for _ in range(_count_delete_stories):
                 _item_delete_stories = reader.read_int()
@@ -1697,7 +1701,7 @@ class UpdateAlbumRequest(TLRequest):
             _args['delete_stories'] = None
         if flags & (1 << 2):
             reader.read_int(signed=False)  # skip vector id
-            _count_add_stories = reader.read_int()
+            _count_add_stories = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_add_stories = []
             for _ in range(_count_add_stories):
                 _item_add_stories = reader.read_int()
@@ -1707,7 +1711,7 @@ class UpdateAlbumRequest(TLRequest):
             _args['add_stories'] = None
         if flags & (1 << 3):
             reader.read_int(signed=False)  # skip vector id
-            _count_order = reader.read_int()
+            _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_order = []
             for _ in range(_count_order):
                 _item_order = reader.read_int()

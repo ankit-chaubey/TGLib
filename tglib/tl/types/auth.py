@@ -33,6 +33,8 @@ class Authorization(TLObject):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
+        if self.setup_password_required:
+            flags |= (1 << 1)
         if self.otherwise_relogin_days is not None:
             flags |= (1 << 1)
         if self.tmp_sessions is not None:
@@ -40,13 +42,13 @@ class Authorization(TLObject):
         if self.future_auth_token is not None:
             flags |= (1 << 2)
         buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.user))
         if self.otherwise_relogin_days is not None:
             buf.write(struct.pack('<i', self.otherwise_relogin_days))
         if self.tmp_sessions is not None:
             buf.write(struct.pack('<i', self.tmp_sessions))
         if self.future_auth_token is not None:
             buf.write(TLObject.serialize_bytes(self.future_auth_token))
+        buf.write(bytes(self.user))
         return buf.getvalue()
 
     @classmethod
@@ -324,14 +326,14 @@ class LoginToken(TLObject):
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(struct.pack('<i', self.expires))
+        buf.write(TLObject.serialize_datetime(self.expires))
         buf.write(TLObject.serialize_bytes(self.token))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        _val_expires = reader.read_int()
+        _val_expires = reader.tgread_date()
         _args['expires'] = _val_expires
         _val_token = reader.tgread_bytes()
         _args['token'] = _val_token
@@ -702,7 +704,7 @@ class SentCodeTypeEmailCode(TLObject):
         if self.reset_available_period is not None:
             buf.write(struct.pack('<i', self.reset_available_period))
         if self.reset_pending_date is not None:
-            buf.write(struct.pack('<i', self.reset_pending_date))
+            buf.write(TLObject.serialize_datetime(self.reset_pending_date))
         return buf.getvalue()
 
     @classmethod
@@ -721,7 +723,7 @@ class SentCodeTypeEmailCode(TLObject):
         else:
             _args['reset_available_period'] = None
         if flags & (1 << 4):
-            _val_reset_pending_date = reader.read_int()
+            _val_reset_pending_date = reader.tgread_date()
             _args['reset_pending_date'] = _val_reset_pending_date
         else:
             _args['reset_pending_date'] = None
@@ -759,12 +761,15 @@ class SentCodeTypeFirebaseSms(TLObject):
         flags = 0
         if self.nonce is not None:
             flags |= (1 << 0)
+        if self.play_integrity_project_id is not None:
+            flags |= (1 << 2)
         if self.play_integrity_nonce is not None:
             flags |= (1 << 2)
+        if self.receipt is not None:
+            flags |= (1 << 1)
         if self.push_timeout is not None:
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
-        buf.write(struct.pack('<i', self.length))
         if self.nonce is not None:
             buf.write(TLObject.serialize_bytes(self.nonce))
         if self.play_integrity_project_id is not None:
@@ -775,6 +780,7 @@ class SentCodeTypeFirebaseSms(TLObject):
             buf.write(TLObject.serialize_bytes(self.receipt))
         if self.push_timeout is not None:
             buf.write(struct.pack('<i', self.push_timeout))
+        buf.write(struct.pack('<i', self.length))
         return buf.getvalue()
 
     @classmethod

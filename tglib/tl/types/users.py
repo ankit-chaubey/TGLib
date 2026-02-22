@@ -39,7 +39,7 @@ class SavedMusic(TLObject):
         _val_count = reader.read_int()
         _args['count'] = _val_count
         reader.read_int(signed=False)  # skip vector id
-        _count_documents = reader.read_int()
+        _count_documents = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_documents = []
         for _ in range(_count_documents):
             _item_documents = reader.tgread_object()
@@ -116,14 +116,14 @@ class UserFull(TLObject):
         _val_full_user = reader.tgread_object()
         _args['full_user'] = _val_full_user
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -160,7 +160,7 @@ class Users(TLObject):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -202,7 +202,7 @@ class UsersSlice(TLObject):
         _val_count = reader.read_int()
         _args['count'] = _val_count
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()

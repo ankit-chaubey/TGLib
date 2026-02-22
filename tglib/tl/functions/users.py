@@ -64,7 +64,7 @@ class GetRequirementsToContactRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.tgread_object()
@@ -150,7 +150,7 @@ class GetSavedMusicByIdRequest(TLRequest):
         _val_id = reader.tgread_object()
         _args['id'] = _val_id
         reader.read_int(signed=False)  # skip vector id
-        _count_documents = reader.read_int()
+        _count_documents = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_documents = []
         for _ in range(_count_documents):
             _item_documents = reader.tgread_object()
@@ -187,7 +187,7 @@ class GetUsersRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.tgread_object()
@@ -229,7 +229,7 @@ class SetSecureValueErrorsRequest(TLRequest):
         _val_id = reader.tgread_object()
         _args['id'] = _val_id
         reader.read_int(signed=False)  # skip vector id
-        _count_errors = reader.read_int()
+        _count_errors = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_errors = []
         for _ in range(_count_errors):
             _item_errors = reader.tgread_object()

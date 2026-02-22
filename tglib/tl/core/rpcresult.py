@@ -25,8 +25,10 @@ class GzipPacked(TLObject):
         return data
 
     def _bytes(self) -> bytes:
+        # FIX BUG 5: data stored decompressed; must recompress before writing to wire
+        compressed = gzip.compress(self.data)
         return (struct.pack('<I', self.CONSTRUCTOR_ID) +
-                TLObject.serialize_bytes(self.data))
+                TLObject.serialize_bytes(compressed))
 
     @classmethod
     def from_reader(cls, reader):

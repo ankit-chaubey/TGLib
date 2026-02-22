@@ -83,7 +83,7 @@ class GroupCall(TLObject):
         _val_call = reader.tgread_object()
         _args['call'] = _val_call
         reader.read_int(signed=False)  # skip vector id
-        _count_participants = reader.read_int()
+        _count_participants = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_participants = []
         for _ in range(_count_participants):
             _item_participants = reader.tgread_object()
@@ -92,14 +92,14 @@ class GroupCall(TLObject):
         _val_participants_next_offset = reader.tgread_string()
         _args['participants_next_offset'] = _val_participants_next_offset
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -153,21 +153,21 @@ class GroupCallStars(TLObject):
         _val_total_stars = reader.read_long()
         _args['total_stars'] = _val_total_stars
         reader.read_int(signed=False)  # skip vector id
-        _count_top_donors = reader.read_int()
+        _count_top_donors = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_top_donors = []
         for _ in range(_count_top_donors):
             _item_top_donors = reader.tgread_object()
             _list_top_donors.append(_item_top_donors)
         _args['top_donors'] = _list_top_donors
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -204,7 +204,7 @@ class GroupCallStreamChannels(TLObject):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_channels = reader.read_int()
+        _count_channels = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_channels = []
         for _ in range(_count_channels):
             _item_channels = reader.tgread_object()
@@ -298,7 +298,7 @@ class GroupParticipants(TLObject):
         _val_count = reader.read_int()
         _args['count'] = _val_count
         reader.read_int(signed=False)  # skip vector id
-        _count_participants = reader.read_int()
+        _count_participants = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_participants = []
         for _ in range(_count_participants):
             _item_participants = reader.tgread_object()
@@ -307,14 +307,14 @@ class GroupParticipants(TLObject):
         _val_next_offset = reader.tgread_string()
         _args['next_offset'] = _val_next_offset
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -365,21 +365,21 @@ class JoinAsPeers(TLObject):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_peers = reader.read_int()
+        _count_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_peers = []
         for _ in range(_count_peers):
             _item_peers = reader.tgread_object()
             _list_peers.append(_item_peers)
         _args['peers'] = _list_peers
         reader.read_int(signed=False)  # skip vector id
-        _count_chats = reader.read_int()
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -421,7 +421,7 @@ class PhoneCall(TLObject):
         _val_phone_call = reader.tgread_object()
         _args['phone_call'] = _val_phone_call
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()

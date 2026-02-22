@@ -126,7 +126,7 @@ class EditExportedInviteRequest(TLRequest):
             _args['title'] = None
         if flags & (1 << 2):
             reader.read_int(signed=False)  # skip vector id
-            _count_peers = reader.read_int()
+            _count_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_peers = []
             for _ in range(_count_peers):
                 _item_peers = reader.tgread_object()
@@ -175,7 +175,7 @@ class ExportChatlistInviteRequest(TLRequest):
         _val_title = reader.tgread_string()
         _args['title'] = _val_title
         reader.read_int(signed=False)  # skip vector id
-        _count_peers = reader.read_int()
+        _count_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_peers = []
         for _ in range(_count_peers):
             _item_peers = reader.tgread_object()
@@ -333,7 +333,7 @@ class JoinChatlistInviteRequest(TLRequest):
         _val_slug = reader.tgread_string()
         _args['slug'] = _val_slug
         reader.read_int(signed=False)  # skip vector id
-        _count_peers = reader.read_int()
+        _count_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_peers = []
         for _ in range(_count_peers):
             _item_peers = reader.tgread_object()
@@ -375,7 +375,7 @@ class JoinChatlistUpdatesRequest(TLRequest):
         _val_chatlist = reader.tgread_object()
         _args['chatlist'] = _val_chatlist
         reader.read_int(signed=False)  # skip vector id
-        _count_peers = reader.read_int()
+        _count_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_peers = []
         for _ in range(_count_peers):
             _item_peers = reader.tgread_object()
@@ -417,7 +417,7 @@ class LeaveChatlistRequest(TLRequest):
         _val_chatlist = reader.tgread_object()
         _args['chatlist'] = _val_chatlist
         reader.read_int(signed=False)  # skip vector id
-        _count_peers = reader.read_int()
+        _count_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_peers = []
         for _ in range(_count_peers):
             _item_peers = reader.tgread_object()

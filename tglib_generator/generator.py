@@ -68,8 +68,10 @@ def _args_serialization(arg: TLArg, indent: str) -> List[str]:
 
 
 def _serialize_single_type(name, t, is_vector, use_vector_id,
-                            skip_constructor_id, indent) -> List[str]:
+                            skip_constructor_id, indent, use_self=True) -> List[str]:
     lines = []
+    # For field access use self.name; for loop variables (item) use plain name
+    ref = f'self.{name}' if use_self else name
 
     def w(code):
         lines.append(f'{indent}{code}')
@@ -77,34 +79,40 @@ def _serialize_single_type(name, t, is_vector, use_vector_id,
     if is_vector:
         if use_vector_id:
             w(f'buf.write(struct.pack(\'<i\', 0x1cb5c415))  # vector id')
-        w(f'buf.write(struct.pack(\'<i\', len(self.{name})))')
-        w(f'for item in self.{name}:')
+        w(f'buf.write(struct.pack(\'<i\', len({ref})))')
+        w(f'for item in {ref}:')
+        # Vector items are loop variables — no 'self.' prefix
         item_lines = _serialize_single_type('item', t, False, False,
-                                            skip_constructor_id, indent + '    ')
+                                            skip_constructor_id, indent + '    ',
+                                            use_self=False)
         lines.extend(item_lines)
         return lines
 
-    if t in ('int', 'date'):
-        w(f'buf.write(struct.pack(\'<i\', self.{name}))')
+    if t == 'int':
+        w(f'buf.write(struct.pack(\'<i\', {ref}))')
+    elif t == 'date':
+        # FIX BUG 4: date fields may be datetime objects or raw ints — use serialize_datetime()
+        w(f'buf.write(TLObject.serialize_datetime({ref}))')
     elif t == 'long':
-        w(f'buf.write(struct.pack(\'<q\', self.{name}))')
+        w(f'buf.write(struct.pack(\'<q\', {ref}))')
     elif t == 'int128':
-        w(f'buf.write(self.{name}.to_bytes(16, \'little\'))')
+        w(f'buf.write({ref}.to_bytes(16, \'little\'))')
     elif t == 'int256':
-        w(f'buf.write(self.{name}.to_bytes(32, \'little\'))')
+        w(f'buf.write({ref}.to_bytes(32, \'little\'))')
     elif t == 'double':
-        w(f'buf.write(struct.pack(\'<d\', self.{name}))')
+        w(f'buf.write(struct.pack(\'<d\', {ref}))')
     elif t in ('string', 'bytes'):
-        w(f'buf.write(TLObject.serialize_bytes(self.{name}))')
+        w(f'buf.write(TLObject.serialize_bytes({ref}))')
     elif t == 'Bool':
-        w(f'buf.write(struct.pack(\'<I\', 0x997275b5 if self.{name} else 0xbc799737))')
+        w(f'buf.write(struct.pack(\'<I\', 0x997275b5 if {ref} else 0xbc799737))')
     elif t == 'true':
         pass  # true flags are only present/absent, no serialization needed
     else:
         if skip_constructor_id:
-            w(f'buf.write(bytes(self.{name}))')
+            # FIX BUG 3: bare type — strip the 4-byte constructor ID prefix
+            w(f'buf.write(bytes({ref})[4:])')
         else:
-            w(f'buf.write(bytes(self.{name}))')
+            w(f'buf.write(bytes({ref}))')
 
     return lines
 
@@ -119,23 +127,27 @@ def _write_to_bytes(obj: TLObject, f):
 
     # Handle flag computation
     has_flags = any(a.flag_indicator for a in obj.args)
-    flag_fields = {}  # flag_name -> {bit_index: arg_name}
+    # FIX BUG 2: use list per bit so multiple fields sharing the same bit are ALL checked
+    flag_fields = {}  # flag_name -> {bit_index: [arg, ...]}
     for arg in obj.real_args:
         if arg.flag:
-            flag_fields.setdefault(arg.flag, {})[arg.flag_index] = arg
+            flag_fields.setdefault(arg.flag, {}).setdefault(arg.flag_index, []).append(arg)
 
     if has_flags:
         for flag_name, bits in flag_fields.items():
             f.write(f'        {flag_name} = 0\n')
-            for bit, arg in bits.items():
-                if arg.type == 'true':
-                    f.write(f'        if self.{arg.name}:\n')
-                    f.write(f'            {flag_name} |= (1 << {bit})\n')
-                else:
-                    f.write(f'        if self.{arg.name} is not None:\n')
-                    f.write(f'            {flag_name} |= (1 << {bit})\n')
+            for bit, args_at_bit in bits.items():
+                for arg in args_at_bit:
+                    if arg.type == 'true':
+                        f.write(f'        if self.{arg.name}:\n')
+                        f.write(f'            {flag_name} |= (1 << {bit})\n')
+                    else:
+                        f.write(f'        if self.{arg.name} is not None:\n')
+                        f.write(f'            {flag_name} |= (1 << {bit})\n')
 
-    for arg in obj.sorted_args() if hasattr(obj, 'sorted_args') else obj._sorted_args():
+    # FIX BUG 1: iterate args in SCHEMA ORDER (obj.args), never _sorted_args().
+    # _sorted_args() reorders optional fields to the end which breaks the wire format.
+    for arg in obj.args:
         if arg.generic_definition:
             continue
         if arg.flag_indicator:
@@ -214,7 +226,7 @@ def _read_single_type(name, t, is_vector, use_vector_id, indent) -> List[str]:
     if is_vector:
         if use_vector_id:
             w('reader.read_int(signed=False)  # skip vector id')
-        w(f'_count_{name} = reader.read_int()')
+        w(f'_count_{name} = reader.read_int(signed=False)  # BUG6 fix: unsigned count')
         w(f'_list_{name} = []')
         w(f'for _ in range(_count_{name}):')
         item_lines = _read_single_item(f'_item_{name}', t, indent + '    ')
@@ -234,8 +246,12 @@ def _read_single_item(var, t, indent) -> List[str]:
     def w(code):
         lines.append(f'{indent}{code}')
 
-    if t in ('int', 'date'):
+    if t == 'int':
         w(f'{var} = reader.read_int()')
+    elif t == 'date':
+        # FIX BUG 4: use tgread_date() so date fields are proper datetime objects,
+        # consistent with the Optional[datetime] type hint on __init__
+        w(f'{var} = reader.tgread_date()')
     elif t == 'long':
         w(f'{var} = reader.read_long()')
     elif t == 'int128':

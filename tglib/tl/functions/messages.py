@@ -79,6 +79,10 @@ class AcceptUrlAuthRequest(TLRequest):
             flags |= (1 << 0)
         if self.share_phone_number:
             flags |= (1 << 3)
+        if self.peer is not None:
+            flags |= (1 << 1)
+        if self.msg_id is not None:
+            flags |= (1 << 1)
         if self.button_id is not None:
             flags |= (1 << 1)
         if self.url is not None:
@@ -200,7 +204,7 @@ class AppendTodoListRequest(TLRequest):
         _val_msg_id = reader.read_int()
         _args['msg_id'] = _val_msg_id
         reader.read_int(signed=False)  # skip vector id
-        _count_list = reader.read_int()
+        _count_list = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_list = []
         for _ in range(_count_list):
             _item_list = reader.tgread_object()
@@ -487,7 +491,7 @@ class CreateChatRequest(TLRequest):
         _args = {}
         flags = reader.read_int(signed=False)
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -763,9 +767,9 @@ class DeleteHistoryRequest(TLRequest):
         buf.write(bytes(self.peer))
         buf.write(struct.pack('<i', self.max_id))
         if self.min_date is not None:
-            buf.write(struct.pack('<i', self.min_date))
+            buf.write(TLObject.serialize_datetime(self.min_date))
         if self.max_date is not None:
-            buf.write(struct.pack('<i', self.max_date))
+            buf.write(TLObject.serialize_datetime(self.max_date))
         return buf.getvalue()
 
     @classmethod
@@ -779,12 +783,12 @@ class DeleteHistoryRequest(TLRequest):
         _val_max_id = reader.read_int()
         _args['max_id'] = _val_max_id
         if flags & (1 << 2):
-            _val_min_date = reader.read_int()
+            _val_min_date = reader.tgread_date()
             _args['min_date'] = _val_min_date
         else:
             _args['min_date'] = None
         if flags & (1 << 3):
-            _val_max_date = reader.read_int()
+            _val_max_date = reader.tgread_date()
             _args['max_date'] = _val_max_date
         else:
             _args['max_date'] = None
@@ -818,7 +822,7 @@ class DeleteMessagesRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -827,7 +831,7 @@ class DeleteMessagesRequest(TLRequest):
         flags = reader.read_int(signed=False)
         _args['revoke'] = bool(flags & (1 << 0))
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -892,7 +896,7 @@ class DeleteQuickReplyMessagesRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -901,7 +905,7 @@ class DeleteQuickReplyMessagesRequest(TLRequest):
         _val_shortcut_id = reader.read_int()
         _args['shortcut_id'] = _val_shortcut_id
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -1007,14 +1011,14 @@ class DeleteSavedHistoryRequest(TLRequest):
         if self.max_date is not None:
             flags |= (1 << 3)
         buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        buf.write(struct.pack('<i', self.max_id))
         if self.parent_peer is not None:
             buf.write(bytes(self.parent_peer))
+        buf.write(bytes(self.peer))
+        buf.write(struct.pack('<i', self.max_id))
         if self.min_date is not None:
-            buf.write(struct.pack('<i', self.min_date))
+            buf.write(TLObject.serialize_datetime(self.min_date))
         if self.max_date is not None:
-            buf.write(struct.pack('<i', self.max_date))
+            buf.write(TLObject.serialize_datetime(self.max_date))
         return buf.getvalue()
 
     @classmethod
@@ -1031,12 +1035,12 @@ class DeleteSavedHistoryRequest(TLRequest):
         _val_max_id = reader.read_int()
         _args['max_id'] = _val_max_id
         if flags & (1 << 2):
-            _val_min_date = reader.read_int()
+            _val_min_date = reader.tgread_date()
             _args['min_date'] = _val_min_date
         else:
             _args['min_date'] = None
         if flags & (1 << 3):
-            _val_max_date = reader.read_int()
+            _val_max_date = reader.tgread_date()
             _args['max_date'] = _val_max_date
         else:
             _args['max_date'] = None
@@ -1067,7 +1071,7 @@ class DeleteScheduledMessagesRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -1076,7 +1080,7 @@ class DeleteScheduledMessagesRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -1376,7 +1380,7 @@ class EditExportedChatInviteRequest(TLRequest):
         buf.write(bytes(self.peer))
         buf.write(TLObject.serialize_bytes(self.link))
         if self.expire_date is not None:
-            buf.write(struct.pack('<i', self.expire_date))
+            buf.write(TLObject.serialize_datetime(self.expire_date))
         if self.usage_limit is not None:
             buf.write(struct.pack('<i', self.usage_limit))
         if self.request_needed is not None:
@@ -1395,7 +1399,7 @@ class EditExportedChatInviteRequest(TLRequest):
         _val_link = reader.tgread_string()
         _args['link'] = _val_link
         if flags & (1 << 0):
-            _val_expire_date = reader.read_int()
+            _val_expire_date = reader.tgread_date()
             _args['expire_date'] = _val_expire_date
         else:
             _args['expire_date'] = None
@@ -1620,7 +1624,7 @@ class EditInlineBotMessageRequest(TLRequest):
             _args['reply_markup'] = None
         if flags & (1 << 3):
             reader.read_int(signed=False)  # skip vector id
-            _count_entities = reader.read_int()
+            _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
                 _item_entities = reader.tgread_object()
@@ -1703,7 +1707,7 @@ class EditMessageRequest(TLRequest):
             for item in self.entities:
                 buf.write(bytes(item))
         if self.schedule_date is not None:
-            buf.write(struct.pack('<i', self.schedule_date))
+            buf.write(TLObject.serialize_datetime(self.schedule_date))
         if self.schedule_repeat_period is not None:
             buf.write(struct.pack('<i', self.schedule_repeat_period))
         if self.quick_reply_shortcut_id is not None:
@@ -1737,7 +1741,7 @@ class EditMessageRequest(TLRequest):
             _args['reply_markup'] = None
         if flags & (1 << 3):
             reader.read_int(signed=False)  # skip vector id
-            _count_entities = reader.read_int()
+            _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
                 _item_entities = reader.tgread_object()
@@ -1746,7 +1750,7 @@ class EditMessageRequest(TLRequest):
         else:
             _args['entities'] = None
         if flags & (1 << 15):
-            _val_schedule_date = reader.read_int()
+            _val_schedule_date = reader.tgread_date()
             _args['schedule_date'] = _val_schedule_date
         else:
             _args['schedule_date'] = None
@@ -1843,7 +1847,7 @@ class ExportChatInviteRequest(TLRequest):
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
         if self.expire_date is not None:
-            buf.write(struct.pack('<i', self.expire_date))
+            buf.write(TLObject.serialize_datetime(self.expire_date))
         if self.usage_limit is not None:
             buf.write(struct.pack('<i', self.usage_limit))
         if self.title is not None:
@@ -1861,7 +1865,7 @@ class ExportChatInviteRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         if flags & (1 << 0):
-            _val_expire_date = reader.read_int()
+            _val_expire_date = reader.tgread_date()
             _args['expire_date'] = _val_expire_date
         else:
             _args['expire_date'] = None
@@ -2054,18 +2058,18 @@ class ForwardMessagesRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
-        buf.write(bytes(self.to_peer))
+            buf.write(struct.pack('<i', item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.random_id)))
         for item in self.random_id:
-            buf.write(struct.pack('<q', self.item))
+            buf.write(struct.pack('<q', item))
+        buf.write(bytes(self.to_peer))
         if self.top_msg_id is not None:
             buf.write(struct.pack('<i', self.top_msg_id))
         if self.reply_to is not None:
             buf.write(bytes(self.reply_to))
         if self.schedule_date is not None:
-            buf.write(struct.pack('<i', self.schedule_date))
+            buf.write(TLObject.serialize_datetime(self.schedule_date))
         if self.schedule_repeat_period is not None:
             buf.write(struct.pack('<i', self.schedule_repeat_period))
         if self.send_as is not None:
@@ -2096,14 +2100,14 @@ class ForwardMessagesRequest(TLRequest):
         _val_from_peer = reader.tgread_object()
         _args['from_peer'] = _val_from_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
             _list_id.append(_item_id)
         _args['id'] = _list_id
         reader.read_int(signed=False)  # skip vector id
-        _count_random_id = reader.read_int()
+        _count_random_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_random_id = []
         for _ in range(_count_random_id):
             _item_random_id = reader.read_long()
@@ -2122,7 +2126,7 @@ class ForwardMessagesRequest(TLRequest):
         else:
             _args['reply_to'] = None
         if flags & (1 << 10):
-            _val_schedule_date = reader.read_int()
+            _val_schedule_date = reader.tgread_date()
             _args['schedule_date'] = _val_schedule_date
         else:
             _args['schedule_date'] = None
@@ -2214,14 +2218,14 @@ class GetAllChatsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.except_ids)))
         for item in self.except_ids:
-            buf.write(struct.pack('<q', self.item))
+            buf.write(struct.pack('<q', item))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_except_ids = reader.read_int()
+        _count_except_ids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_except_ids = []
         for _ in range(_count_except_ids):
             _item_except_ids = reader.read_long()
@@ -2616,13 +2620,13 @@ class GetChatInviteImportersRequest(TLRequest):
             flags |= (1 << 2)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
-        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
-        buf.write(bytes(self.offset_user))
-        buf.write(struct.pack('<i', self.limit))
         if self.link is not None:
             buf.write(TLObject.serialize_bytes(self.link))
         if self.q is not None:
             buf.write(TLObject.serialize_bytes(self.q))
+        buf.write(TLObject.serialize_datetime(self.offset_date))
+        buf.write(bytes(self.offset_user))
+        buf.write(struct.pack('<i', self.limit))
         return buf.getvalue()
 
     @classmethod
@@ -2643,7 +2647,7 @@ class GetChatInviteImportersRequest(TLRequest):
             _args['q'] = _val_q
         else:
             _args['q'] = None
-        _val_offset_date = reader.read_int()
+        _val_offset_date = reader.tgread_date()
         _args['offset_date'] = _val_offset_date
         _val_offset_user = reader.tgread_object()
         _args['offset_user'] = _val_offset_user
@@ -2673,14 +2677,14 @@ class GetChatsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<q', self.item))
+            buf.write(struct.pack('<q', item))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_long()
@@ -2749,14 +2753,14 @@ class GetCustomEmojiDocumentsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.document_id)))
         for item in self.document_id:
-            buf.write(struct.pack('<q', self.item))
+            buf.write(struct.pack('<q', item))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_document_id = reader.read_int()
+        _count_document_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_document_id = []
         for _ in range(_count_document_id):
             _item_document_id = reader.read_long()
@@ -2950,13 +2954,13 @@ class GetDialogsRequest(TLRequest):
         if self.folder_id is not None:
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
-        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
+        if self.folder_id is not None:
+            buf.write(struct.pack('<i', self.folder_id))
+        buf.write(TLObject.serialize_datetime(self.offset_date))
         buf.write(struct.pack('<i', self.offset_id))
         buf.write(bytes(self.offset_peer))
         buf.write(struct.pack('<i', self.limit))
         buf.write(struct.pack('<q', self.hash))
-        if self.folder_id is not None:
-            buf.write(struct.pack('<i', self.folder_id))
         return buf.getvalue()
 
     @classmethod
@@ -2969,7 +2973,7 @@ class GetDialogsRequest(TLRequest):
             _args['folder_id'] = _val_folder_id
         else:
             _args['folder_id'] = None
-        _val_offset_date = reader.read_int()
+        _val_offset_date = reader.tgread_date()
         _args['offset_date'] = _val_offset_date
         _val_offset_id = reader.read_int()
         _args['offset_id'] = _val_offset_id
@@ -3199,7 +3203,7 @@ class GetEmojiKeywordsLanguagesRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_lang_codes = reader.read_int()
+        _count_lang_codes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_lang_codes = []
         for _ in range(_count_lang_codes):
             _item_lang_codes = reader.tgread_string()
@@ -3418,16 +3422,18 @@ class GetExportedChatInvitesRequest(TLRequest):
         flags = 0
         if self.revoked:
             flags |= (1 << 3)
+        if self.offset_date is not None:
+            flags |= (1 << 2)
         if self.offset_link is not None:
             flags |= (1 << 2)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
         buf.write(bytes(self.admin_id))
-        buf.write(struct.pack('<i', self.limit))
         if self.offset_date is not None:
-            buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
+            buf.write(TLObject.serialize_datetime(self.offset_date))
         if self.offset_link is not None:
             buf.write(TLObject.serialize_bytes(self.offset_link))
+        buf.write(struct.pack('<i', self.limit))
         return buf.getvalue()
 
     @classmethod
@@ -3440,7 +3446,7 @@ class GetExportedChatInvitesRequest(TLRequest):
         _val_admin_id = reader.tgread_object()
         _args['admin_id'] = _val_admin_id
         if flags & (1 << 2):
-            _val_offset_date = reader.read_int()
+            _val_offset_date = reader.tgread_date()
             _args['offset_date'] = _val_offset_date
         else:
             _args['offset_date'] = None
@@ -3478,7 +3484,7 @@ class GetExtendedMediaRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -3487,7 +3493,7 @@ class GetExtendedMediaRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -3520,7 +3526,7 @@ class GetFactCheckRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.msg_id)))
         for item in self.msg_id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -3529,7 +3535,7 @@ class GetFactCheckRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_msg_id = reader.read_int()
+        _count_msg_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_msg_id = []
         for _ in range(_count_msg_id):
             _item_msg_id = reader.read_int()
@@ -3658,12 +3664,12 @@ class GetForumTopicsRequest(TLRequest):
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
-        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
+        if self.q is not None:
+            buf.write(TLObject.serialize_bytes(self.q))
+        buf.write(TLObject.serialize_datetime(self.offset_date))
         buf.write(struct.pack('<i', self.offset_id))
         buf.write(struct.pack('<i', self.offset_topic))
         buf.write(struct.pack('<i', self.limit))
-        if self.q is not None:
-            buf.write(TLObject.serialize_bytes(self.q))
         return buf.getvalue()
 
     @classmethod
@@ -3677,7 +3683,7 @@ class GetForumTopicsRequest(TLRequest):
             _args['q'] = _val_q
         else:
             _args['q'] = None
-        _val_offset_date = reader.read_int()
+        _val_offset_date = reader.tgread_date()
         _args['offset_date'] = _val_offset_date
         _val_offset_id = reader.read_int()
         _args['offset_id'] = _val_offset_id
@@ -3712,7 +3718,7 @@ class GetForumTopicsByIdRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.topics)))
         for item in self.topics:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -3721,7 +3727,7 @@ class GetForumTopicsByIdRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_topics = reader.read_int()
+        _count_topics = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_topics = []
         for _ in range(_count_topics):
             _item_topics = reader.read_int()
@@ -3832,7 +3838,7 @@ class GetHistoryRequest(TLRequest):
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         buf.write(bytes(self.peer))
         buf.write(struct.pack('<i', self.offset_id))
-        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
+        buf.write(TLObject.serialize_datetime(self.offset_date))
         buf.write(struct.pack('<i', self.add_offset))
         buf.write(struct.pack('<i', self.limit))
         buf.write(struct.pack('<i', self.max_id))
@@ -3847,7 +3853,7 @@ class GetHistoryRequest(TLRequest):
         _args['peer'] = _val_peer
         _val_offset_id = reader.read_int()
         _args['offset_id'] = _val_offset_id
-        _val_offset_date = reader.read_int()
+        _val_offset_date = reader.tgread_date()
         _args['offset_date'] = _val_offset_date
         _val_add_offset = reader.read_int()
         _args['add_offset'] = _val_add_offset
@@ -3894,10 +3900,10 @@ class GetInlineBotResultsRequest(TLRequest):
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.bot))
         buf.write(bytes(self.peer))
-        buf.write(TLObject.serialize_bytes(self.query))
-        buf.write(TLObject.serialize_bytes(self.offset))
         if self.geo_point is not None:
             buf.write(bytes(self.geo_point))
+        buf.write(TLObject.serialize_bytes(self.query))
+        buf.write(TLObject.serialize_bytes(self.offset))
         return buf.getvalue()
 
     @classmethod
@@ -4051,11 +4057,11 @@ class GetMessageReactionsListRequest(TLRequest):
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
         buf.write(struct.pack('<i', self.id))
-        buf.write(struct.pack('<i', self.limit))
         if self.reaction is not None:
             buf.write(bytes(self.reaction))
         if self.offset is not None:
             buf.write(TLObject.serialize_bytes(self.offset))
+        buf.write(struct.pack('<i', self.limit))
         return buf.getvalue()
 
     @classmethod
@@ -4143,7 +4149,7 @@ class GetMessagesRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.tgread_object()
@@ -4176,7 +4182,7 @@ class GetMessagesReactionsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -4185,7 +4191,7 @@ class GetMessagesReactionsRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -4220,7 +4226,7 @@ class GetMessagesViewsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         buf.write(struct.pack('<I', 0x997275b5 if self.increment else 0xbc799737))
         return buf.getvalue()
 
@@ -4230,7 +4236,7 @@ class GetMessagesViewsRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -4429,7 +4435,7 @@ class GetPeerDialogsRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_peers = reader.read_int()
+        _count_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_peers = []
         for _ in range(_count_peers):
             _item_peers = reader.tgread_object()
@@ -4588,11 +4594,11 @@ class GetPollVotesRequest(TLRequest):
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
         buf.write(struct.pack('<i', self.id))
-        buf.write(struct.pack('<i', self.limit))
         if self.option is not None:
             buf.write(TLObject.serialize_bytes(self.option))
         if self.offset is not None:
             buf.write(TLObject.serialize_bytes(self.offset))
+        buf.write(struct.pack('<i', self.limit))
         return buf.getvalue()
 
     @classmethod
@@ -4708,12 +4714,12 @@ class GetQuickReplyMessagesRequest(TLRequest):
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
         buf.write(struct.pack('<i', self.shortcut_id))
-        buf.write(struct.pack('<q', self.hash))
         if self.id is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.id)))
             for item in self.id:
-                buf.write(struct.pack('<i', self.item))
+                buf.write(struct.pack('<i', item))
+        buf.write(struct.pack('<q', self.hash))
         return buf.getvalue()
 
     @classmethod
@@ -4724,7 +4730,7 @@ class GetQuickReplyMessagesRequest(TLRequest):
         _args['shortcut_id'] = _val_shortcut_id
         if flags & (1 << 0):
             reader.read_int(signed=False)  # skip vector id
-            _count_id = reader.read_int()
+            _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_id = []
             for _ in range(_count_id):
                 _item_id = reader.read_int()
@@ -4884,7 +4890,7 @@ class GetRepliesRequest(TLRequest):
         buf.write(bytes(self.peer))
         buf.write(struct.pack('<i', self.msg_id))
         buf.write(struct.pack('<i', self.offset_id))
-        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
+        buf.write(TLObject.serialize_datetime(self.offset_date))
         buf.write(struct.pack('<i', self.add_offset))
         buf.write(struct.pack('<i', self.limit))
         buf.write(struct.pack('<i', self.max_id))
@@ -4901,7 +4907,7 @@ class GetRepliesRequest(TLRequest):
         _args['msg_id'] = _val_msg_id
         _val_offset_id = reader.read_int()
         _args['offset_id'] = _val_offset_id
-        _val_offset_date = reader.read_int()
+        _val_offset_date = reader.tgread_date()
         _args['offset_date'] = _val_offset_date
         _val_add_offset = reader.read_int()
         _args['add_offset'] = _val_add_offset
@@ -4952,13 +4958,13 @@ class GetSavedDialogsRequest(TLRequest):
         if self.parent_peer is not None:
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
-        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
+        if self.parent_peer is not None:
+            buf.write(bytes(self.parent_peer))
+        buf.write(TLObject.serialize_datetime(self.offset_date))
         buf.write(struct.pack('<i', self.offset_id))
         buf.write(bytes(self.offset_peer))
         buf.write(struct.pack('<i', self.limit))
         buf.write(struct.pack('<q', self.hash))
-        if self.parent_peer is not None:
-            buf.write(bytes(self.parent_peer))
         return buf.getvalue()
 
     @classmethod
@@ -4971,7 +4977,7 @@ class GetSavedDialogsRequest(TLRequest):
             _args['parent_peer'] = _val_parent_peer
         else:
             _args['parent_peer'] = None
-        _val_offset_date = reader.read_int()
+        _val_offset_date = reader.tgread_date()
         _args['offset_date'] = _val_offset_date
         _val_offset_id = reader.read_int()
         _args['offset_id'] = _val_offset_id
@@ -5008,12 +5014,12 @@ class GetSavedDialogsByIdRequest(TLRequest):
         if self.parent_peer is not None:
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
+        if self.parent_peer is not None:
+            buf.write(bytes(self.parent_peer))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.ids)))
         for item in self.ids:
             buf.write(bytes(item))
-        if self.parent_peer is not None:
-            buf.write(bytes(self.parent_peer))
         return buf.getvalue()
 
     @classmethod
@@ -5026,7 +5032,7 @@ class GetSavedDialogsByIdRequest(TLRequest):
         else:
             _args['parent_peer'] = None
         reader.read_int(signed=False)  # skip vector id
-        _count_ids = reader.read_int()
+        _count_ids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_ids = []
         for _ in range(_count_ids):
             _item_ids = reader.tgread_object()
@@ -5102,16 +5108,16 @@ class GetSavedHistoryRequest(TLRequest):
         if self.parent_peer is not None:
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
+        if self.parent_peer is not None:
+            buf.write(bytes(self.parent_peer))
         buf.write(bytes(self.peer))
         buf.write(struct.pack('<i', self.offset_id))
-        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
+        buf.write(TLObject.serialize_datetime(self.offset_date))
         buf.write(struct.pack('<i', self.add_offset))
         buf.write(struct.pack('<i', self.limit))
         buf.write(struct.pack('<i', self.max_id))
         buf.write(struct.pack('<i', self.min_id))
         buf.write(struct.pack('<q', self.hash))
-        if self.parent_peer is not None:
-            buf.write(bytes(self.parent_peer))
         return buf.getvalue()
 
     @classmethod
@@ -5127,7 +5133,7 @@ class GetSavedHistoryRequest(TLRequest):
         _args['peer'] = _val_peer
         _val_offset_id = reader.read_int()
         _args['offset_id'] = _val_offset_id
-        _val_offset_date = reader.read_int()
+        _val_offset_date = reader.tgread_date()
         _args['offset_date'] = _val_offset_date
         _val_add_offset = reader.read_int()
         _args['add_offset'] = _val_add_offset
@@ -5166,9 +5172,9 @@ class GetSavedReactionTagsRequest(TLRequest):
         if self.peer is not None:
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
-        buf.write(struct.pack('<q', self.hash))
         if self.peer is not None:
             buf.write(bytes(self.peer))
+        buf.write(struct.pack('<q', self.hash))
         return buf.getvalue()
 
     @classmethod
@@ -5243,7 +5249,7 @@ class GetScheduledMessagesRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -5252,7 +5258,7 @@ class GetScheduledMessagesRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -5292,14 +5298,14 @@ class GetSearchCountersRequest(TLRequest):
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
-        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-        buf.write(struct.pack('<i', len(self.filters)))
-        for item in self.filters:
-            buf.write(bytes(item))
         if self.saved_peer_id is not None:
             buf.write(bytes(self.saved_peer_id))
         if self.top_msg_id is not None:
             buf.write(struct.pack('<i', self.top_msg_id))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.filters)))
+        for item in self.filters:
+            buf.write(bytes(item))
         return buf.getvalue()
 
     @classmethod
@@ -5319,7 +5325,7 @@ class GetSearchCountersRequest(TLRequest):
         else:
             _args['top_msg_id'] = None
         reader.read_int(signed=False)  # skip vector id
-        _count_filters = reader.read_int()
+        _count_filters = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_filters = []
         for _ in range(_count_filters):
             _item_filters = reader.tgread_object()
@@ -5359,11 +5365,11 @@ class GetSearchResultsCalendarRequest(TLRequest):
             flags |= (1 << 2)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
-        buf.write(bytes(self.filter))
-        buf.write(struct.pack('<i', self.offset_id))
-        buf.write(struct.pack('<i', self.offset_date if self.offset_date is not None else 0))
         if self.saved_peer_id is not None:
             buf.write(bytes(self.saved_peer_id))
+        buf.write(bytes(self.filter))
+        buf.write(struct.pack('<i', self.offset_id))
+        buf.write(TLObject.serialize_datetime(self.offset_date))
         return buf.getvalue()
 
     @classmethod
@@ -5381,7 +5387,7 @@ class GetSearchResultsCalendarRequest(TLRequest):
         _args['filter'] = _val_filter
         _val_offset_id = reader.read_int()
         _args['offset_id'] = _val_offset_id
-        _val_offset_date = reader.read_int()
+        _val_offset_date = reader.tgread_date()
         _args['offset_date'] = _val_offset_date
         return cls(**_args)
 
@@ -5417,11 +5423,11 @@ class GetSearchResultsPositionsRequest(TLRequest):
             flags |= (1 << 2)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
+        if self.saved_peer_id is not None:
+            buf.write(bytes(self.saved_peer_id))
         buf.write(bytes(self.filter))
         buf.write(struct.pack('<i', self.offset_id))
         buf.write(struct.pack('<i', self.limit))
-        if self.saved_peer_id is not None:
-            buf.write(bytes(self.saved_peer_id))
         return buf.getvalue()
 
     @classmethod
@@ -5714,13 +5720,13 @@ class GetUnreadMentionsRequest(TLRequest):
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
+        if self.top_msg_id is not None:
+            buf.write(struct.pack('<i', self.top_msg_id))
         buf.write(struct.pack('<i', self.offset_id))
         buf.write(struct.pack('<i', self.add_offset))
         buf.write(struct.pack('<i', self.limit))
         buf.write(struct.pack('<i', self.max_id))
         buf.write(struct.pack('<i', self.min_id))
-        if self.top_msg_id is not None:
-            buf.write(struct.pack('<i', self.top_msg_id))
         return buf.getvalue()
 
     @classmethod
@@ -5786,15 +5792,15 @@ class GetUnreadReactionsRequest(TLRequest):
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
+        if self.top_msg_id is not None:
+            buf.write(struct.pack('<i', self.top_msg_id))
+        if self.saved_peer_id is not None:
+            buf.write(bytes(self.saved_peer_id))
         buf.write(struct.pack('<i', self.offset_id))
         buf.write(struct.pack('<i', self.add_offset))
         buf.write(struct.pack('<i', self.limit))
         buf.write(struct.pack('<i', self.max_id))
         buf.write(struct.pack('<i', self.min_id))
-        if self.top_msg_id is not None:
-            buf.write(struct.pack('<i', self.top_msg_id))
-        if self.saved_peer_id is not None:
-            buf.write(bytes(self.saved_peer_id))
         return buf.getvalue()
 
     @classmethod
@@ -5900,7 +5906,7 @@ class GetWebPagePreviewRequest(TLRequest):
         _args['message'] = _val_message
         if flags & (1 << 3):
             reader.read_int(signed=False)  # skip vector id
-            _count_entities = reader.read_int()
+            _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
                 _item_entities = reader.tgread_object()
@@ -6199,9 +6205,9 @@ class MarkDialogUnreadRequest(TLRequest):
         if self.parent_peer is not None:
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
         if self.parent_peer is not None:
             buf.write(bytes(self.parent_peer))
+        buf.write(bytes(self.peer))
         return buf.getvalue()
 
     @classmethod
@@ -6421,7 +6427,7 @@ class ReadEncryptedHistoryRequest(TLRequest):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         buf.write(bytes(self.peer))
-        buf.write(struct.pack('<i', self.max_date))
+        buf.write(TLObject.serialize_datetime(self.max_date))
         return buf.getvalue()
 
     @classmethod
@@ -6429,7 +6435,7 @@ class ReadEncryptedHistoryRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        _val_max_date = reader.read_int()
+        _val_max_date = reader.tgread_date()
         _args['max_date'] = _val_max_date
         return cls(**_args)
 
@@ -6455,14 +6461,14 @@ class ReadFeaturedStickersRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<q', self.item))
+            buf.write(struct.pack('<q', item))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_long()
@@ -6569,14 +6575,14 @@ class ReadMessageContentsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -6777,7 +6783,7 @@ class ReorderPinnedDialogsRequest(TLRequest):
         _val_folder_id = reader.read_int()
         _args['folder_id'] = _val_folder_id
         reader.read_int(signed=False)  # skip vector id
-        _count_order = reader.read_int()
+        _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
             _item_order = reader.tgread_object()
@@ -6816,7 +6822,7 @@ class ReorderPinnedForumTopicsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.order)))
         for item in self.order:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -6827,7 +6833,7 @@ class ReorderPinnedForumTopicsRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_order = reader.read_int()
+        _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
             _item_order = reader.read_int()
@@ -6872,7 +6878,7 @@ class ReorderPinnedSavedDialogsRequest(TLRequest):
         flags = reader.read_int(signed=False)
         _args['force'] = bool(flags & (1 << 0))
         reader.read_int(signed=False)  # skip vector id
-        _count_order = reader.read_int()
+        _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
             _item_order = reader.tgread_object()
@@ -6902,14 +6908,14 @@ class ReorderQuickRepliesRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.order)))
         for item in self.order:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_order = reader.read_int()
+        _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
             _item_order = reader.read_int()
@@ -6949,7 +6955,7 @@ class ReorderStickerSetsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.order)))
         for item in self.order:
-            buf.write(struct.pack('<q', self.item))
+            buf.write(struct.pack('<q', item))
         return buf.getvalue()
 
     @classmethod
@@ -6959,7 +6965,7 @@ class ReorderStickerSetsRequest(TLRequest):
         _args['masks'] = bool(flags & (1 << 0))
         _args['emojis'] = bool(flags & (1 << 1))
         reader.read_int(signed=False)  # skip vector id
-        _count_order = reader.read_int()
+        _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
             _item_order = reader.read_long()
@@ -6996,7 +7002,7 @@ class ReportRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         buf.write(TLObject.serialize_bytes(self.option))
         buf.write(TLObject.serialize_bytes(self.message))
         return buf.getvalue()
@@ -7007,7 +7013,7 @@ class ReportRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -7079,7 +7085,7 @@ class ReportMessagesDeliveryRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -7090,7 +7096,7 @@ class ReportMessagesDeliveryRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -7187,8 +7193,8 @@ class ReportSponsoredMessageRequest(TLRequest):
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(TLObject.serialize_bytes(self.option))
         buf.write(TLObject.serialize_bytes(self.random_id))
+        buf.write(TLObject.serialize_bytes(self.option))
         return buf.getvalue()
 
     @classmethod
@@ -7247,11 +7253,11 @@ class RequestAppWebViewRequest(TLRequest):
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
         buf.write(bytes(self.app))
-        buf.write(TLObject.serialize_bytes(self.platform))
         if self.start_param is not None:
             buf.write(TLObject.serialize_bytes(self.start_param))
         if self.theme_params is not None:
             buf.write(bytes(self.theme_params))
+        buf.write(TLObject.serialize_bytes(self.platform))
         return buf.getvalue()
 
     @classmethod
@@ -7303,8 +7309,8 @@ class RequestEncryptionRequest(TLRequest):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         buf.write(bytes(self.user_id))
-        buf.write(TLObject.serialize_bytes(self.g_a))
         buf.write(struct.pack('<i', self.random_id))
+        buf.write(TLObject.serialize_bytes(self.g_a))
         return buf.getvalue()
 
     @classmethod
@@ -7361,11 +7367,11 @@ class RequestMainWebViewRequest(TLRequest):
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
         buf.write(bytes(self.bot))
-        buf.write(TLObject.serialize_bytes(self.platform))
         if self.start_param is not None:
             buf.write(TLObject.serialize_bytes(self.start_param))
         if self.theme_params is not None:
             buf.write(bytes(self.theme_params))
+        buf.write(TLObject.serialize_bytes(self.platform))
         return buf.getvalue()
 
     @classmethod
@@ -7444,13 +7450,13 @@ class RequestSimpleWebViewRequest(TLRequest):
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.bot))
-        buf.write(TLObject.serialize_bytes(self.platform))
         if self.url is not None:
             buf.write(TLObject.serialize_bytes(self.url))
         if self.start_param is not None:
             buf.write(TLObject.serialize_bytes(self.start_param))
         if self.theme_params is not None:
             buf.write(bytes(self.theme_params))
+        buf.write(TLObject.serialize_bytes(self.platform))
         return buf.getvalue()
 
     @classmethod
@@ -7508,6 +7514,10 @@ class RequestUrlAuthRequest(TLRequest):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
+        if self.peer is not None:
+            flags |= (1 << 1)
+        if self.msg_id is not None:
+            flags |= (1 << 1)
         if self.button_id is not None:
             flags |= (1 << 1)
         if self.url is not None:
@@ -7612,13 +7622,13 @@ class RequestWebViewRequest(TLRequest):
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
         buf.write(bytes(self.bot))
-        buf.write(TLObject.serialize_bytes(self.platform))
         if self.url is not None:
             buf.write(TLObject.serialize_bytes(self.url))
         if self.start_param is not None:
             buf.write(TLObject.serialize_bytes(self.start_param))
         if self.theme_params is not None:
             buf.write(bytes(self.theme_params))
+        buf.write(TLObject.serialize_bytes(self.platform))
         if self.reply_to is not None:
             buf.write(bytes(self.reply_to))
         if self.send_as is not None:
@@ -7751,10 +7761,10 @@ class SaveDraftRequest(TLRequest):
         if self.suggested_post is not None:
             flags |= (1 << 8)
         buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        buf.write(TLObject.serialize_bytes(self.message))
         if self.reply_to is not None:
             buf.write(bytes(self.reply_to))
+        buf.write(bytes(self.peer))
+        buf.write(TLObject.serialize_bytes(self.message))
         if self.entities is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.entities)))
@@ -7785,7 +7795,7 @@ class SaveDraftRequest(TLRequest):
         _args['message'] = _val_message
         if flags & (1 << 3):
             reader.read_int(signed=False)  # skip vector id
-            _count_entities = reader.read_int()
+            _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
                 _item_entities = reader.tgread_object()
@@ -7890,7 +7900,7 @@ class SavePreparedInlineMessageRequest(TLRequest):
         _args['user_id'] = _val_user_id
         if flags & (1 << 0):
             reader.read_int(signed=False)  # skip vector id
-            _count_peer_types = reader.read_int()
+            _count_peer_types = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_peer_types = []
             for _ in range(_count_peer_types):
                 _item_peer_types = reader.tgread_object()
@@ -8001,15 +8011,6 @@ class SearchRequest(TLRequest):
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
         buf.write(TLObject.serialize_bytes(self.q))
-        buf.write(bytes(self.filter))
-        buf.write(struct.pack('<i', self.min_date))
-        buf.write(struct.pack('<i', self.max_date))
-        buf.write(struct.pack('<i', self.offset_id))
-        buf.write(struct.pack('<i', self.add_offset))
-        buf.write(struct.pack('<i', self.limit))
-        buf.write(struct.pack('<i', self.max_id))
-        buf.write(struct.pack('<i', self.min_id))
-        buf.write(struct.pack('<q', self.hash))
         if self.from_id is not None:
             buf.write(bytes(self.from_id))
         if self.saved_peer_id is not None:
@@ -8021,6 +8022,15 @@ class SearchRequest(TLRequest):
                 buf.write(bytes(item))
         if self.top_msg_id is not None:
             buf.write(struct.pack('<i', self.top_msg_id))
+        buf.write(bytes(self.filter))
+        buf.write(TLObject.serialize_datetime(self.min_date))
+        buf.write(TLObject.serialize_datetime(self.max_date))
+        buf.write(struct.pack('<i', self.offset_id))
+        buf.write(struct.pack('<i', self.add_offset))
+        buf.write(struct.pack('<i', self.limit))
+        buf.write(struct.pack('<i', self.max_id))
+        buf.write(struct.pack('<i', self.min_id))
+        buf.write(struct.pack('<q', self.hash))
         return buf.getvalue()
 
     @classmethod
@@ -8043,7 +8053,7 @@ class SearchRequest(TLRequest):
             _args['saved_peer_id'] = None
         if flags & (1 << 3):
             reader.read_int(signed=False)  # skip vector id
-            _count_saved_reaction = reader.read_int()
+            _count_saved_reaction = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_saved_reaction = []
             for _ in range(_count_saved_reaction):
                 _item_saved_reaction = reader.tgread_object()
@@ -8058,9 +8068,9 @@ class SearchRequest(TLRequest):
             _args['top_msg_id'] = None
         _val_filter = reader.tgread_object()
         _args['filter'] = _val_filter
-        _val_min_date = reader.read_int()
+        _val_min_date = reader.tgread_date()
         _args['min_date'] = _val_min_date
-        _val_max_date = reader.read_int()
+        _val_max_date = reader.tgread_date()
         _args['max_date'] = _val_max_date
         _val_offset_id = reader.read_int()
         _args['offset_id'] = _val_offset_id
@@ -8203,16 +8213,16 @@ class SearchGlobalRequest(TLRequest):
         if self.folder_id is not None:
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
+        if self.folder_id is not None:
+            buf.write(struct.pack('<i', self.folder_id))
         buf.write(TLObject.serialize_bytes(self.q))
         buf.write(bytes(self.filter))
-        buf.write(struct.pack('<i', self.min_date))
-        buf.write(struct.pack('<i', self.max_date))
+        buf.write(TLObject.serialize_datetime(self.min_date))
+        buf.write(TLObject.serialize_datetime(self.max_date))
         buf.write(struct.pack('<i', self.offset_rate))
         buf.write(bytes(self.offset_peer))
         buf.write(struct.pack('<i', self.offset_id))
         buf.write(struct.pack('<i', self.limit))
-        if self.folder_id is not None:
-            buf.write(struct.pack('<i', self.folder_id))
         return buf.getvalue()
 
     @classmethod
@@ -8231,9 +8241,9 @@ class SearchGlobalRequest(TLRequest):
         _args['q'] = _val_q
         _val_filter = reader.tgread_object()
         _args['filter'] = _val_filter
-        _val_min_date = reader.read_int()
+        _val_min_date = reader.tgread_date()
         _args['min_date'] = _val_min_date
-        _val_max_date = reader.read_int()
+        _val_max_date = reader.tgread_date()
         _args['max_date'] = _val_max_date
         _val_offset_rate = reader.read_int()
         _args['offset_rate'] = _val_offset_rate
@@ -8382,7 +8392,7 @@ class SearchStickersRequest(TLRequest):
         _val_emoticon = reader.tgread_string()
         _args['emoticon'] = _val_emoticon
         reader.read_int(signed=False)  # skip vector id
-        _count_lang_code = reader.read_int()
+        _count_lang_code = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_lang_code = []
         for _ in range(_count_lang_code):
             _item_lang_code = reader.tgread_string()
@@ -8440,7 +8450,7 @@ class SendBotRequestedPeerRequest(TLRequest):
         _val_button_id = reader.read_int()
         _args['button_id'] = _val_button_id
         reader.read_int(signed=False)  # skip vector id
-        _count_requested_peers = reader.read_int()
+        _count_requested_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_requested_peers = []
         for _ in range(_count_requested_peers):
             _item_requested_peers = reader.tgread_object()
@@ -8478,8 +8488,8 @@ class SendEncryptedRequest(TLRequest):
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
-        buf.write(TLObject.serialize_bytes(self.data))
         buf.write(struct.pack('<q', self.random_id))
+        buf.write(TLObject.serialize_bytes(self.data))
         return buf.getvalue()
 
     @classmethod
@@ -8527,9 +8537,9 @@ class SendEncryptedFileRequest(TLRequest):
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
+        buf.write(struct.pack('<q', self.random_id))
         buf.write(TLObject.serialize_bytes(self.data))
         buf.write(bytes(self.file))
-        buf.write(struct.pack('<q', self.random_id))
         return buf.getvalue()
 
     @classmethod
@@ -8571,8 +8581,8 @@ class SendEncryptedServiceRequest(TLRequest):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         buf.write(bytes(self.peer))
-        buf.write(TLObject.serialize_bytes(self.data))
         buf.write(struct.pack('<q', self.random_id))
+        buf.write(TLObject.serialize_bytes(self.data))
         return buf.getvalue()
 
     @classmethod
@@ -8650,13 +8660,13 @@ class SendInlineBotResultRequest(TLRequest):
             flags |= (1 << 21)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
-        buf.write(struct.pack('<q', self.query_id))
-        buf.write(TLObject.serialize_bytes(self.id))
         if self.reply_to is not None:
             buf.write(bytes(self.reply_to))
         buf.write(struct.pack('<q', self.random_id))
+        buf.write(struct.pack('<q', self.query_id))
+        buf.write(TLObject.serialize_bytes(self.id))
         if self.schedule_date is not None:
-            buf.write(struct.pack('<i', self.schedule_date))
+            buf.write(TLObject.serialize_datetime(self.schedule_date))
         if self.send_as is not None:
             buf.write(bytes(self.send_as))
         if self.quick_reply_shortcut is not None:
@@ -8687,7 +8697,7 @@ class SendInlineBotResultRequest(TLRequest):
         _val_id = reader.tgread_string()
         _args['id'] = _val_id
         if flags & (1 << 10):
-            _val_schedule_date = reader.read_int()
+            _val_schedule_date = reader.tgread_date()
             _args['schedule_date'] = _val_schedule_date
         else:
             _args['schedule_date'] = None
@@ -8804,10 +8814,10 @@ class SendMediaRequest(TLRequest):
             flags |= (1 << 22)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
-        buf.write(bytes(self.media))
-        buf.write(TLObject.serialize_bytes(self.message))
         if self.reply_to is not None:
             buf.write(bytes(self.reply_to))
+        buf.write(bytes(self.media))
+        buf.write(TLObject.serialize_bytes(self.message))
         buf.write(struct.pack('<q', self.random_id))
         if self.reply_markup is not None:
             buf.write(bytes(self.reply_markup))
@@ -8817,7 +8827,7 @@ class SendMediaRequest(TLRequest):
             for item in self.entities:
                 buf.write(bytes(item))
         if self.schedule_date is not None:
-            buf.write(struct.pack('<i', self.schedule_date))
+            buf.write(TLObject.serialize_datetime(self.schedule_date))
         if self.schedule_repeat_period is not None:
             buf.write(struct.pack('<i', self.schedule_repeat_period))
         if self.send_as is not None:
@@ -8863,7 +8873,7 @@ class SendMediaRequest(TLRequest):
             _args['reply_markup'] = None
         if flags & (1 << 3):
             reader.read_int(signed=False)  # skip vector id
-            _count_entities = reader.read_int()
+            _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
                 _item_entities = reader.tgread_object()
@@ -8872,7 +8882,7 @@ class SendMediaRequest(TLRequest):
         else:
             _args['entities'] = None
         if flags & (1 << 10):
-            _val_schedule_date = reader.read_int()
+            _val_schedule_date = reader.tgread_date()
             _args['schedule_date'] = _val_schedule_date
         else:
             _args['schedule_date'] = None
@@ -9006,9 +9016,9 @@ class SendMessageRequest(TLRequest):
             flags |= (1 << 22)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
-        buf.write(TLObject.serialize_bytes(self.message))
         if self.reply_to is not None:
             buf.write(bytes(self.reply_to))
+        buf.write(TLObject.serialize_bytes(self.message))
         buf.write(struct.pack('<q', self.random_id))
         if self.reply_markup is not None:
             buf.write(bytes(self.reply_markup))
@@ -9018,7 +9028,7 @@ class SendMessageRequest(TLRequest):
             for item in self.entities:
                 buf.write(bytes(item))
         if self.schedule_date is not None:
-            buf.write(struct.pack('<i', self.schedule_date))
+            buf.write(TLObject.serialize_datetime(self.schedule_date))
         if self.schedule_repeat_period is not None:
             buf.write(struct.pack('<i', self.schedule_repeat_period))
         if self.send_as is not None:
@@ -9063,7 +9073,7 @@ class SendMessageRequest(TLRequest):
             _args['reply_markup'] = None
         if flags & (1 << 3):
             reader.read_int(signed=False)  # skip vector id
-            _count_entities = reader.read_int()
+            _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
                 _item_entities = reader.tgread_object()
@@ -9072,7 +9082,7 @@ class SendMessageRequest(TLRequest):
         else:
             _args['entities'] = None
         if flags & (1 << 10):
-            _val_schedule_date = reader.read_int()
+            _val_schedule_date = reader.tgread_date()
             _args['schedule_date'] = _val_schedule_date
         else:
             _args['schedule_date'] = None
@@ -9184,14 +9194,14 @@ class SendMultiMediaRequest(TLRequest):
             flags |= (1 << 21)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
+        if self.reply_to is not None:
+            buf.write(bytes(self.reply_to))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.multi_media)))
         for item in self.multi_media:
             buf.write(bytes(item))
-        if self.reply_to is not None:
-            buf.write(bytes(self.reply_to))
         if self.schedule_date is not None:
-            buf.write(struct.pack('<i', self.schedule_date))
+            buf.write(TLObject.serialize_datetime(self.schedule_date))
         if self.send_as is not None:
             buf.write(bytes(self.send_as))
         if self.quick_reply_shortcut is not None:
@@ -9221,14 +9231,14 @@ class SendMultiMediaRequest(TLRequest):
         else:
             _args['reply_to'] = None
         reader.read_int(signed=False)  # skip vector id
-        _count_multi_media = reader.read_int()
+        _count_multi_media = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_multi_media = []
         for _ in range(_count_multi_media):
             _item_multi_media = reader.tgread_object()
             _list_multi_media.append(_item_multi_media)
         _args['multi_media'] = _list_multi_media
         if flags & (1 << 10):
-            _val_schedule_date = reader.read_int()
+            _val_schedule_date = reader.tgread_date()
             _args['schedule_date'] = _val_schedule_date
         else:
             _args['schedule_date'] = None
@@ -9342,11 +9352,11 @@ class SendQuickReplyMessagesRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.random_id)))
         for item in self.random_id:
-            buf.write(struct.pack('<q', self.item))
+            buf.write(struct.pack('<q', item))
         return buf.getvalue()
 
     @classmethod
@@ -9357,14 +9367,14 @@ class SendQuickReplyMessagesRequest(TLRequest):
         _val_shortcut_id = reader.read_int()
         _args['shortcut_id'] = _val_shortcut_id
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
             _list_id.append(_item_id)
         _args['id'] = _list_id
         reader.read_int(signed=False)  # skip vector id
-        _count_random_id = reader.read_int()
+        _count_random_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_random_id = []
         for _ in range(_count_random_id):
             _item_random_id = reader.read_long()
@@ -9428,7 +9438,7 @@ class SendReactionRequest(TLRequest):
         _args['msg_id'] = _val_msg_id
         if flags & (1 << 0):
             reader.read_int(signed=False)  # skip vector id
-            _count_reaction = reader.read_int()
+            _count_reaction = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_reaction = []
             for _ in range(_count_reaction):
                 _item_reaction = reader.tgread_object()
@@ -9463,7 +9473,7 @@ class SendScheduledMessagesRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -9472,7 +9482,7 @@ class SendScheduledMessagesRequest(TLRequest):
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -9558,7 +9568,7 @@ class SendVoteRequest(TLRequest):
         _val_msg_id = reader.read_int()
         _args['msg_id'] = _val_msg_id
         reader.read_int(signed=False)  # skip vector id
-        _count_options = reader.read_int()
+        _count_options = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_options = []
         for _ in range(_count_options):
             _item_options = reader.tgread_bytes()
@@ -9592,9 +9602,9 @@ class SendWebViewDataRequest(TLRequest):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         buf.write(bytes(self.bot))
+        buf.write(struct.pack('<q', self.random_id))
         buf.write(TLObject.serialize_bytes(self.button_text))
         buf.write(TLObject.serialize_bytes(self.data))
-        buf.write(struct.pack('<q', self.random_id))
         return buf.getvalue()
 
     @classmethod
@@ -9680,11 +9690,11 @@ class SetBotCallbackAnswerRequest(TLRequest):
             flags |= (1 << 2)
         buf.write(struct.pack('<I', flags))
         buf.write(struct.pack('<q', self.query_id))
-        buf.write(struct.pack('<i', self.cache_time))
         if self.message is not None:
             buf.write(TLObject.serialize_bytes(self.message))
         if self.url is not None:
             buf.write(TLObject.serialize_bytes(self.url))
+        buf.write(struct.pack('<i', self.cache_time))
         return buf.getvalue()
 
     @classmethod
@@ -9808,7 +9818,7 @@ class SetBotShippingResultsRequest(TLRequest):
             _args['error'] = None
         if flags & (1 << 1):
             reader.read_int(signed=False)  # skip vector id
-            _count_shipping_options = reader.read_int()
+            _count_shipping_options = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_shipping_options = []
             for _ in range(_count_shipping_options):
                 _item_shipping_options = reader.tgread_object()
@@ -10237,7 +10247,7 @@ class SetInlineBotResultsRequest(TLRequest):
         _val_query_id = reader.read_long()
         _args['query_id'] = _val_query_id
         reader.read_int(signed=False)  # skip vector id
-        _count_results = reader.read_int()
+        _count_results = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_results = []
         for _ in range(_count_results):
             _item_results = reader.tgread_object()
@@ -10342,9 +10352,9 @@ class SetTypingRequest(TLRequest):
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
-        buf.write(bytes(self.action))
         if self.top_msg_id is not None:
             buf.write(struct.pack('<i', self.top_msg_id))
+        buf.write(bytes(self.action))
         return buf.getvalue()
 
     @classmethod
@@ -10418,8 +10428,8 @@ class StartBotRequest(TLRequest):
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         buf.write(bytes(self.bot))
         buf.write(bytes(self.peer))
-        buf.write(TLObject.serialize_bytes(self.start_param))
         buf.write(struct.pack('<q', self.random_id))
+        buf.write(TLObject.serialize_bytes(self.start_param))
         return buf.getvalue()
 
     @classmethod
@@ -10819,7 +10829,7 @@ class ToggleStickerSetsRequest(TLRequest):
         _args['archive'] = bool(flags & (1 << 1))
         _args['unarchive'] = bool(flags & (1 << 2))
         reader.read_int(signed=False)  # skip vector id
-        _count_stickersets = reader.read_int()
+        _count_stickersets = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_stickersets = []
         for _ in range(_count_stickersets):
             _item_stickersets = reader.tgread_object()
@@ -10865,7 +10875,7 @@ class ToggleSuggestedPostApprovalRequest(TLRequest):
         buf.write(bytes(self.peer))
         buf.write(struct.pack('<i', self.msg_id))
         if self.schedule_date is not None:
-            buf.write(struct.pack('<i', self.schedule_date))
+            buf.write(TLObject.serialize_datetime(self.schedule_date))
         if self.reject_comment is not None:
             buf.write(TLObject.serialize_bytes(self.reject_comment))
         return buf.getvalue()
@@ -10880,7 +10890,7 @@ class ToggleSuggestedPostApprovalRequest(TLRequest):
         _val_msg_id = reader.read_int()
         _args['msg_id'] = _val_msg_id
         if flags & (1 << 0):
-            _val_schedule_date = reader.read_int()
+            _val_schedule_date = reader.tgread_date()
             _args['schedule_date'] = _val_schedule_date
         else:
             _args['schedule_date'] = None
@@ -10921,11 +10931,11 @@ class ToggleTodoCompletedRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.completed)))
         for item in self.completed:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.incompleted)))
         for item in self.incompleted:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -10936,14 +10946,14 @@ class ToggleTodoCompletedRequest(TLRequest):
         _val_msg_id = reader.read_int()
         _args['msg_id'] = _val_msg_id
         reader.read_int(signed=False)  # skip vector id
-        _count_completed = reader.read_int()
+        _count_completed = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_completed = []
         for _ in range(_count_completed):
             _item_completed = reader.read_int()
             _list_completed.append(_item_completed)
         _args['completed'] = _list_completed
         reader.read_int(signed=False)  # skip vector id
-        _count_incompleted = reader.read_int()
+        _count_incompleted = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_incompleted = []
         for _ in range(_count_incompleted):
             _item_incompleted = reader.read_int()
@@ -11011,24 +11021,26 @@ class TranslateTextRequest(TLRequest):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
+        if self.peer is not None:
+            flags |= (1 << 0)
         if self.id is not None:
             flags |= (1 << 0)
         if self.text is not None:
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
-        buf.write(TLObject.serialize_bytes(self.to_lang))
         if self.peer is not None:
             buf.write(bytes(self.peer))
         if self.id is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.id)))
             for item in self.id:
-                buf.write(struct.pack('<i', self.item))
+                buf.write(struct.pack('<i', item))
         if self.text is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.text)))
             for item in self.text:
                 buf.write(bytes(item))
+        buf.write(TLObject.serialize_bytes(self.to_lang))
         return buf.getvalue()
 
     @classmethod
@@ -11042,7 +11054,7 @@ class TranslateTextRequest(TLRequest):
             _args['peer'] = None
         if flags & (1 << 0):
             reader.read_int(signed=False)  # skip vector id
-            _count_id = reader.read_int()
+            _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_id = []
             for _ in range(_count_id):
                 _item_id = reader.read_int()
@@ -11052,7 +11064,7 @@ class TranslateTextRequest(TLRequest):
             _args['id'] = None
         if flags & (1 << 1):
             reader.read_int(signed=False)  # skip vector id
-            _count_text = reader.read_int()
+            _count_text = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_text = []
             for _ in range(_count_text):
                 _item_text = reader.tgread_object()
@@ -11212,14 +11224,14 @@ class UpdateDialogFiltersOrderRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.order)))
         for item in self.order:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_order = reader.read_int()
+        _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
             _item_order = reader.read_int()
@@ -11466,10 +11478,10 @@ class UploadMediaRequest(TLRequest):
         if self.business_connection_id is not None:
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        buf.write(bytes(self.media))
         if self.business_connection_id is not None:
             buf.write(TLObject.serialize_bytes(self.business_connection_id))
+        buf.write(bytes(self.peer))
+        buf.write(bytes(self.media))
         return buf.getvalue()
 
     @classmethod

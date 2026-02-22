@@ -96,12 +96,12 @@ class GetDifferenceRequest(TLRequest):
             flags |= (1 << 2)
         buf.write(struct.pack('<I', flags))
         buf.write(struct.pack('<i', self.pts))
-        buf.write(struct.pack('<i', self.date))
-        buf.write(struct.pack('<i', self.qts))
         if self.pts_limit is not None:
             buf.write(struct.pack('<i', self.pts_limit))
         if self.pts_total_limit is not None:
             buf.write(struct.pack('<i', self.pts_total_limit))
+        buf.write(TLObject.serialize_datetime(self.date))
+        buf.write(struct.pack('<i', self.qts))
         if self.qts_limit is not None:
             buf.write(struct.pack('<i', self.qts_limit))
         return buf.getvalue()
@@ -122,7 +122,7 @@ class GetDifferenceRequest(TLRequest):
             _args['pts_total_limit'] = _val_pts_total_limit
         else:
             _args['pts_total_limit'] = None
-        _val_date = reader.read_int()
+        _val_date = reader.tgread_date()
         _args['date'] = _val_date
         _val_qts = reader.read_int()
         _args['qts'] = _val_qts

@@ -70,7 +70,7 @@ class CheckGroupCallRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.sources)))
         for item in self.sources:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -79,7 +79,7 @@ class CheckGroupCallRequest(TLRequest):
         _val_call = reader.tgread_object()
         _args['call'] = _val_call
         reader.read_int(signed=False)  # skip vector id
-        _count_sources = reader.read_int()
+        _count_sources = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_sources = []
         for _ in range(_count_sources):
             _item_sources = reader.read_int()
@@ -167,6 +167,12 @@ class CreateConferenceCallRequest(TLRequest):
             flags |= (1 << 0)
         if self.video_stopped:
             flags |= (1 << 2)
+        if self.join:
+            flags |= (1 << 3)
+        if self.public_key is not None:
+            flags |= (1 << 3)
+        if self.block is not None:
+            flags |= (1 << 3)
         if self.params is not None:
             flags |= (1 << 3)
         buf.write(struct.pack('<I', flags))
@@ -245,7 +251,7 @@ class CreateGroupCallRequest(TLRequest):
         if self.title is not None:
             buf.write(TLObject.serialize_bytes(self.title))
         if self.schedule_date is not None:
-            buf.write(struct.pack('<i', self.schedule_date))
+            buf.write(TLObject.serialize_datetime(self.schedule_date))
         return buf.getvalue()
 
     @classmethod
@@ -263,7 +269,7 @@ class CreateGroupCallRequest(TLRequest):
         else:
             _args['title'] = None
         if flags & (1 << 1):
-            _val_schedule_date = reader.read_int()
+            _val_schedule_date = reader.tgread_date()
             _args['schedule_date'] = _val_schedule_date
         else:
             _args['schedule_date'] = None
@@ -335,7 +341,7 @@ class DeleteConferenceCallParticipantsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.ids)))
         for item in self.ids:
-            buf.write(struct.pack('<q', self.item))
+            buf.write(struct.pack('<q', item))
         buf.write(TLObject.serialize_bytes(self.block))
         return buf.getvalue()
 
@@ -348,7 +354,7 @@ class DeleteConferenceCallParticipantsRequest(TLRequest):
         _val_call = reader.tgread_object()
         _args['call'] = _val_call
         reader.read_int(signed=False)  # skip vector id
-        _count_ids = reader.read_int()
+        _count_ids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_ids = []
         for _ in range(_count_ids):
             _item_ids = reader.read_long()
@@ -389,7 +395,7 @@ class DeleteGroupCallMessagesRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.messages)))
         for item in self.messages:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -400,7 +406,7 @@ class DeleteGroupCallMessagesRequest(TLRequest):
         _val_call = reader.tgread_object()
         _args['call'] = _val_call
         reader.read_int(signed=False)  # skip vector id
-        _count_messages = reader.read_int()
+        _count_messages = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_messages = []
         for _ in range(_count_messages):
             _item_messages = reader.read_int()
@@ -971,7 +977,7 @@ class GetGroupParticipantsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.sources)))
         for item in self.sources:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         buf.write(TLObject.serialize_bytes(self.offset))
         buf.write(struct.pack('<i', self.limit))
         return buf.getvalue()
@@ -982,14 +988,14 @@ class GetGroupParticipantsRequest(TLRequest):
         _val_call = reader.tgread_object()
         _args['call'] = _val_call
         reader.read_int(signed=False)  # skip vector id
-        _count_ids = reader.read_int()
+        _count_ids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_ids = []
         for _ in range(_count_ids):
             _item_ids = reader.tgread_object()
             _list_ids.append(_item_ids)
         _args['ids'] = _list_ids
         reader.read_int(signed=False)  # skip vector id
-        _count_sources = reader.read_int()
+        _count_sources = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_sources = []
         for _ in range(_count_sources):
             _item_sources = reader.read_int()
@@ -1077,7 +1083,7 @@ class InviteToGroupCallRequest(TLRequest):
         _val_call = reader.tgread_object()
         _args['call'] = _val_call
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -1125,18 +1131,20 @@ class JoinGroupCallRequest(TLRequest):
             flags |= (1 << 2)
         if self.invite_hash is not None:
             flags |= (1 << 1)
+        if self.public_key is not None:
+            flags |= (1 << 3)
         if self.block is not None:
             flags |= (1 << 3)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.call))
         buf.write(bytes(self.join_as))
-        buf.write(bytes(self.params))
         if self.invite_hash is not None:
             buf.write(TLObject.serialize_bytes(self.invite_hash))
         if self.public_key is not None:
             buf.write(self.public_key.to_bytes(32, 'little'))
         if self.block is not None:
             buf.write(TLObject.serialize_bytes(self.block))
+        buf.write(bytes(self.params))
         return buf.getvalue()
 
     @classmethod
@@ -1326,9 +1334,9 @@ class RequestCallRequest(TLRequest):
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.user_id))
+        buf.write(struct.pack('<i', self.random_id))
         buf.write(TLObject.serialize_bytes(self.g_a_hash))
         buf.write(bytes(self.protocol))
-        buf.write(struct.pack('<i', self.random_id))
         return buf.getvalue()
 
     @classmethod
@@ -1584,8 +1592,8 @@ class SendGroupCallMessageRequest(TLRequest):
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.call))
-        buf.write(bytes(self.message))
         buf.write(struct.pack('<q', self.random_id))
+        buf.write(bytes(self.message))
         if self.allow_paid_stars is not None:
             buf.write(struct.pack('<q', self.allow_paid_stars))
         if self.send_as is not None:
@@ -1754,6 +1762,8 @@ class ToggleGroupCallRecordRequest(TLRequest):
         flags = 0
         if self.start:
             flags |= (1 << 0)
+        if self.video:
+            flags |= (1 << 2)
         if self.video_portrait is not None:
             flags |= (1 << 2)
         if self.title is not None:

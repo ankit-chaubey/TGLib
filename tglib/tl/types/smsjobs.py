@@ -79,13 +79,13 @@ class Status(TLObject):
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
         buf.write(struct.pack('<i', self.recent_sent))
-        buf.write(struct.pack('<i', self.recent_since))
+        buf.write(TLObject.serialize_datetime(self.recent_since))
         buf.write(struct.pack('<i', self.recent_remains))
         buf.write(struct.pack('<i', self.total_sent))
-        buf.write(struct.pack('<i', self.total_since))
-        buf.write(TLObject.serialize_bytes(self.terms_url))
+        buf.write(TLObject.serialize_datetime(self.total_since))
         if self.last_gift_slug is not None:
             buf.write(TLObject.serialize_bytes(self.last_gift_slug))
+        buf.write(TLObject.serialize_bytes(self.terms_url))
         return buf.getvalue()
 
     @classmethod
@@ -95,13 +95,13 @@ class Status(TLObject):
         _args['allow_international'] = bool(flags & (1 << 0))
         _val_recent_sent = reader.read_int()
         _args['recent_sent'] = _val_recent_sent
-        _val_recent_since = reader.read_int()
+        _val_recent_since = reader.tgread_date()
         _args['recent_since'] = _val_recent_since
         _val_recent_remains = reader.read_int()
         _args['recent_remains'] = _val_recent_remains
         _val_total_sent = reader.read_int()
         _args['total_sent'] = _val_total_sent
-        _val_total_since = reader.read_int()
+        _val_total_since = reader.tgread_date()
         _args['total_since'] = _val_total_since
         if flags & (1 << 1):
             _val_last_gift_slug = reader.tgread_string()

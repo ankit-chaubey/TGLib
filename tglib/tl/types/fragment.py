@@ -34,7 +34,7 @@ class CollectibleInfo(TLObject):
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(struct.pack('<i', self.purchase_date))
+        buf.write(TLObject.serialize_datetime(self.purchase_date))
         buf.write(TLObject.serialize_bytes(self.currency))
         buf.write(struct.pack('<q', self.amount))
         buf.write(TLObject.serialize_bytes(self.crypto_currency))
@@ -45,7 +45,7 @@ class CollectibleInfo(TLObject):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        _val_purchase_date = reader.read_int()
+        _val_purchase_date = reader.tgread_date()
         _args['purchase_date'] = _val_purchase_date
         _val_currency = reader.tgread_string()
         _args['currency'] = _val_currency

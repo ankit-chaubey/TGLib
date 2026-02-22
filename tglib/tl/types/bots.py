@@ -69,12 +69,12 @@ class PopularAppBots(TLObject):
         if self.next_offset is not None:
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
+        if self.next_offset is not None:
+            buf.write(TLObject.serialize_bytes(self.next_offset))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.users)))
         for item in self.users:
             buf.write(bytes(item))
-        if self.next_offset is not None:
-            buf.write(TLObject.serialize_bytes(self.next_offset))
         return buf.getvalue()
 
     @classmethod
@@ -87,7 +87,7 @@ class PopularAppBots(TLObject):
         else:
             _args['next_offset'] = None
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -130,14 +130,14 @@ class PreviewInfo(TLObject):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_media = reader.read_int()
+        _count_media = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_media = []
         for _ in range(_count_media):
             _item_media = reader.tgread_object()
             _list_media.append(_item_media)
         _args['media'] = _list_media
         reader.read_int(signed=False)  # skip vector id
-        _count_lang_codes = reader.read_int()
+        _count_lang_codes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_lang_codes = []
         for _ in range(_count_lang_codes):
             _item_lang_codes = reader.tgread_string()

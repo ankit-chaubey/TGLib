@@ -151,6 +151,8 @@ class CreateChannelRequest(TLRequest):
             flags |= (1 << 3)
         if self.forum:
             flags |= (1 << 5)
+        if self.geo_point is not None:
+            flags |= (1 << 2)
         if self.address is not None:
             flags |= (1 << 2)
         if self.ttl_period is not None:
@@ -320,7 +322,7 @@ class DeleteMessagesRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -329,7 +331,7 @@ class DeleteMessagesRequest(TLRequest):
         _val_channel = reader.tgread_object()
         _args['channel'] = _val_channel
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -686,9 +688,6 @@ class GetAdminLogRequest(TLRequest):
         buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.channel))
         buf.write(TLObject.serialize_bytes(self.q))
-        buf.write(struct.pack('<q', self.max_id))
-        buf.write(struct.pack('<q', self.min_id))
-        buf.write(struct.pack('<i', self.limit))
         if self.events_filter is not None:
             buf.write(bytes(self.events_filter))
         if self.admins is not None:
@@ -696,6 +695,9 @@ class GetAdminLogRequest(TLRequest):
             buf.write(struct.pack('<i', len(self.admins)))
             for item in self.admins:
                 buf.write(bytes(item))
+        buf.write(struct.pack('<q', self.max_id))
+        buf.write(struct.pack('<q', self.min_id))
+        buf.write(struct.pack('<i', self.limit))
         return buf.getvalue()
 
     @classmethod
@@ -713,7 +715,7 @@ class GetAdminLogRequest(TLRequest):
             _args['events_filter'] = None
         if flags & (1 << 1):
             reader.read_int(signed=False)  # skip vector id
-            _count_admins = reader.read_int()
+            _count_admins = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_admins = []
             for _ in range(_count_admins):
                 _item_admins = reader.tgread_object()
@@ -838,7 +840,7 @@ class GetChannelsRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.tgread_object()
@@ -1049,7 +1051,7 @@ class GetMessagesRequest(TLRequest):
         _val_channel = reader.tgread_object()
         _args['channel'] = _val_channel
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.tgread_object()
@@ -1216,7 +1218,7 @@ class InviteToChannelRequest(TLRequest):
         _val_channel = reader.tgread_object()
         _args['channel'] = _val_channel
         reader.read_int(signed=False)  # skip vector id
-        _count_users = reader.read_int()
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
             _item_users = reader.tgread_object()
@@ -1341,7 +1343,7 @@ class ReadMessageContentsRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -1350,7 +1352,7 @@ class ReadMessageContentsRequest(TLRequest):
         _val_channel = reader.tgread_object()
         _args['channel'] = _val_channel
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -1392,7 +1394,7 @@ class ReorderUsernamesRequest(TLRequest):
         _val_channel = reader.tgread_object()
         _args['channel'] = _val_channel
         reader.read_int(signed=False)  # skip vector id
-        _count_order = reader.read_int()
+        _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
             _item_order = reader.tgread_string()
@@ -1462,7 +1464,7 @@ class ReportSpamRequest(TLRequest):
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.id)))
         for item in self.id:
-            buf.write(struct.pack('<i', self.item))
+            buf.write(struct.pack('<i', item))
         return buf.getvalue()
 
     @classmethod
@@ -1473,7 +1475,7 @@ class ReportSpamRequest(TLRequest):
         _val_participant = reader.tgread_object()
         _args['participant'] = _val_participant
         reader.read_int(signed=False)  # skip vector id
-        _count_id = reader.read_int()
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
@@ -1554,14 +1556,14 @@ class SearchPostsRequest(TLRequest):
         if self.allow_paid_stars is not None:
             flags |= (1 << 2)
         buf.write(struct.pack('<I', flags))
-        buf.write(struct.pack('<i', self.offset_rate))
-        buf.write(bytes(self.offset_peer))
-        buf.write(struct.pack('<i', self.offset_id))
-        buf.write(struct.pack('<i', self.limit))
         if self.hashtag is not None:
             buf.write(TLObject.serialize_bytes(self.hashtag))
         if self.query is not None:
             buf.write(TLObject.serialize_bytes(self.query))
+        buf.write(struct.pack('<i', self.offset_rate))
+        buf.write(bytes(self.offset_peer))
+        buf.write(struct.pack('<i', self.offset_id))
+        buf.write(struct.pack('<i', self.limit))
         if self.allow_paid_stars is not None:
             buf.write(struct.pack('<q', self.allow_paid_stars))
         return buf.getvalue()

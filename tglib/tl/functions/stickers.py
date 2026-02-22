@@ -218,12 +218,12 @@ class CreateStickerSetRequest(TLRequest):
         buf.write(bytes(self.user_id))
         buf.write(TLObject.serialize_bytes(self.title))
         buf.write(TLObject.serialize_bytes(self.short_name))
+        if self.thumb is not None:
+            buf.write(bytes(self.thumb))
         buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
         buf.write(struct.pack('<i', len(self.stickers)))
         for item in self.stickers:
             buf.write(bytes(item))
-        if self.thumb is not None:
-            buf.write(bytes(self.thumb))
         if self.software is not None:
             buf.write(TLObject.serialize_bytes(self.software))
         return buf.getvalue()
@@ -247,7 +247,7 @@ class CreateStickerSetRequest(TLRequest):
         else:
             _args['thumb'] = None
         reader.read_int(signed=False)  # skip vector id
-        _count_stickers = reader.read_int()
+        _count_stickers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_stickers = []
         for _ in range(_count_stickers):
             _item_stickers = reader.tgread_object()

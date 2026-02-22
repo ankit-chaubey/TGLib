@@ -31,12 +31,12 @@ class ApplyBoostRequest(TLRequest):
         if self.slots is not None:
             flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
         if self.slots is not None:
             buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
             buf.write(struct.pack('<i', len(self.slots)))
             for item in self.slots:
-                buf.write(struct.pack('<i', self.item))
+                buf.write(struct.pack('<i', item))
+        buf.write(bytes(self.peer))
         return buf.getvalue()
 
     @classmethod
@@ -45,7 +45,7 @@ class ApplyBoostRequest(TLRequest):
         flags = reader.read_int(signed=False)
         if flags & (1 << 0):
             reader.read_int(signed=False)  # skip vector id
-            _count_slots = reader.read_int()
+            _count_slots = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_slots = []
             for _ in range(_count_slots):
                 _item_slots = reader.read_int()
