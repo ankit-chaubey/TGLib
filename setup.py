@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="tglib",
-    version="0.1.0",
+    version="0.1.1",
     author="Ankit Chaubey",
     author_email="ankitchaubey.dev@gmail.com",
     description="An experimental full MTProto Python client library",
