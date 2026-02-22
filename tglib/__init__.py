@@ -1,14 +1,47 @@
 """
-tglib - A placeholder Python package for Telegram-related functionalities.
+tglib - A full MTProto 2.0 Python library for Telegram
+======================================================
 
-This is the initial release of the package and serves as the foundation for future
-development. Additional features and functionality will be added in upcoming releases.
+Similar to Telethon and Pyrogram, tglib provides:
+  - Full MTProto 2.0 implementation
+  - Auth key generation (DH exchange)
+  - AES-IGE encrypted transport
+  - TL (Type Language) serialization/deserialization
+  - High-level client API: send_message, get_me, etc.
+  - Raw API access: await client(SomeRequest(...))
+  - Session persistence (SQLite)
+  - Event/update handling
+
+Quick Start:
+    from tglib import TelegramClient
+    from tglib.tl import functions, types
+
+    client = TelegramClient('session', api_id, api_hash)
+
+    async def main():
+        await client.connect()
+        me = await client.get_me()
+        await client.send_message('me', 'Hello!')
+        await client.disconnect()
 """
+from .client import TelegramClient
+from .sessions import SQLiteSession, MemorySession
+from .errors import (
+    TglibError, RPCError, FloodWaitError,
+    SessionPasswordNeededError, SecurityError,
+)
+from . import tl, helpers
 
-# Version of the package
-__version__ = "0.0.1"
-
-# Author information
-__author__ = "Ankit Chaubey"
-__email__ = "m.ankitchaubey@gmail.com"
-
+__version__ = '1.0.0'
+__all__ = [
+    'TelegramClient',
+    'SQLiteSession',
+    'MemorySession',
+    'TglibError',
+    'RPCError',
+    'FloodWaitError',
+    'SessionPasswordNeededError',
+    'SecurityError',
+    'tl',
+    'helpers',
+]
