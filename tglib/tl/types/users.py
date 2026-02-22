@@ -38,7 +38,9 @@ class SavedMusic(TLObject):
         _args = {}
         _val_count = reader.read_int()
         _args['count'] = _val_count
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_documents = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_documents = []
         for _ in range(_count_documents):
@@ -115,14 +117,18 @@ class UserFull(TLObject):
         _args = {}
         _val_full_user = reader.tgread_object()
         _args['full_user'] = _val_full_user
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
@@ -159,7 +165,9 @@ class Users(TLObject):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
@@ -201,7 +209,9 @@ class UsersSlice(TLObject):
         _args = {}
         _val_count = reader.read_int()
         _args['count'] = _val_count
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):

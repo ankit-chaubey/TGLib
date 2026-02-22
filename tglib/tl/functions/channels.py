@@ -330,7 +330,9 @@ class DeleteMessagesRequest(TLRequest):
         _args = {}
         _val_channel = reader.tgread_object()
         _args['channel'] = _val_channel
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -714,7 +716,9 @@ class GetAdminLogRequest(TLRequest):
         else:
             _args['events_filter'] = None
         if flags & (1 << 1):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_admins = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_admins = []
             for _ in range(_count_admins):
@@ -839,7 +843,9 @@ class GetChannelsRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -1050,7 +1056,9 @@ class GetMessagesRequest(TLRequest):
         _args = {}
         _val_channel = reader.tgread_object()
         _args['channel'] = _val_channel
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -1217,7 +1225,9 @@ class InviteToChannelRequest(TLRequest):
         _args = {}
         _val_channel = reader.tgread_object()
         _args['channel'] = _val_channel
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
@@ -1351,7 +1361,9 @@ class ReadMessageContentsRequest(TLRequest):
         _args = {}
         _val_channel = reader.tgread_object()
         _args['channel'] = _val_channel
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -1393,7 +1405,9 @@ class ReorderUsernamesRequest(TLRequest):
         _args = {}
         _val_channel = reader.tgread_object()
         _args['channel'] = _val_channel
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
@@ -1474,7 +1488,9 @@ class ReportSpamRequest(TLRequest):
         _args['channel'] = _val_channel
         _val_participant = reader.tgread_object()
         _args['participant'] = _val_participant
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):

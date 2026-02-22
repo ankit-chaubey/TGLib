@@ -130,7 +130,9 @@ class EditExportedInviteRequest(TLRequest):
         else:
             _args['title'] = None
         if flags & (1 << 2):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_peers = []
             for _ in range(_count_peers):
@@ -179,7 +181,9 @@ class ExportChatlistInviteRequest(TLRequest):
         _args['chatlist'] = _val_chatlist
         _val_title = reader.tgread_string()
         _args['title'] = _val_title
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_peers = []
         for _ in range(_count_peers):
@@ -337,7 +341,9 @@ class JoinChatlistInviteRequest(TLRequest):
         _args = {}
         _val_slug = reader.tgread_string()
         _args['slug'] = _val_slug
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_peers = []
         for _ in range(_count_peers):
@@ -379,7 +385,9 @@ class JoinChatlistUpdatesRequest(TLRequest):
         _args = {}
         _val_chatlist = reader.tgread_object()
         _args['chatlist'] = _val_chatlist
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_peers = []
         for _ in range(_count_peers):
@@ -421,7 +429,9 @@ class LeaveChatlistRequest(TLRequest):
         _args = {}
         _val_chatlist = reader.tgread_object()
         _args['chatlist'] = _val_chatlist
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_peers = []
         for _ in range(_count_peers):

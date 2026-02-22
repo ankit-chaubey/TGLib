@@ -45,21 +45,27 @@ class AdminLogResults(TLObject):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_events = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_events = []
         for _ in range(_count_events):
             _item_events = reader.tgread_object()
             _list_events.append(_item_events)
         _args['events'] = _list_events
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
@@ -107,14 +113,18 @@ class ChannelParticipant(TLObject):
         _args = {}
         _val_participant = reader.tgread_object()
         _args['participant'] = _val_participant
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
@@ -168,21 +178,27 @@ class ChannelParticipants(TLObject):
         _args = {}
         _val_count = reader.read_int()
         _args['count'] = _val_count
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_participants = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_participants = []
         for _ in range(_count_participants):
             _item_participants = reader.tgread_object()
             _list_participants.append(_item_participants)
         _args['participants'] = _list_participants
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
@@ -255,21 +271,27 @@ class SendAsPeers(TLObject):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_peers = []
         for _ in range(_count_peers):
             _item_peers = reader.tgread_object()
             _list_peers.append(_item_peers)
         _args['peers'] = _list_peers
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
@@ -335,7 +357,9 @@ class SponsoredMessageReportResultChooseOption(TLObject):
         _args = {}
         _val_title = reader.tgread_string()
         _args['title'] = _val_title
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_options = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_options = []
         for _ in range(_count_options):

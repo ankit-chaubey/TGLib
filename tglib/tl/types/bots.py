@@ -86,7 +86,9 @@ class PopularAppBots(TLObject):
             _args['next_offset'] = _val_next_offset
         else:
             _args['next_offset'] = None
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
@@ -129,14 +131,18 @@ class PreviewInfo(TLObject):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_media = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_media = []
         for _ in range(_count_media):
             _item_media = reader.tgread_object()
             _list_media.append(_item_media)
         _args['media'] = _list_media
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_lang_codes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_lang_codes = []
         for _ in range(_count_lang_codes):

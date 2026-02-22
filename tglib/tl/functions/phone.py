@@ -78,7 +78,9 @@ class CheckGroupCallRequest(TLRequest):
         _args = {}
         _val_call = reader.tgread_object()
         _args['call'] = _val_call
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_sources = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_sources = []
         for _ in range(_count_sources):
@@ -353,7 +355,9 @@ class DeleteConferenceCallParticipantsRequest(TLRequest):
         _args['kick'] = bool(flags & (1 << 1))
         _val_call = reader.tgread_object()
         _args['call'] = _val_call
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_ids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_ids = []
         for _ in range(_count_ids):
@@ -405,7 +409,9 @@ class DeleteGroupCallMessagesRequest(TLRequest):
         _args['report_spam'] = bool(flags & (1 << 0))
         _val_call = reader.tgread_object()
         _args['call'] = _val_call
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_messages = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_messages = []
         for _ in range(_count_messages):
@@ -987,14 +993,18 @@ class GetGroupParticipantsRequest(TLRequest):
         _args = {}
         _val_call = reader.tgread_object()
         _args['call'] = _val_call
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_ids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_ids = []
         for _ in range(_count_ids):
             _item_ids = reader.tgread_object()
             _list_ids.append(_item_ids)
         _args['ids'] = _list_ids
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_sources = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_sources = []
         for _ in range(_count_sources):
@@ -1082,7 +1092,9 @@ class InviteToGroupCallRequest(TLRequest):
         _args = {}
         _val_call = reader.tgread_object()
         _args['call'] = _val_call
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):

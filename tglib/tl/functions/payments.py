@@ -418,7 +418,9 @@ class CreateStarGiftCollectionRequest(TLRequest):
         _args['peer'] = _val_peer
         _val_title = reader.tgread_string()
         _args['title'] = _val_title
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_stargift = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_stargift = []
         for _ in range(_count_stargift):
@@ -909,7 +911,9 @@ class GetResaleStarGiftsRequest(TLRequest):
         _val_gift_id = reader.read_long()
         _args['gift_id'] = _val_gift_id
         if flags & (1 << 3):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_attributes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_attributes = []
             for _ in range(_count_attributes):
@@ -976,7 +980,9 @@ class GetSavedStarGiftRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_stargift = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_stargift = []
         for _ in range(_count_stargift):
@@ -1733,7 +1739,9 @@ class GetStarsTransactionsByIdRequest(TLRequest):
         _args['ton'] = bool(flags & (1 << 0))
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -1958,7 +1966,9 @@ class ReorderStarGiftCollectionsRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
@@ -2322,7 +2332,9 @@ class ToggleStarGiftsPinnedToTopRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_stargift = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_stargift = []
         for _ in range(_count_stargift):
@@ -2439,7 +2451,9 @@ class UpdateStarGiftCollectionRequest(TLRequest):
         else:
             _args['title'] = None
         if flags & (1 << 1):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_delete_stargift = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_delete_stargift = []
             for _ in range(_count_delete_stargift):
@@ -2449,7 +2463,9 @@ class UpdateStarGiftCollectionRequest(TLRequest):
         else:
             _args['delete_stargift'] = None
         if flags & (1 << 2):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_add_stargift = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_add_stargift = []
             for _ in range(_count_add_stargift):
@@ -2459,7 +2475,9 @@ class UpdateStarGiftCollectionRequest(TLRequest):
         else:
             _args['add_stargift'] = None
         if flags & (1 << 3):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_order = []
             for _ in range(_count_order):

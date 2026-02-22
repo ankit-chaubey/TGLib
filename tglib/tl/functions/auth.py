@@ -238,7 +238,9 @@ class DropTempAuthKeysRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_except_auth_keys = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_except_auth_keys = []
         for _ in range(_count_except_auth_keys):
@@ -314,7 +316,9 @@ class ExportLoginTokenRequest(TLRequest):
         _args['api_id'] = _val_api_id
         _val_api_hash = reader.tgread_string()
         _args['api_hash'] = _val_api_hash
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_except_ids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_except_ids = []
         for _ in range(_count_except_ids):

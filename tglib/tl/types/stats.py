@@ -138,7 +138,9 @@ class BroadcastStats(TLObject):
         _args['story_interactions_graph'] = _val_story_interactions_graph
         _val_story_reactions_by_emotion_graph = reader.tgread_object()
         _args['story_reactions_by_emotion_graph'] = _val_story_reactions_by_emotion_graph
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_recent_posts_interactions = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_recent_posts_interactions = []
         for _ in range(_count_recent_posts_interactions):
@@ -258,28 +260,36 @@ class MegagroupStats(TLObject):
         _args['top_hours_graph'] = _val_top_hours_graph
         _val_weekdays_graph = reader.tgread_object()
         _args['weekdays_graph'] = _val_weekdays_graph
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_top_posters = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_top_posters = []
         for _ in range(_count_top_posters):
             _item_top_posters = reader.tgread_object()
             _list_top_posters.append(_item_top_posters)
         _args['top_posters'] = _list_top_posters
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_top_admins = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_top_admins = []
         for _ in range(_count_top_admins):
             _item_top_admins = reader.tgread_object()
             _list_top_admins.append(_item_top_admins)
         _args['top_admins'] = _list_top_admins
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_top_inviters = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_top_inviters = []
         for _ in range(_count_top_inviters):
             _item_top_inviters = reader.tgread_object()
             _list_top_inviters.append(_item_top_inviters)
         _args['top_inviters'] = _list_top_inviters
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
@@ -376,7 +386,9 @@ class PublicForwards(TLObject):
         flags = reader.read_int(signed=False)
         _val_count = reader.read_int()
         _args['count'] = _val_count
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_forwards = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_forwards = []
         for _ in range(_count_forwards):
@@ -388,14 +400,18 @@ class PublicForwards(TLObject):
             _args['next_offset'] = _val_next_offset
         else:
             _args['next_offset'] = None
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_chats = []
         for _ in range(_count_chats):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):

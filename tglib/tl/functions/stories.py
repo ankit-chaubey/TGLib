@@ -110,7 +110,9 @@ class CreateAlbumRequest(TLRequest):
         _args['peer'] = _val_peer
         _val_title = reader.tgread_string()
         _args['title'] = _val_title
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_stories = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_stories = []
         for _ in range(_count_stories):
@@ -186,7 +188,9 @@ class DeleteStoriesRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -275,7 +279,9 @@ class EditStoryRequest(TLRequest):
         else:
             _args['media'] = None
         if flags & (1 << 3):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_media_areas = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_media_areas = []
             for _ in range(_count_media_areas):
@@ -290,7 +296,9 @@ class EditStoryRequest(TLRequest):
         else:
             _args['caption'] = None
         if flags & (1 << 1):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
@@ -300,7 +308,9 @@ class EditStoryRequest(TLRequest):
         else:
             _args['entities'] = None
         if flags & (1 << 2):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_privacy_rules = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_privacy_rules = []
             for _ in range(_count_privacy_rules):
@@ -547,7 +557,9 @@ class GetPeerMaxIdsRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -696,7 +708,9 @@ class GetStoriesByIdRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -738,7 +752,9 @@ class GetStoriesViewsRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -922,7 +938,9 @@ class IncrementStoryViewsRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -998,7 +1016,9 @@ class ReorderAlbumsRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
@@ -1046,7 +1066,9 @@ class ReportRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -1287,7 +1309,9 @@ class SendStoryRequest(TLRequest):
         _val_media = reader.tgread_object()
         _args['media'] = _val_media
         if flags & (1 << 5):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_media_areas = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_media_areas = []
             for _ in range(_count_media_areas):
@@ -1302,7 +1326,9 @@ class SendStoryRequest(TLRequest):
         else:
             _args['caption'] = None
         if flags & (1 << 1):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
@@ -1311,7 +1337,9 @@ class SendStoryRequest(TLRequest):
             _args['entities'] = _list_entities
         else:
             _args['entities'] = None
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_privacy_rules = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_privacy_rules = []
         for _ in range(_count_privacy_rules):
@@ -1336,7 +1364,9 @@ class SendStoryRequest(TLRequest):
         else:
             _args['fwd_from_story'] = None
         if flags & (1 << 8):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_albums = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_albums = []
             for _ in range(_count_albums):
@@ -1434,7 +1464,9 @@ class StartLiveRequest(TLRequest):
         else:
             _args['caption'] = None
         if flags & (1 << 1):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
@@ -1443,7 +1475,9 @@ class StartLiveRequest(TLRequest):
             _args['entities'] = _list_entities
         else:
             _args['entities'] = None
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_privacy_rules = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_privacy_rules = []
         for _ in range(_count_privacy_rules):
@@ -1563,7 +1597,9 @@ class TogglePinnedRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -1607,7 +1643,9 @@ class TogglePinnedToTopRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -1690,7 +1728,9 @@ class UpdateAlbumRequest(TLRequest):
         else:
             _args['title'] = None
         if flags & (1 << 1):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_delete_stories = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_delete_stories = []
             for _ in range(_count_delete_stories):
@@ -1700,7 +1740,9 @@ class UpdateAlbumRequest(TLRequest):
         else:
             _args['delete_stories'] = None
         if flags & (1 << 2):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_add_stories = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_add_stories = []
             for _ in range(_count_add_stories):
@@ -1710,7 +1752,9 @@ class UpdateAlbumRequest(TLRequest):
         else:
             _args['add_stories'] = None
         if flags & (1 << 3):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_order = []
             for _ in range(_count_order):

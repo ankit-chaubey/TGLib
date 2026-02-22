@@ -52,7 +52,9 @@ class AcceptAuthorizationRequest(TLRequest):
         _args['scope'] = _val_scope
         _val_public_key = reader.tgread_string()
         _args['public_key'] = _val_public_key
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_value_hashes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_value_hashes = []
         for _ in range(_count_value_hashes):
@@ -386,7 +388,9 @@ class CreateThemeRequest(TLRequest):
         else:
             _args['document'] = None
         if flags & (1 << 3):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_settings = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_settings = []
             for _ in range(_count_settings):
@@ -574,7 +578,9 @@ class DeleteSecureValueRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_types = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_types = []
         for _ in range(_count_types):
@@ -1246,7 +1252,9 @@ class GetMultiWallPapersRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_wallpapers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_wallpapers = []
         for _ in range(_count_wallpapers):
@@ -1620,7 +1628,9 @@ class GetSecureValueRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_types = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_types = []
         for _ in range(_count_types):
@@ -2071,7 +2081,9 @@ class InvalidateSignInCodesRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_codes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_codes = []
         for _ in range(_count_codes):
@@ -2136,7 +2148,9 @@ class RegisterDeviceRequest(TLRequest):
         _args['app_sandbox'] = _val_app_sandbox
         _val_secret = reader.tgread_bytes()
         _args['secret'] = _val_secret
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_other_uids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_other_uids = []
         for _ in range(_count_other_uids):
@@ -2202,7 +2216,9 @@ class ReorderUsernamesRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
@@ -3136,7 +3152,9 @@ class SetPrivacyRequest(TLRequest):
         _args = {}
         _val_key = reader.tgread_object()
         _args['key'] = _val_key
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_rules = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_rules = []
         for _ in range(_count_rules):
@@ -3362,7 +3380,9 @@ class UnregisterDeviceRequest(TLRequest):
         _args['token_type'] = _val_token_type
         _val_token = reader.tgread_string()
         _args['token'] = _val_token
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_other_uids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_other_uids = []
         for _ in range(_count_other_uids):
@@ -4028,7 +4048,9 @@ class UpdateThemeRequest(TLRequest):
         else:
             _args['document'] = None
         if flags & (1 << 3):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_settings = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_settings = []
             for _ in range(_count_settings):

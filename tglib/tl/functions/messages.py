@@ -203,7 +203,9 @@ class AppendTodoListRequest(TLRequest):
         _args['peer'] = _val_peer
         _val_msg_id = reader.read_int()
         _args['msg_id'] = _val_msg_id
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_list = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_list = []
         for _ in range(_count_list):
@@ -478,7 +480,9 @@ class CraftStarGiftRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_stargift = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_stargift = []
         for _ in range(_count_stargift):
@@ -527,7 +531,9 @@ class CreateChatRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         flags = reader.read_int(signed=False)
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_users = []
         for _ in range(_count_users):
@@ -867,7 +873,9 @@ class DeleteMessagesRequest(TLRequest):
         _args = {}
         flags = reader.read_int(signed=False)
         _args['revoke'] = bool(flags & (1 << 0))
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -941,7 +949,9 @@ class DeleteQuickReplyMessagesRequest(TLRequest):
         _args = {}
         _val_shortcut_id = reader.read_int()
         _args['shortcut_id'] = _val_shortcut_id
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -1116,7 +1126,9 @@ class DeleteScheduledMessagesRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -1660,7 +1672,9 @@ class EditInlineBotMessageRequest(TLRequest):
         else:
             _args['reply_markup'] = None
         if flags & (1 << 3):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
@@ -1777,7 +1791,9 @@ class EditMessageRequest(TLRequest):
         else:
             _args['reply_markup'] = None
         if flags & (1 << 3):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
@@ -2136,14 +2152,18 @@ class ForwardMessagesRequest(TLRequest):
         _args['allow_paid_floodskip'] = bool(flags & (1 << 19))
         _val_from_peer = reader.tgread_object()
         _args['from_peer'] = _val_from_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
             _list_id.append(_item_id)
         _args['id'] = _list_id
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_random_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_random_id = []
         for _ in range(_count_random_id):
@@ -2261,7 +2281,9 @@ class GetAllChatsRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_except_ids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_except_ids = []
         for _ in range(_count_except_ids):
@@ -2720,7 +2742,9 @@ class GetChatsRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -2835,7 +2859,9 @@ class GetCustomEmojiDocumentsRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_document_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_document_id = []
         for _ in range(_count_document_id):
@@ -3278,7 +3304,9 @@ class GetEmojiKeywordsLanguagesRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_lang_codes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_lang_codes = []
         for _ in range(_count_lang_codes):
@@ -3568,7 +3596,9 @@ class GetExtendedMediaRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -3610,7 +3640,9 @@ class GetFactCheckRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_msg_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_msg_id = []
         for _ in range(_count_msg_id):
@@ -3802,7 +3834,9 @@ class GetForumTopicsByIdRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_topics = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_topics = []
         for _ in range(_count_topics):
@@ -4224,7 +4258,9 @@ class GetMessagesRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -4266,7 +4302,9 @@ class GetMessagesReactionsRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -4311,7 +4349,9 @@ class GetMessagesViewsRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -4510,7 +4550,9 @@ class GetPeerDialogsRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_peers = []
         for _ in range(_count_peers):
@@ -4805,7 +4847,9 @@ class GetQuickReplyMessagesRequest(TLRequest):
         _val_shortcut_id = reader.read_int()
         _args['shortcut_id'] = _val_shortcut_id
         if flags & (1 << 0):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_id = []
             for _ in range(_count_id):
@@ -5107,7 +5151,9 @@ class GetSavedDialogsByIdRequest(TLRequest):
             _args['parent_peer'] = _val_parent_peer
         else:
             _args['parent_peer'] = None
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_ids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_ids = []
         for _ in range(_count_ids):
@@ -5333,7 +5379,9 @@ class GetScheduledMessagesRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -5400,7 +5448,9 @@ class GetSearchCountersRequest(TLRequest):
             _args['top_msg_id'] = _val_top_msg_id
         else:
             _args['top_msg_id'] = None
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_filters = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_filters = []
         for _ in range(_count_filters):
@@ -5981,7 +6031,9 @@ class GetWebPagePreviewRequest(TLRequest):
         _val_message = reader.tgread_string()
         _args['message'] = _val_message
         if flags & (1 << 3):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
@@ -6543,7 +6595,9 @@ class ReadFeaturedStickersRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -6657,7 +6711,9 @@ class ReadMessageContentsRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -6858,7 +6914,9 @@ class ReorderPinnedDialogsRequest(TLRequest):
         _args['force'] = bool(flags & (1 << 0))
         _val_folder_id = reader.read_int()
         _args['folder_id'] = _val_folder_id
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
@@ -6908,7 +6966,9 @@ class ReorderPinnedForumTopicsRequest(TLRequest):
         _args['force'] = bool(flags & (1 << 0))
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
@@ -6953,7 +7013,9 @@ class ReorderPinnedSavedDialogsRequest(TLRequest):
         _args = {}
         flags = reader.read_int(signed=False)
         _args['force'] = bool(flags & (1 << 0))
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
@@ -6990,7 +7052,9 @@ class ReorderQuickRepliesRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
@@ -7040,7 +7104,9 @@ class ReorderStickerSetsRequest(TLRequest):
         flags = reader.read_int(signed=False)
         _args['masks'] = bool(flags & (1 << 0))
         _args['emojis'] = bool(flags & (1 << 1))
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
@@ -7088,7 +7154,9 @@ class ReportRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -7171,7 +7239,9 @@ class ReportMessagesDeliveryRequest(TLRequest):
         _args['push'] = bool(flags & (1 << 0))
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -7870,7 +7940,9 @@ class SaveDraftRequest(TLRequest):
         _val_message = reader.tgread_string()
         _args['message'] = _val_message
         if flags & (1 << 3):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
@@ -7975,7 +8047,9 @@ class SavePreparedInlineMessageRequest(TLRequest):
         _val_user_id = reader.tgread_object()
         _args['user_id'] = _val_user_id
         if flags & (1 << 0):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_peer_types = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_peer_types = []
             for _ in range(_count_peer_types):
@@ -8128,7 +8202,9 @@ class SearchRequest(TLRequest):
         else:
             _args['saved_peer_id'] = None
         if flags & (1 << 3):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_saved_reaction = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_saved_reaction = []
             for _ in range(_count_saved_reaction):
@@ -8467,7 +8543,9 @@ class SearchStickersRequest(TLRequest):
         _args['q'] = _val_q
         _val_emoticon = reader.tgread_string()
         _args['emoticon'] = _val_emoticon
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_lang_code = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_lang_code = []
         for _ in range(_count_lang_code):
@@ -8525,7 +8603,9 @@ class SendBotRequestedPeerRequest(TLRequest):
         _args['msg_id'] = _val_msg_id
         _val_button_id = reader.read_int()
         _args['button_id'] = _val_button_id
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_requested_peers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_requested_peers = []
         for _ in range(_count_requested_peers):
@@ -8948,7 +9028,9 @@ class SendMediaRequest(TLRequest):
         else:
             _args['reply_markup'] = None
         if flags & (1 << 3):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
@@ -9148,7 +9230,9 @@ class SendMessageRequest(TLRequest):
         else:
             _args['reply_markup'] = None
         if flags & (1 << 3):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_entities = []
             for _ in range(_count_entities):
@@ -9306,7 +9390,9 @@ class SendMultiMediaRequest(TLRequest):
             _args['reply_to'] = _val_reply_to
         else:
             _args['reply_to'] = None
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_multi_media = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_multi_media = []
         for _ in range(_count_multi_media):
@@ -9442,14 +9528,18 @@ class SendQuickReplyMessagesRequest(TLRequest):
         _args['peer'] = _val_peer
         _val_shortcut_id = reader.read_int()
         _args['shortcut_id'] = _val_shortcut_id
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
             _item_id = reader.read_int()
             _list_id.append(_item_id)
         _args['id'] = _list_id
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_random_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_random_id = []
         for _ in range(_count_random_id):
@@ -9513,7 +9603,9 @@ class SendReactionRequest(TLRequest):
         _val_msg_id = reader.read_int()
         _args['msg_id'] = _val_msg_id
         if flags & (1 << 0):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_reaction = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_reaction = []
             for _ in range(_count_reaction):
@@ -9557,7 +9649,9 @@ class SendScheduledMessagesRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -9643,7 +9737,9 @@ class SendVoteRequest(TLRequest):
         _args['peer'] = _val_peer
         _val_msg_id = reader.read_int()
         _args['msg_id'] = _val_msg_id
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_options = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_options = []
         for _ in range(_count_options):
@@ -9893,7 +9989,9 @@ class SetBotShippingResultsRequest(TLRequest):
         else:
             _args['error'] = None
         if flags & (1 << 1):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_shipping_options = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_shipping_options = []
             for _ in range(_count_shipping_options):
@@ -10322,7 +10420,9 @@ class SetInlineBotResultsRequest(TLRequest):
         _args['private'] = bool(flags & (1 << 1))
         _val_query_id = reader.read_long()
         _args['query_id'] = _val_query_id
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_results = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_results = []
         for _ in range(_count_results):
@@ -10904,7 +11004,9 @@ class ToggleStickerSetsRequest(TLRequest):
         _args['uninstall'] = bool(flags & (1 << 0))
         _args['archive'] = bool(flags & (1 << 1))
         _args['unarchive'] = bool(flags & (1 << 2))
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_stickersets = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_stickersets = []
         for _ in range(_count_stickersets):
@@ -11021,14 +11123,18 @@ class ToggleTodoCompletedRequest(TLRequest):
         _args['peer'] = _val_peer
         _val_msg_id = reader.read_int()
         _args['msg_id'] = _val_msg_id
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_completed = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_completed = []
         for _ in range(_count_completed):
             _item_completed = reader.read_int()
             _list_completed.append(_item_completed)
         _args['completed'] = _list_completed
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_incompleted = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_incompleted = []
         for _ in range(_count_incompleted):
@@ -11129,7 +11235,9 @@ class TranslateTextRequest(TLRequest):
         else:
             _args['peer'] = None
         if flags & (1 << 0):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_id = []
             for _ in range(_count_id):
@@ -11139,7 +11247,9 @@ class TranslateTextRequest(TLRequest):
         else:
             _args['id'] = None
         if flags & (1 << 1):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_text = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_text = []
             for _ in range(_count_text):
@@ -11306,7 +11416,9 @@ class UpdateDialogFiltersOrderRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):

@@ -210,7 +210,9 @@ class DeleteByPhonesRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_phones = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_phones = []
         for _ in range(_count_phones):
@@ -247,7 +249,9 @@ class DeleteContactsRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -284,7 +288,9 @@ class EditCloseFriendsRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -681,7 +687,9 @@ class ImportCardRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_export_card = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_export_card = []
         for _ in range(_count_export_card):
@@ -747,7 +755,9 @@ class ImportContactsRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_contacts = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_contacts = []
         for _ in range(_count_contacts):
@@ -959,7 +969,9 @@ class SetBlockedRequest(TLRequest):
         _args = {}
         flags = reader.read_int(signed=False)
         _args['my_stories_from'] = bool(flags & (1 << 0))
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):

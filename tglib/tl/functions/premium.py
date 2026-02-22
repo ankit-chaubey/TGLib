@@ -44,7 +44,9 @@ class ApplyBoostRequest(TLRequest):
         _args = {}
         flags = reader.read_int(signed=False)
         if flags & (1 << 0):
-            reader.read_int(signed=False)  # skip vector id
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
             _count_slots = reader.read_int(signed=False)  # BUG6 fix: unsigned count
             _list_slots = []
             for _ in range(_count_slots):

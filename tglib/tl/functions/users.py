@@ -63,7 +63,9 @@ class GetRequirementsToContactRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -149,7 +151,9 @@ class GetSavedMusicByIdRequest(TLRequest):
         _args = {}
         _val_id = reader.tgread_object()
         _args['id'] = _val_id
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_documents = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_documents = []
         for _ in range(_count_documents):
@@ -186,7 +190,9 @@ class GetUsersRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_id = []
         for _ in range(_count_id):
@@ -228,7 +234,9 @@ class SetSecureValueErrorsRequest(TLRequest):
         _args = {}
         _val_id = reader.tgread_object()
         _args['id'] = _val_id
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_errors = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_errors = []
         for _ in range(_count_errors):

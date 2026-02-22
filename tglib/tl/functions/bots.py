@@ -214,7 +214,9 @@ class DeletePreviewMediaRequest(TLRequest):
         _args['bot'] = _val_bot
         _val_lang_code = reader.tgread_string()
         _args['lang_code'] = _val_lang_code
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_media = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_media = []
         for _ in range(_count_media):
@@ -600,7 +602,9 @@ class ReorderPreviewMediasRequest(TLRequest):
         _args['bot'] = _val_bot
         _val_lang_code = reader.tgread_string()
         _args['lang_code'] = _val_lang_code
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
@@ -642,7 +646,9 @@ class ReorderUsernamesRequest(TLRequest):
         _args = {}
         _val_bot = reader.tgread_object()
         _args['bot'] = _val_bot
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_order = []
         for _ in range(_count_order):
@@ -786,7 +792,9 @@ class SetBotCommandsRequest(TLRequest):
         _args['scope'] = _val_scope
         _val_lang_code = reader.tgread_string()
         _args['lang_code'] = _val_lang_code
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_commands = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_commands = []
         for _ in range(_count_commands):

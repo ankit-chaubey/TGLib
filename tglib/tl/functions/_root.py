@@ -160,7 +160,9 @@ class InvokeAfterMsgsRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        reader.read_int(signed=False)  # skip vector id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
         _count_msg_ids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
         _list_msg_ids = []
         for _ in range(_count_msg_ids):

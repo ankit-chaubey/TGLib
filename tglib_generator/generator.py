@@ -225,7 +225,9 @@ def _read_single_type(name, t, is_vector, use_vector_id, indent) -> List[str]:
 
     if is_vector:
         if use_vector_id:
-            w('reader.read_int(signed=False)  # skip vector id')
+            w('_vec_id = reader.read_int(signed=False)')
+            w('if _vec_id != 0x1cb5c415:')
+            w("    raise RuntimeError(f\'Expected vector but got 0x{_vec_id:08x}\'"  + ')')
         w(f'_count_{name} = reader.read_int(signed=False)  # BUG6 fix: unsigned count')
         w(f'_list_{name} = []')
         w(f'for _ in range(_count_{name}):')
