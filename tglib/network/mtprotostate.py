@@ -176,6 +176,13 @@ class MTProtoState:
 
         obj = reader.tgread_object()
 
+        # Log what we received for diagnostics
+        import logging
+        _log = logging.getLogger(__name__)
+        if _log.isEnabledFor(logging.DEBUG):
+            cid = getattr(obj, 'CONSTRUCTOR_ID', None)
+            _log.debug('decrypt: got 0x%08x (%s)', cid or 0, type(obj).__name__)
+
         # Time check (skip for BadServerSalt / BadMsgNotification)
         from ..tl.core.rpcresult import RpcResult
         BAD_IDS = {0xedab447b, 0xa7eff811}  # BadServerSalt, BadMsgNotification

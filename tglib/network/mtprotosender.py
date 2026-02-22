@@ -288,7 +288,12 @@ class MTProtoSender:
 
     async def _handle_gzip_packed(self, message: TLMessage):
         from ..extensions import BinaryReader
-        reader = BinaryReader(message.obj.data)
+        data = message.obj.data
+        self._log.debug(
+            'GzipPacked top-level: data_len=%d head=%s',
+            len(data), data[:32].hex()
+        )
+        reader = BinaryReader(data)
         inner_obj = reader.tgread_object()
         await self._process_message(TLMessage(
             message.msg_id, message.seq_no, inner_obj

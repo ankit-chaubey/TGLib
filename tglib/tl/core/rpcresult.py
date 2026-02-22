@@ -16,13 +16,11 @@ class GzipPacked(TLObject):
 
     @staticmethod
     def gzip_if_smaller(content_related: bool, data: bytes) -> bytes:
-        """Return gzip-packed data if it's smaller, otherwise original."""
         if content_related:
             try:
                 gzipped = gzip.compress(data)
                 if len(gzipped) < len(data):
-                    packed = GzipPacked(gzipped)
-                    return bytes(packed)
+                    return bytes(GzipPacked(gzipped))
             except Exception:
                 pass
         return data
@@ -43,7 +41,7 @@ class GzipPacked(TLObject):
 
 class MessageContainer(TLObject):
     CONSTRUCTOR_ID = 0x73f1f8dc
-    MAXIMUM_SIZE = 1044456  # 1MB
+    MAXIMUM_SIZE = 1044456
     MAXIMUM_LENGTH = 100
 
     def __init__(self, messages):
@@ -58,24 +56,20 @@ class MessageContainer(TLObject):
         messages = []
         for _ in range(count):
             from .tlmessage import TLMessage
-            msg_id  = reader.read_long()
-            seq_no  = reader.read_int()
-            length  = reader.read_int()
+            msg_id = reader.read_long()
+            seq_no = reader.read_int()
+            length = reader.read_int()
 
-            # CRITICAL: scope each inner message to EXACTLY `length` bytes.
-            # Without this, if any inner parser reads the wrong number of bytes,
-            # ALL subsequent messages in the container are misaligned.  In the
-            # worst case the next msg_id read hits zero-padding bytes and the
-            # eventual tgread_object() raises TypeNotFoundError(0x00000000, ...),
-            # which is what produces the misleading "SCHEMA MISMATCH 0x00000000".
+            # Scope each inner message to exactly `length` bytes.
+            # This prevents any misaligned parser from corrupting subsequent messages.
             inner_bytes = reader.read(length)
             with BinaryReader(inner_bytes) as inner:
                 try:
                     obj = inner.tgread_object()
                 except Exception as e:
                     __log__.debug(
-                        'Failed to parse inner message (msg_id=%d, length=%d): %s',
-                        msg_id, length, e
+                        'Failed to parse container inner msg_id=%d length=%d: %s '
+                        'raw(hex)=%s', msg_id, length, e, inner_bytes[:32].hex()
                     )
                     obj = RawObject(0, inner_bytes)
 
@@ -111,52 +105,57 @@ class RpcResult(TLObject):
 
         elif inner_code == GzipPacked.CONSTRUCTOR_ID:
             packed_data = reader.tgread_bytes()
+            __log__.debug(
+                'RpcResult gzip: packed_len=%d packed_head=%s',
+                len(packed_data), packed_data[:16].hex()
+            )
             try:
                 unpacked = gzip.decompress(packed_data)
             except Exception as e:
-                __log__.warning(
-                    'RpcResult: gzip decompression failed for req_msg_id=%d: %s',
-                    req_msg_id, e
-                )
+                __log__.warning('RpcResult: gzip decompress failed req=%d: %s', req_msg_id, e)
                 return cls(req_msg_id, RawObject(GzipPacked.CONSTRUCTOR_ID, packed_data))
+
+            __log__.debug(
+                'RpcResult gzip: unpacked_len=%d unpacked_head=%s',
+                len(unpacked), unpacked[:32].hex()
+            )
 
             with BinaryReader(unpacked) as inner:
                 try:
                     body = inner.tgread_object()
                 except TypeNotFoundError as e:
-                    __log__.debug(
-                        'RpcResult: unknown constructor 0x%08x in gzip body '
-                        '(req_msg_id=%d) — schema may be outdated',
-                        e.invalid_constructor_id, req_msg_id
+                    __log__.warning(
+                        'RpcResult: unknown constructor 0x%08x in gzip body req=%d '
+                        'unpacked_head=%s',
+                        e.invalid_constructor_id, req_msg_id, unpacked[:32].hex()
                     )
                     body = RawObject(e.invalid_constructor_id, e.remaining)
                 except Exception as e:
                     __log__.warning(
-                        'RpcResult: parse error in gzip body (req_msg_id=%d): '
-                        '%s: %s. Raw gzip bytes (first 64): %s',
-                        req_msg_id, type(e).__name__, e,
-                        unpacked[:64].hex()
+                        'RpcResult: parse error in gzip body req=%d: %s: %s '
+                        'unpacked_head=%s',
+                        req_msg_id, type(e).__name__, e, unpacked[:32].hex()
                     )
                     body = RawObject(0xdeadbeef, unpacked)
 
             result = cls(req_msg_id, body)
 
         else:
-            # Non-gzip body — seek back and re-read including the constructor.
             reader.seek(-4)
+            __log__.debug(
+                'RpcResult raw: inner_code=0x%08x req=%d', inner_code, req_msg_id
+            )
             try:
                 body = reader.tgread_object()
             except TypeNotFoundError as e:
-                __log__.debug(
-                    'RpcResult: unknown constructor 0x%08x in raw body '
-                    '(req_msg_id=%d) — schema may be outdated',
+                __log__.warning(
+                    'RpcResult: unknown constructor 0x%08x in raw body req=%d',
                     e.invalid_constructor_id, req_msg_id
                 )
                 body = RawObject(e.invalid_constructor_id, e.remaining)
             except Exception as e:
                 __log__.warning(
-                    'RpcResult: parse error in raw body (req_msg_id=%d): '
-                    '%s: %s',
+                    'RpcResult: parse error in raw body req=%d: %s: %s',
                     req_msg_id, type(e).__name__, e
                 )
                 body = RawObject(inner_code, b'')
