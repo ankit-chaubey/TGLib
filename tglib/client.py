@@ -85,6 +85,9 @@ class TelegramClient:
         self._self_input_peer = None
         self._connected = False
 
+        # Sync loop (used when calling client in non-async context)
+        self._loop = None
+
         # Logging
         self._loggers = {
             name: logging.getLogger(name)
@@ -134,13 +137,7 @@ class TelegramClient:
             await self._sender.disconnect()
         self.session.close()
         self._connected = False
-
-    async def __aenter__(self):
-        await self.connect()
-        return self
-
-    async def __aexit__(self, *args):
-        await self.disconnect()
+        __log__.info('Disconnected')
 
     # ── Raw API invoke ──────────────────────────────────────────────────────
 
@@ -582,40 +579,110 @@ class TelegramClient:
                 break
 
     async def run_until_disconnected(self):
-        """Block until the client disconnects."""
-        while self._connected:
-            await asyncio.sleep(1)
+        """
+        Block until the client disconnects.
+
+        Async usage:
+            await client.run_until_disconnected()
+
+        Sync usage (inside 'with' block):
+            client.run(client.run_until_disconnected())
+        """
+        try:
+            while self._connected:
+                await asyncio.sleep(1)
+        except (asyncio.CancelledError, KeyboardInterrupt):
+            await self.disconnect()
 
     # ── Sync helpers ─────────────────────────────────────────────────────────
 
-    def start(self, phone=None, password=None, bot_token=None,
-              code_callback=None):
+    def _get_loop(self):
+        """Get or create a dedicated event loop for sync usage."""
+        if self._loop is None or self._loop.is_closed():
+            self._loop = asyncio.new_event_loop()
+        return self._loop
+
+    def _run_sync(self, coro):
+        """Run a coroutine synchronously. Used internally for sync wrappers."""
+        return self._get_loop().run_until_complete(coro)
+
+    def run(self, coro):
         """
-        Synchronous wrapper to connect and authenticate.
-        Returns self for chaining.
+        Run any coroutine synchronously. Useful for simple scripts.
+
+        Example:
+            me = client.run(client.get_me())
+            print(me.first_name)
         """
-        import sys
+        return self._run_sync(coro)
 
-        async def _start():
-            await self.connect()
-            if await self.is_user_authorized():
-                return self
+    # ── Context manager (sync) ────────────────────────────────────────────────
 
-            if bot_token:
-                await self.sign_in_bot(bot_token)
-                return self
+    def __enter__(self):
+        """
+        Sync context manager support.
 
-            if phone:
-                sent = await self.send_code_request(phone)
-                code = (code_callback() if code_callback
-                        else input('Enter the code: '))
-                try:
-                    await self.sign_in(phone, code,
-                                       phone_code_hash=sent.phone_code_hash)
-                except SessionPasswordNeededError:
-                    pwd = password or input('Enter 2FA password: ')
-                    await self._sign_in_2fa(pwd)
+        Example:
+            with TelegramClient(...) as client:
+                me = client.run(client.get_me())
+        """
+        self._run_sync(self.start())
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        try:
+            self._run_sync(self.disconnect())
+        finally:
+            if self._loop and not self._loop.is_closed():
+                self._loop.close()
+                self._loop = None
+
+    # ── Context manager (async) ───────────────────────────────────────────────
+
+    async def __aenter__(self):
+        """
+        Async context manager support.
+
+        Example:
+            async with TelegramClient(...) as client:
+                me = await client.get_me()
+        """
+        await self.start()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.disconnect()
+
+    # ── Start ─────────────────────────────────────────────────────────────────
+
+    async def start(self, phone=None, password=None, bot_token=None,
+                    code_callback=None):
+        """
+        Connect and authenticate. Works in both async and sync contexts.
+
+        Async usage:
+            await client.start(phone='+1234567890')
+
+        Sync usage (via __enter__):
+            with client:
+                ...
+        """
+        await self.connect()
+        if await self.is_user_authorized():
             return self
 
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(_start())
+        if bot_token:
+            await self.sign_in_bot(bot_token)
+            return self
+
+        if phone:
+            sent = await self.send_code_request(phone)
+            code = (code_callback() if code_callback
+                    else input('Enter the code: '))
+            try:
+                await self.sign_in(phone, code,
+                                   phone_code_hash=sent.phone_code_hash)
+            except SessionPasswordNeededError:
+                pwd = password or input('Enter 2FA password: ')
+                await self._sign_in_2fa(pwd)
+        return self
