@@ -30,6 +30,13 @@ from .errors import (
     TglibError, RPCError, FloodWaitError,
     SessionPasswordNeededError, SecurityError,
 )
+from .crypto.backend import (
+    set_backend,
+    get_backend,
+    list_backends,
+    print_backends,
+    BACKENDS,
+)
 from . import tl, helpers
 
 __version__ = '1.0.0'
@@ -44,4 +51,10 @@ __all__ = [
     'SecurityError',
     'tl',
     'helpers',
+    # Crypto backend control
+    'set_backend',
+    'get_backend',
+    'list_backends',
+    'print_backends',
+    'BACKENDS',
 ]

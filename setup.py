@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="tglib",
-    version="0.1.3",
+    version="0.1.4",
     author="Ankit Chaubey",
     author_email="ankitchaubey.dev@gmail.com",
     description="An experimental full MTProto Python client library",
@@ -35,5 +35,15 @@ setup(
         "pycryptodome",
         "aiosqlite",
     ],
+    extras_require={
+        # Recommended: ARM-CE / AES-NI via OpenSSL EVP (fastest, preferred)
+        "cipheron": ["cipheron"],
+        # Alternative: AES-NI accelerated with pure-Python fallback
+        "cryptogram": ["cryptogram"],
+        # Legacy C extension (kept for compatibility)
+        "fast": ["cryptg"],
+        # Install everything and let TGLib pick the best available backend
+        "all": ["cipheron", "cryptogram", "cryptg"],
+    },
     keywords=["telegram", "mtproto", "tglib", "client", "api", "bot", "async"],
 )

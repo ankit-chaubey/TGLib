@@ -27,7 +27,7 @@
 - ⚡ **Async-first** — built entirely on `asyncio`
 - 🔄 **Sync & Async support** — use whichever style you prefer
 - 🗄️ **Session persistence** — via `aiosqlite`
-- 🔒 **Encryption** — powered by `pyaes` and `pycryptodome`
+- 🔒 **Encryption** — powered by `cipheron` (ARM-CE/AES-NI) › `cryptogram` › `cryptg` › `pycryptodome` › `pyaes`
 - 🤖 **Bot & User client** — supports both bot tokens and phone login
 - 🪶 **Lightweight** — minimal dependencies, maximum control
 - 🐍 **Python 3.10+** — uses modern Python features
@@ -36,17 +36,44 @@
 
 ## 📦 Installation
 
-**From PyPI:**
+**From PyPI (with recommended crypto accelerator):**
+```bash
+pip install tglib[cipheron]
+```
+
+**From PyPI (with alternative accelerator):**
+```bash
+pip install tglib[cryptogram]
+```
+
+**Basic install (falls back to pure Python):**
 ```bash
 pip install tglib
+```
+
+**Install all accelerators and let TGLib pick the fastest:**
+```bash
+pip install tglib[all]
 ```
 
 **From source:**
 ```bash
 git clone https://github.com/ankit-chaubey/TGLib.git
 cd TGLib
-pip install -e .
+pip install -e .[cipheron]
 ```
+
+### 🔒 Crypto Backend Priority
+
+TGLib automatically selects the fastest available AES/factorization backend:
+
+| Priority | Package | Description |
+|----------|---------|-------------|
+| 1st ✅ | `cipheron` | ARM-CE / AES-NI via OpenSSL EVP — **recommended** |
+| 2nd | `cryptogram` | AES-NI with pure-Python fallback |
+| 3rd | `cryptg` | Legacy C extension (compatibility) |
+| 4th | `pycryptodome` | CTR/CBC only; IGE via Python |
+| 5th | `pyaes` | Pure-Python fallback (always available) |
 
 ---
 
