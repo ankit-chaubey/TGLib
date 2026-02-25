@@ -2056,6 +2056,45 @@ class ReorderStarGiftCollectionsRequest(TLRequest):
         return cls(**_args)
 
 
+class RequestRecurringPaymentRequest(TLRequest):
+    """TL type: payments.requestRecurringPayment"""
+    CONSTRUCTOR_ID = 0x146e958d
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, user_id: 'TypeInputUser', recurring_init_charge: str, invoice_media: 'TypeInputMedia'):
+        self.user_id = user_id
+        self.recurring_init_charge = recurring_init_charge
+        self.invoice_media = invoice_media
+
+    def to_dict(self):
+        return {
+            '_': 'RequestRecurringPaymentRequest',
+            'user_id': self.user_id,
+            'recurring_init_charge': self.recurring_init_charge,
+            'invoice_media': self.invoice_media,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(bytes(self.user_id))
+        buf.write(TLObject.serialize_bytes(self.recurring_init_charge))
+        buf.write(bytes(self.invoice_media))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_user_id = reader.tgread_object()
+        _args['user_id'] = _val_user_id
+        _val_recurring_init_charge = reader.tgread_string()
+        _args['recurring_init_charge'] = _val_recurring_init_charge
+        _val_invoice_media = reader.tgread_object()
+        _args['invoice_media'] = _val_invoice_media
+        return cls(**_args)
+
+
 class ResolveStarGiftOfferRequest(TLRequest):
     """TL type: payments.resolveStarGiftOffer"""
     CONSTRUCTOR_ID = 0xe9ce781c

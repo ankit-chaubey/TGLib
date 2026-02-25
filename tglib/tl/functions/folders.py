@@ -7,6 +7,35 @@ import struct
 from datetime import datetime
 
 
+class DeleteFolderRequest(TLRequest):
+    """TL type: folders.deleteFolder"""
+    CONSTRUCTOR_ID = 0x1c295881
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, folder_id: int):
+        self.folder_id = folder_id
+
+    def to_dict(self):
+        return {
+            '_': 'DeleteFolderRequest',
+            'folder_id': self.folder_id,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(struct.pack('<i', self.folder_id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_folder_id = reader.read_int()
+        _args['folder_id'] = _val_folder_id
+        return cls(**_args)
+
+
 class EditPeerFoldersRequest(TLRequest):
     """TL type: folders.editPeerFolders"""
     CONSTRUCTOR_ID = 0x6847d0ab

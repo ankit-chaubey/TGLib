@@ -48,16 +48,17 @@ class AcceptEncryptionRequest(TLRequest):
 
 class AcceptUrlAuthRequest(TLRequest):
     """TL type: messages.acceptUrlAuth"""
-    CONSTRUCTOR_ID = 0xb12c7125
+    CONSTRUCTOR_ID = 0x67a3f0de
     SUBCLASS_OF_ID = 0x7765cb1e
 
-    def __init__(self, write_allowed: Optional[bool] = None, share_phone_number: Optional[bool] = None, peer: Optional['TypeInputPeer'] = None, msg_id: Optional[int] = None, button_id: Optional[int] = None, url: Optional[str] = None):
+    def __init__(self, write_allowed: Optional[bool] = None, share_phone_number: Optional[bool] = None, peer: Optional['TypeInputPeer'] = None, msg_id: Optional[int] = None, button_id: Optional[int] = None, url: Optional[str] = None, match_code: Optional[str] = None):
         self.write_allowed = write_allowed
         self.share_phone_number = share_phone_number
         self.peer = peer
         self.msg_id = msg_id
         self.button_id = button_id
         self.url = url
+        self.match_code = match_code
 
     def to_dict(self):
         return {
@@ -68,6 +69,7 @@ class AcceptUrlAuthRequest(TLRequest):
             'msg_id': self.msg_id,
             'button_id': self.button_id,
             'url': self.url,
+            'match_code': self.match_code,
         }
 
     def _bytes(self) -> bytes:
@@ -87,6 +89,8 @@ class AcceptUrlAuthRequest(TLRequest):
             flags |= (1 << 1)
         if self.url is not None:
             flags |= (1 << 2)
+        if self.match_code is not None:
+            flags |= (1 << 4)
         buf.write(struct.pack('<I', flags))
         if self.peer is not None:
             buf.write(bytes(self.peer))
@@ -96,6 +100,8 @@ class AcceptUrlAuthRequest(TLRequest):
             buf.write(struct.pack('<i', self.button_id))
         if self.url is not None:
             buf.write(TLObject.serialize_bytes(self.url))
+        if self.match_code is not None:
+            buf.write(TLObject.serialize_bytes(self.match_code))
         return buf.getvalue()
 
     @classmethod
@@ -124,6 +130,11 @@ class AcceptUrlAuthRequest(TLRequest):
             _args['url'] = _val_url
         else:
             _args['url'] = None
+        if flags & (1 << 4):
+            _val_match_code = reader.tgread_string()
+            _args['match_code'] = _val_match_code
+        else:
+            _args['match_code'] = None
         return cls(**_args)
 
 
@@ -328,6 +339,40 @@ class CheckQuickReplyShortcutRequest(TLRequest):
         _args = {}
         _val_shortcut = reader.tgread_string()
         _args['shortcut'] = _val_shortcut
+        return cls(**_args)
+
+
+class CheckUrlAuthMatchCodeRequest(TLRequest):
+    """TL type: messages.checkUrlAuthMatchCode"""
+    CONSTRUCTOR_ID = 0xc9a47b0b
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, url: str, match_code: str):
+        self.url = url
+        self.match_code = match_code
+
+    def to_dict(self):
+        return {
+            '_': 'CheckUrlAuthMatchCodeRequest',
+            'url': self.url,
+            'match_code': self.match_code,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(TLObject.serialize_bytes(self.url))
+        buf.write(TLObject.serialize_bytes(self.match_code))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_url = reader.tgread_string()
+        _args['url'] = _val_url
+        _val_match_code = reader.tgread_string()
+        _args['match_code'] = _val_match_code
         return cls(**_args)
 
 
@@ -588,6 +633,35 @@ class CreateForumTopicRequest(TLRequest):
             _args['send_as'] = _val_send_as
         else:
             _args['send_as'] = None
+        return cls(**_args)
+
+
+class DeclineUrlAuthRequest(TLRequest):
+    """TL type: messages.declineUrlAuth"""
+    CONSTRUCTOR_ID = 0x35436bbc
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, url: str):
+        self.url = url
+
+    def to_dict(self):
+        return {
+            '_': 'DeclineUrlAuthRequest',
+            'url': self.url,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(TLObject.serialize_bytes(self.url))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_url = reader.tgread_string()
+        _args['url'] = _val_url
         return cls(**_args)
 
 
@@ -1277,6 +1351,45 @@ class EditChatDefaultBannedRightsRequest(TLRequest):
         return cls(**_args)
 
 
+class EditChatParticipantRankRequest(TLRequest):
+    """TL type: messages.editChatParticipantRank"""
+    CONSTRUCTOR_ID = 0xa00f32b0
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, peer: 'TypeInputPeer', participant: 'TypeInputPeer', rank: str):
+        self.peer = peer
+        self.participant = participant
+        self.rank = rank
+
+    def to_dict(self):
+        return {
+            '_': 'EditChatParticipantRankRequest',
+            'peer': self.peer,
+            'participant': self.participant,
+            'rank': self.rank,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(bytes(self.peer))
+        buf.write(bytes(self.participant))
+        buf.write(TLObject.serialize_bytes(self.rank))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        _val_participant = reader.tgread_object()
+        _args['participant'] = _val_participant
+        _val_rank = reader.tgread_string()
+        _args['rank'] = _val_rank
+        return cls(**_args)
+
+
 class EditChatPhotoRequest(TLRequest):
     """TL type: messages.editChatPhoto"""
     CONSTRUCTOR_ID = 0x35ddd674
@@ -1935,6 +2048,45 @@ class FaveStickerRequest(TLRequest):
         return cls(**_args)
 
 
+class ForwardMessageRequest(TLRequest):
+    """TL type: messages.forwardMessage"""
+    CONSTRUCTOR_ID = 0x33963bf9
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, peer: 'TypeInputPeer', id: int, random_id: int = None):
+        self.peer = peer
+        self.id = id
+        self.random_id = random_id
+
+    def to_dict(self):
+        return {
+            '_': 'ForwardMessageRequest',
+            'peer': self.peer,
+            'id': self.id,
+            'random_id': self.random_id,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(bytes(self.peer))
+        buf.write(struct.pack('<i', self.id))
+        buf.write(struct.pack('<q', self.random_id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        _val_id = reader.read_int()
+        _args['id'] = _val_id
+        _val_random_id = reader.read_long()
+        _args['random_id'] = _val_random_id
+        return cls(**_args)
+
+
 class ForwardMessagesRequest(TLRequest):
     """TL type: messages.forwardMessages"""
     CONSTRUCTOR_ID = 0x13704a7c
@@ -2173,6 +2325,45 @@ class GetAdminsWithInvitesRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
+        return cls(**_args)
+
+
+class GetAllChatsRequest(TLRequest):
+    """TL type: messages.getAllChats"""
+    CONSTRUCTOR_ID = 0x875f74be
+    SUBCLASS_OF_ID = 0x99d5cb14
+
+    def __init__(self, except_ids: List[int]):
+        self.except_ids = except_ids
+
+    def to_dict(self):
+        return {
+            '_': 'GetAllChatsRequest',
+            'except_ids': self.except_ids,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.except_ids)))
+        for item in self.except_ids:
+            buf.write(struct.pack('<q', item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_except_ids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_except_ids = []
+        for _ in range(_count_except_ids):
+            _item_except_ids = reader.read_long()
+            _list_except_ids.append(_item_except_ids)
+        _args['except_ids'] = _list_except_ids
         return cls(**_args)
 
 
@@ -5487,6 +5678,48 @@ class GetSponsoredMessagesRequest(TLRequest):
         return cls(**_args)
 
 
+class GetStatsUrlRequest(TLRequest):
+    """TL type: messages.getStatsURL"""
+    CONSTRUCTOR_ID = 0x812c2ae6
+    SUBCLASS_OF_ID = 0x8d4c94c0
+
+    def __init__(self, peer: 'TypeInputPeer', params: str, dark: Optional[bool] = None):
+        self.peer = peer
+        self.params = params
+        self.dark = dark
+
+    def to_dict(self):
+        return {
+            '_': 'GetStatsUrlRequest',
+            'peer': self.peer,
+            'params': self.params,
+            'dark': self.dark,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.dark:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.peer))
+        buf.write(TLObject.serialize_bytes(self.params))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['dark'] = bool(flags & (1 << 0))
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        _val_params = reader.tgread_string()
+        _args['params'] = _val_params
+        return cls(**_args)
+
+
 class GetStickerSetRequest(TLRequest):
     """TL type: messages.getStickerSet"""
     CONSTRUCTOR_ID = 0xc8a0ec74
@@ -5844,6 +6077,45 @@ class GetWebPagePreviewRequest(TLRequest):
             _args['entities'] = _list_entities
         else:
             _args['entities'] = None
+        return cls(**_args)
+
+
+class GetWebViewResultRequest(TLRequest):
+    """TL type: messages.getWebViewResult"""
+    CONSTRUCTOR_ID = 0x22b6c214
+    SUBCLASS_OF_ID = 0xd8597669
+
+    def __init__(self, peer: 'TypeInputPeer', bot: 'TypeInputUser', query_id: int):
+        self.peer = peer
+        self.bot = bot
+        self.query_id = query_id
+
+    def to_dict(self):
+        return {
+            '_': 'GetWebViewResultRequest',
+            'peer': self.peer,
+            'bot': self.bot,
+            'query_id': self.query_id,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(bytes(self.peer))
+        buf.write(bytes(self.bot))
+        buf.write(struct.pack('<q', self.query_id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        _val_bot = reader.tgread_object()
+        _args['bot'] = _val_bot
+        _val_query_id = reader.read_long()
+        _args['query_id'] = _val_query_id
         return cls(**_args)
 
 
@@ -7400,14 +7672,15 @@ class RequestSimpleWebViewRequest(TLRequest):
 
 class RequestUrlAuthRequest(TLRequest):
     """TL type: messages.requestUrlAuth"""
-    CONSTRUCTOR_ID = 0x198fb446
+    CONSTRUCTOR_ID = 0x894cc99c
     SUBCLASS_OF_ID = 0x7765cb1e
 
-    def __init__(self, peer: Optional['TypeInputPeer'] = None, msg_id: Optional[int] = None, button_id: Optional[int] = None, url: Optional[str] = None):
+    def __init__(self, peer: Optional['TypeInputPeer'] = None, msg_id: Optional[int] = None, button_id: Optional[int] = None, url: Optional[str] = None, in_app_origin: Optional[str] = None):
         self.peer = peer
         self.msg_id = msg_id
         self.button_id = button_id
         self.url = url
+        self.in_app_origin = in_app_origin
 
     def to_dict(self):
         return {
@@ -7416,6 +7689,7 @@ class RequestUrlAuthRequest(TLRequest):
             'msg_id': self.msg_id,
             'button_id': self.button_id,
             'url': self.url,
+            'in_app_origin': self.in_app_origin,
         }
 
     def _bytes(self) -> bytes:
@@ -7431,6 +7705,8 @@ class RequestUrlAuthRequest(TLRequest):
             flags |= (1 << 1)
         if self.url is not None:
             flags |= (1 << 2)
+        if self.in_app_origin is not None:
+            flags |= (1 << 3)
         buf.write(struct.pack('<I', flags))
         if self.peer is not None:
             buf.write(bytes(self.peer))
@@ -7440,6 +7716,8 @@ class RequestUrlAuthRequest(TLRequest):
             buf.write(struct.pack('<i', self.button_id))
         if self.url is not None:
             buf.write(TLObject.serialize_bytes(self.url))
+        if self.in_app_origin is not None:
+            buf.write(TLObject.serialize_bytes(self.in_app_origin))
         return buf.getvalue()
 
     @classmethod
@@ -7466,6 +7744,11 @@ class RequestUrlAuthRequest(TLRequest):
             _args['url'] = _val_url
         else:
             _args['url'] = None
+        if flags & (1 << 3):
+            _val_in_app_origin = reader.tgread_string()
+            _args['in_app_origin'] = _val_in_app_origin
+        else:
+            _args['in_app_origin'] = None
         return cls(**_args)
 
 
@@ -10312,6 +10595,35 @@ class SetTypingRequest(TLRequest):
         return cls(**_args)
 
 
+class SetWebViewResultRequest(TLRequest):
+    """TL type: messages.setWebViewResult"""
+    CONSTRUCTOR_ID = 0xe41cd11d
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, query_id: int):
+        self.query_id = query_id
+
+    def to_dict(self):
+        return {
+            '_': 'SetWebViewResultRequest',
+            'query_id': self.query_id,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(struct.pack('<q', self.query_id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_query_id = reader.read_long()
+        _args['query_id'] = _val_query_id
+        return cls(**_args)
+
+
 class StartBotRequest(TLRequest):
     """TL type: messages.startBot"""
     CONSTRUCTOR_ID = 0xe6df7378
@@ -10548,35 +10860,49 @@ class ToggleDialogPinRequest(TLRequest):
 
 class ToggleNoForwardsRequest(TLRequest):
     """TL type: messages.toggleNoForwards"""
-    CONSTRUCTOR_ID = 0xb11eafa2
+    CONSTRUCTOR_ID = 0xb2081a35
     SUBCLASS_OF_ID = 0x8af52aac
 
-    def __init__(self, peer: 'TypeInputPeer', enabled: bool):
+    def __init__(self, peer: 'TypeInputPeer', enabled: bool, request_msg_id: Optional[int] = None):
         self.peer = peer
         self.enabled = enabled
+        self.request_msg_id = request_msg_id
 
     def to_dict(self):
         return {
             '_': 'ToggleNoForwardsRequest',
             'peer': self.peer,
             'enabled': self.enabled,
+            'request_msg_id': self.request_msg_id,
         }
 
     def _bytes(self) -> bytes:
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.request_msg_id is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
         buf.write(struct.pack('<I', 0x997275b5 if self.enabled else 0xbc799737))
+        if self.request_msg_id is not None:
+            buf.write(struct.pack('<i', self.request_msg_id))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
+        flags = reader.read_int(signed=False)
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         _val_enabled = reader.tgread_bool()
         _args['enabled'] = _val_enabled
+        if flags & (1 << 0):
+            _val_request_msg_id = reader.read_int()
+            _args['request_msg_id'] = _val_request_msg_id
+        else:
+            _args['request_msg_id'] = None
         return cls(**_args)
 
 

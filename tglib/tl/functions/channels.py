@@ -378,10 +378,10 @@ class DeleteParticipantHistoryRequest(TLRequest):
 
 class EditAdminRequest(TLRequest):
     """TL type: channels.editAdmin"""
-    CONSTRUCTOR_ID = 0xd33c8902
+    CONSTRUCTOR_ID = 0x9a98ad68
     SUBCLASS_OF_ID = 0x8af52aac
 
-    def __init__(self, channel: 'TypeInputChannel', user_id: 'TypeInputUser', admin_rights: 'TypeChatAdminRights', rank: str):
+    def __init__(self, channel: 'TypeInputChannel', user_id: 'TypeInputUser', admin_rights: 'TypeChatAdminRights', rank: Optional[str] = None):
         self.channel = channel
         self.user_id = user_id
         self.admin_rights = admin_rights
@@ -400,23 +400,32 @@ class EditAdminRequest(TLRequest):
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.rank is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.channel))
         buf.write(bytes(self.user_id))
         buf.write(bytes(self.admin_rights))
-        buf.write(TLObject.serialize_bytes(self.rank))
+        if self.rank is not None:
+            buf.write(TLObject.serialize_bytes(self.rank))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
+        flags = reader.read_int(signed=False)
         _val_channel = reader.tgread_object()
         _args['channel'] = _val_channel
         _val_user_id = reader.tgread_object()
         _args['user_id'] = _val_user_id
         _val_admin_rights = reader.tgread_object()
         _args['admin_rights'] = _val_admin_rights
-        _val_rank = reader.tgread_string()
-        _args['rank'] = _val_rank
+        if flags & (1 << 0):
+            _val_rank = reader.tgread_string()
+            _args['rank'] = _val_rank
+        else:
+            _args['rank'] = None
         return cls(**_args)
 
 

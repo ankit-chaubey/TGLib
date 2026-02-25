@@ -660,6 +660,45 @@ class GetTopPeersRequest(TLRequest):
         return cls(**_args)
 
 
+class ImportCardRequest(TLRequest):
+    """TL type: contacts.importCard"""
+    CONSTRUCTOR_ID = 0x4fe196fe
+    SUBCLASS_OF_ID = 0x2da17977
+
+    def __init__(self, export_card: List[int]):
+        self.export_card = export_card
+
+    def to_dict(self):
+        return {
+            '_': 'ImportCardRequest',
+            'export_card': self.export_card,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.export_card)))
+        for item in self.export_card:
+            buf.write(struct.pack('<i', item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_export_card = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_export_card = []
+        for _ in range(_count_export_card):
+            _item_export_card = reader.read_int()
+            _list_export_card.append(_item_export_card)
+        _args['export_card'] = _list_export_card
+        return cls(**_args)
+
+
 class ImportContactTokenRequest(TLRequest):
     """TL type: contacts.importContactToken"""
     CONSTRUCTOR_ID = 0x13005788
