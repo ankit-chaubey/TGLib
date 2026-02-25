@@ -57,26 +57,38 @@ _active:    str | None = None               # currently selected backend name
 def _probe_cipheron() -> dict | None:
     try:
         mod = importlib.import_module('cipheron')
+        # has_aesni / get_backend exist on the C extension build;
+        # guard with getattr so a pure-Python fallback build still works.
+        hw_accel  = bool(getattr(mod, 'has_aesni', lambda: False)())
+        hw_detail = str(getattr(mod, 'get_backend', lambda: 'cipheron')())
         return {
             'module':    mod,
-            'hw_accel':  mod.has_aesni(),
-            'hw_detail': mod.get_backend(),
+            'hw_accel':  hw_accel,
+            'hw_detail': hw_detail,
             'supports':  {'ige', 'ctr', 'cbc', 'factorize'},
         }
     except ImportError:
+        return None
+    except Exception as exc:
+        __log__.debug('cipheron probe failed: %s', exc)
         return None
 
 
 def _probe_cryptogram() -> dict | None:
     try:
         mod = importlib.import_module('cryptogram')
+        hw_accel  = bool(getattr(mod, 'has_aesni', lambda: False)())
+        hw_detail = str(getattr(mod, 'get_backend', lambda: 'cryptogram')())
         return {
             'module':    mod,
-            'hw_accel':  mod.has_aesni(),
-            'hw_detail': mod.get_backend(),
+            'hw_accel':  hw_accel,
+            'hw_detail': hw_detail,
             'supports':  {'ige', 'ctr', 'cbc', 'factorize'},
         }
     except ImportError:
+        return None
+    except Exception as exc:
+        __log__.debug('cryptogram probe failed: %s', exc)
         return None
 
 

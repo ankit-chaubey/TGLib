@@ -89,9 +89,14 @@ class MessagePacker:
                 break
 
         # Write container header
+        container_msg_id = self._state._get_new_msg_id() if hasattr(self._state, '_get_new_msg_id') else 0
         data.extend(struct.pack('<I', MessageContainer.CONSTRUCTOR_ID))
         data.extend(struct.pack('<i', len(states)))
         data.extend(container_buf)
+
+        # Stamp each state with the container's msg_id so _pop_states works
+        for state in states:
+            state.container_id = container_msg_id
 
         self._log.debug('Sending container with %d messages', len(states))
         return bytes(data), states

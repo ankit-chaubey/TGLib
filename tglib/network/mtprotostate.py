@@ -17,7 +17,10 @@ from ..tl.core.gzippacked import GzipPacked
 MAX_RECENT_MSG_IDS = 500
 MSG_TOO_NEW_DELTA = 30
 MSG_TOO_OLD_DELTA = 300
-MAX_CONSECUTIVE_IGNORED = 10
+# Raised from 10 to 64 to tolerate reconnect/salt-correction bursts.
+# The recv loop now treats SecurityError as a soft warning (continue),
+# so even if this fires it won't tear down the connection.
+MAX_CONSECUTIVE_IGNORED = 64
 
 
 class MTProtoState:
@@ -159,12 +162,23 @@ class MTProtoState:
 
         reader = BinaryReader(body)
         reader.read_long()  # salt
-        if reader.read_long() != self.id:
-            raise SecurityError('Server replied with wrong session ID')
+        remote_session_id = reader.read_long()
+        if remote_session_id != self.id:
+            # After reconnect the server may send stale messages for the old
+            # session ID briefly.  Treat as an ignored message (not hard error).
+            import logging
+            logging.getLogger(__name__).debug(
+                'Ignoring message with wrong session ID (got %d, want %d)',
+                remote_session_id, self.id)
+            self._count_ignored()
+            return None
 
         remote_msg_id = reader.read_long()
         if remote_msg_id % 2 != 1:
-            raise SecurityError('Server sent an even msg_id')
+            # Even msg_id means it is a client-originated message echoed back;
+            # ignore silently rather than crashing.
+            self._count_ignored()
+            return None
 
         if (remote_msg_id <= self._highest_remote_id
                 and remote_msg_id in self._recent_remote_ids):

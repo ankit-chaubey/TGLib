@@ -25,6 +25,7 @@ Quick Start:
         await client.disconnect()
 """
 from .client import TelegramClient
+from .entitycache import EntityCache
 from .sessions import SQLiteSession, MemorySession
 from .errors import (
     TglibError, RPCError, FloodWaitError,
@@ -42,6 +43,7 @@ from . import tl, helpers
 __version__ = '1.0.0'
 __all__ = [
     'TelegramClient',
+    'EntityCache',
     'SQLiteSession',
     'MemorySession',
     'TglibError',

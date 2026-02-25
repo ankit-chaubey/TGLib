@@ -127,31 +127,13 @@ class SQLiteSession(MemorySession):
             self._conn = None
 
     def process_entities(self, tlo):
-        """Cache entities (users, chats, channels) from a TL object."""
+        """Cache entities (users, chats, channels) from any TL object.
+        
+        Works recursively so it catches entities nested inside Updates,
+        UpdatesCombined, and any other wrapper that carries .users/.chats.
+        """
         rows = []
-        entities = []
-
-        if hasattr(tlo, 'users'):
-            entities.extend(tlo.users)
-        if hasattr(tlo, 'chats'):
-            entities.extend(tlo.chats)
-        if hasattr(tlo, 'user'):
-            entities.append(tlo.user)
-
-        for e in entities:
-            if not hasattr(e, 'id'):
-                continue
-            eid = getattr(e, 'id', None)
-            ehash = getattr(e, 'access_hash', 0) or 0
-            username = getattr(e, 'username', None)
-            phone = getattr(e, 'phone', None)
-            fn = getattr(e, 'first_name', None)
-            ln = getattr(e, 'last_name', None)
-            title = getattr(e, 'title', None)
-            name = title or ' '.join(filter(None, [fn, ln])) or None
-            rows.append((eid, ehash, username, phone, name,
-                         int(datetime.datetime.utcnow().timestamp())))
-
+        self._collect_entities(tlo, rows, depth=0)
         if rows:
             c = self._cursor()
             c.executemany(
@@ -159,6 +141,40 @@ class SQLiteSession(MemorySession):
             )
             c.close()
             self.save()
+
+    def _collect_entities(self, tlo, rows: list, depth: int = 0):
+        """Recursively collect (id, hash, username, phone, name, ts) rows."""
+        if depth > 4 or tlo is None:
+            return
+        ts = int(datetime.datetime.utcnow().timestamp())
+
+        # Collect from .users and .chats lists on this object
+        entities = []
+        if hasattr(tlo, 'users') and tlo.users:
+            entities.extend(tlo.users)
+        if hasattr(tlo, 'chats') and tlo.chats:
+            entities.extend(tlo.chats)
+        if hasattr(tlo, 'user') and tlo.user:
+            entities.append(tlo.user)
+
+        for e in entities:
+            if not hasattr(e, 'id'):
+                continue
+            eid    = e.id
+            ehash  = getattr(e, 'access_hash', 0) or 0
+            uname  = getattr(e, 'username', None)
+            phone  = getattr(e, 'phone', None)
+            fn     = getattr(e, 'first_name', None)
+            ln     = getattr(e, 'last_name', None)
+            title  = getattr(e, 'title', None)
+            name   = title or ' '.join(filter(None, [fn, ln])) or None
+            rows.append((eid, ehash, uname, phone, name, ts))
+
+        # Recurse into nested update lists (.updates field)
+        nested = getattr(tlo, 'updates', None)
+        if nested:
+            for item in nested:
+                self._collect_entities(item, rows, depth + 1)
 
     def get_entity_rows_by_id(self, entity_id: int, exact: bool = True):
         c = self._cursor()
