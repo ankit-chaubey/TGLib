@@ -41,6 +41,71 @@ class AddStickerToSetRequest(TLRequest):
         return cls(**_args)
 
 
+class ChangeStickerRequest(TLRequest):
+    """TL type: stickers.changeSticker"""
+    CONSTRUCTOR_ID = 0xf5537ebc
+    SUBCLASS_OF_ID = 0x9b704a5a
+
+    def __init__(self, sticker: 'TypeInputDocument', emoji: Optional[str] = None, mask_coords: Optional['TypeMaskCoords'] = None, keywords: Optional[str] = None):
+        self.sticker = sticker
+        self.emoji = emoji
+        self.mask_coords = mask_coords
+        self.keywords = keywords
+
+    def to_dict(self):
+        return {
+            '_': 'ChangeStickerRequest',
+            'sticker': self.sticker,
+            'emoji': self.emoji,
+            'mask_coords': self.mask_coords,
+            'keywords': self.keywords,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.emoji is not None:
+            flags |= (1 << 0)
+        if self.mask_coords is not None:
+            flags |= (1 << 1)
+        if self.keywords is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.sticker))
+        if self.emoji is not None:
+            buf.write(TLObject.serialize_bytes(self.emoji))
+        if self.mask_coords is not None:
+            buf.write(bytes(self.mask_coords))
+        if self.keywords is not None:
+            buf.write(TLObject.serialize_bytes(self.keywords))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_sticker = reader.tgread_object()
+        _args['sticker'] = _val_sticker
+        if flags & (1 << 0):
+            _val_emoji = reader.tgread_string()
+            _args['emoji'] = _val_emoji
+        else:
+            _args['emoji'] = None
+        if flags & (1 << 1):
+            _val_mask_coords = reader.tgread_object()
+            _args['mask_coords'] = _val_mask_coords
+        else:
+            _args['mask_coords'] = None
+        if flags & (1 << 2):
+            _val_keywords = reader.tgread_string()
+            _args['keywords'] = _val_keywords
+        else:
+            _args['keywords'] = None
+        return cls(**_args)
+
+
 class ChangeStickerPositionRequest(TLRequest):
     """TL type: stickers.changeStickerPosition"""
     CONSTRUCTOR_ID = 0xffb6d4ca
@@ -101,6 +166,100 @@ class CheckShortNameRequest(TLRequest):
         _args = {}
         _val_short_name = reader.tgread_string()
         _args['short_name'] = _val_short_name
+        return cls(**_args)
+
+
+class CreateStickerSetRequest(TLRequest):
+    """TL type: stickers.createStickerSet"""
+    CONSTRUCTOR_ID = 0x9021ab67
+    SUBCLASS_OF_ID = 0x9b704a5a
+
+    def __init__(self, user_id: 'TypeInputUser', title: str, short_name: str, stickers: List['TypeInputStickerSetItem'], masks: Optional[bool] = None, emojis: Optional[bool] = None, text_color: Optional[bool] = None, thumb: Optional['TypeInputDocument'] = None, software: Optional[str] = None):
+        self.user_id = user_id
+        self.title = title
+        self.short_name = short_name
+        self.stickers = stickers
+        self.masks = masks
+        self.emojis = emojis
+        self.text_color = text_color
+        self.thumb = thumb
+        self.software = software
+
+    def to_dict(self):
+        return {
+            '_': 'CreateStickerSetRequest',
+            'user_id': self.user_id,
+            'title': self.title,
+            'short_name': self.short_name,
+            'stickers': self.stickers,
+            'masks': self.masks,
+            'emojis': self.emojis,
+            'text_color': self.text_color,
+            'thumb': self.thumb,
+            'software': self.software,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.masks:
+            flags |= (1 << 0)
+        if self.emojis:
+            flags |= (1 << 5)
+        if self.text_color:
+            flags |= (1 << 6)
+        if self.thumb is not None:
+            flags |= (1 << 2)
+        if self.software is not None:
+            flags |= (1 << 3)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.user_id))
+        buf.write(TLObject.serialize_bytes(self.title))
+        buf.write(TLObject.serialize_bytes(self.short_name))
+        if self.thumb is not None:
+            buf.write(bytes(self.thumb))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.stickers)))
+        for item in self.stickers:
+            buf.write(bytes(item))
+        if self.software is not None:
+            buf.write(TLObject.serialize_bytes(self.software))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['masks'] = bool(flags & (1 << 0))
+        _args['emojis'] = bool(flags & (1 << 5))
+        _args['text_color'] = bool(flags & (1 << 6))
+        _val_user_id = reader.tgread_object()
+        _args['user_id'] = _val_user_id
+        _val_title = reader.tgread_string()
+        _args['title'] = _val_title
+        _val_short_name = reader.tgread_string()
+        _args['short_name'] = _val_short_name
+        if flags & (1 << 2):
+            _val_thumb = reader.tgread_object()
+            _args['thumb'] = _val_thumb
+        else:
+            _args['thumb'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_stickers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_stickers = []
+        for _ in range(_count_stickers):
+            _item_stickers = reader.tgread_object()
+            _list_stickers.append(_item_stickers)
+        _args['stickers'] = _list_stickers
+        if flags & (1 << 3):
+            _val_software = reader.tgread_string()
+            _args['software'] = _val_software
+        else:
+            _args['software'] = None
         return cls(**_args)
 
 
@@ -227,6 +386,60 @@ class ReplaceStickerRequest(TLRequest):
         _args['sticker'] = _val_sticker
         _val_new_sticker = reader.tgread_object()
         _args['new_sticker'] = _val_new_sticker
+        return cls(**_args)
+
+
+class SetStickerSetThumbRequest(TLRequest):
+    """TL type: stickers.setStickerSetThumb"""
+    CONSTRUCTOR_ID = 0xa76a5392
+    SUBCLASS_OF_ID = 0x9b704a5a
+
+    def __init__(self, stickerset: 'TypeInputStickerSet', thumb: Optional['TypeInputDocument'] = None, thumb_document_id: Optional[int] = None):
+        self.stickerset = stickerset
+        self.thumb = thumb
+        self.thumb_document_id = thumb_document_id
+
+    def to_dict(self):
+        return {
+            '_': 'SetStickerSetThumbRequest',
+            'stickerset': self.stickerset,
+            'thumb': self.thumb,
+            'thumb_document_id': self.thumb_document_id,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.thumb is not None:
+            flags |= (1 << 0)
+        if self.thumb_document_id is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.stickerset))
+        if self.thumb is not None:
+            buf.write(bytes(self.thumb))
+        if self.thumb_document_id is not None:
+            buf.write(struct.pack('<q', self.thumb_document_id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_stickerset = reader.tgread_object()
+        _args['stickerset'] = _val_stickerset
+        if flags & (1 << 0):
+            _val_thumb = reader.tgread_object()
+            _args['thumb'] = _val_thumb
+        else:
+            _args['thumb'] = None
+        if flags & (1 << 1):
+            _val_thumb_document_id = reader.read_long()
+            _args['thumb_document_id'] = _val_thumb_document_id
+        else:
+            _args['thumb_document_id'] = None
         return cls(**_args)
 
 

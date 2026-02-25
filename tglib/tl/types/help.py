@@ -64,6 +64,101 @@ class AppConfigNotModified(TLObject):
         return cls()
 
 
+class AppUpdate(TLObject):
+    """TL type: help.appUpdate"""
+    CONSTRUCTOR_ID = 0xccbbce30
+    SUBCLASS_OF_ID = 0x5897069e
+
+    def __init__(self, id: int, version: str, text: str, entities: List['TypeMessageEntity'], can_not_skip: Optional[bool] = None, document: Optional['TypeDocument'] = None, url: Optional[str] = None, sticker: Optional['TypeDocument'] = None):
+        self.id = id
+        self.version = version
+        self.text = text
+        self.entities = entities
+        self.can_not_skip = can_not_skip
+        self.document = document
+        self.url = url
+        self.sticker = sticker
+
+    def to_dict(self):
+        return {
+            '_': 'AppUpdate',
+            'id': self.id,
+            'version': self.version,
+            'text': self.text,
+            'entities': self.entities,
+            'can_not_skip': self.can_not_skip,
+            'document': self.document,
+            'url': self.url,
+            'sticker': self.sticker,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.can_not_skip:
+            flags |= (1 << 0)
+        if self.document is not None:
+            flags |= (1 << 1)
+        if self.url is not None:
+            flags |= (1 << 2)
+        if self.sticker is not None:
+            flags |= (1 << 3)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.id))
+        buf.write(TLObject.serialize_bytes(self.version))
+        buf.write(TLObject.serialize_bytes(self.text))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.entities)))
+        for item in self.entities:
+            buf.write(bytes(item))
+        if self.document is not None:
+            buf.write(bytes(self.document))
+        if self.url is not None:
+            buf.write(TLObject.serialize_bytes(self.url))
+        if self.sticker is not None:
+            buf.write(bytes(self.sticker))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['can_not_skip'] = bool(flags & (1 << 0))
+        _val_id = reader.read_int()
+        _args['id'] = _val_id
+        _val_version = reader.tgread_string()
+        _args['version'] = _val_version
+        _val_text = reader.tgread_string()
+        _args['text'] = _val_text
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_entities = []
+        for _ in range(_count_entities):
+            _item_entities = reader.tgread_object()
+            _list_entities.append(_item_entities)
+        _args['entities'] = _list_entities
+        if flags & (1 << 1):
+            _val_document = reader.tgread_object()
+            _args['document'] = _val_document
+        else:
+            _args['document'] = None
+        if flags & (1 << 2):
+            _val_url = reader.tgread_string()
+            _args['url'] = _val_url
+        else:
+            _args['url'] = None
+        if flags & (1 << 3):
+            _val_sticker = reader.tgread_object()
+            _args['sticker'] = _val_sticker
+        else:
+            _args['sticker'] = None
+        return cls(**_args)
+
+
 class CountriesList(TLObject):
     """TL type: help.countriesList"""
     CONSTRUCTOR_ID = 0x87d0759e
@@ -130,6 +225,206 @@ class CountriesListNotModified(TLObject):
     @classmethod
     def from_reader(cls, reader):
         return cls()
+
+
+class Country(TLObject):
+    """TL type: help.country"""
+    CONSTRUCTOR_ID = 0xc3878e23
+    SUBCLASS_OF_ID = 0xa22e9e28
+
+    def __init__(self, iso2: str, default_name: str, country_codes: List['TypeCountryCode'], hidden: Optional[bool] = None, name: Optional[str] = None):
+        self.iso2 = iso2
+        self.default_name = default_name
+        self.country_codes = country_codes
+        self.hidden = hidden
+        self.name = name
+
+    def to_dict(self):
+        return {
+            '_': 'Country',
+            'iso2': self.iso2,
+            'default_name': self.default_name,
+            'country_codes': self.country_codes,
+            'hidden': self.hidden,
+            'name': self.name,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.hidden:
+            flags |= (1 << 0)
+        if self.name is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.iso2))
+        buf.write(TLObject.serialize_bytes(self.default_name))
+        if self.name is not None:
+            buf.write(TLObject.serialize_bytes(self.name))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.country_codes)))
+        for item in self.country_codes:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['hidden'] = bool(flags & (1 << 0))
+        _val_iso2 = reader.tgread_string()
+        _args['iso2'] = _val_iso2
+        _val_default_name = reader.tgread_string()
+        _args['default_name'] = _val_default_name
+        if flags & (1 << 1):
+            _val_name = reader.tgread_string()
+            _args['name'] = _val_name
+        else:
+            _args['name'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_country_codes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_country_codes = []
+        for _ in range(_count_country_codes):
+            _item_country_codes = reader.tgread_object()
+            _list_country_codes.append(_item_country_codes)
+        _args['country_codes'] = _list_country_codes
+        return cls(**_args)
+
+
+class CountryCode(TLObject):
+    """TL type: help.countryCode"""
+    CONSTRUCTOR_ID = 0x4203c5ef
+    SUBCLASS_OF_ID = 0x76f34665
+
+    def __init__(self, country_code: str, prefixes: Optional[List[str]] = None, patterns: Optional[List[str]] = None):
+        self.country_code = country_code
+        self.prefixes = prefixes
+        self.patterns = patterns
+
+    def to_dict(self):
+        return {
+            '_': 'CountryCode',
+            'country_code': self.country_code,
+            'prefixes': self.prefixes,
+            'patterns': self.patterns,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.prefixes is not None:
+            flags |= (1 << 0)
+        if self.patterns is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.country_code))
+        if self.prefixes is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.prefixes)))
+            for item in self.prefixes:
+                buf.write(TLObject.serialize_bytes(item))
+        if self.patterns is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.patterns)))
+            for item in self.patterns:
+                buf.write(TLObject.serialize_bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_country_code = reader.tgread_string()
+        _args['country_code'] = _val_country_code
+        if flags & (1 << 0):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_prefixes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_prefixes = []
+            for _ in range(_count_prefixes):
+                _item_prefixes = reader.tgread_string()
+                _list_prefixes.append(_item_prefixes)
+            _args['prefixes'] = _list_prefixes
+        else:
+            _args['prefixes'] = None
+        if flags & (1 << 1):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_patterns = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_patterns = []
+            for _ in range(_count_patterns):
+                _item_patterns = reader.tgread_string()
+                _list_patterns.append(_item_patterns)
+            _args['patterns'] = _list_patterns
+        else:
+            _args['patterns'] = None
+        return cls(**_args)
+
+
+class DeepLinkInfo(TLObject):
+    """TL type: help.deepLinkInfo"""
+    CONSTRUCTOR_ID = 0x6a4ee832
+    SUBCLASS_OF_ID = 0x984aac38
+
+    def __init__(self, message: str, update_app: Optional[bool] = None, entities: Optional[List['TypeMessageEntity']] = None):
+        self.message = message
+        self.update_app = update_app
+        self.entities = entities
+
+    def to_dict(self):
+        return {
+            '_': 'DeepLinkInfo',
+            'message': self.message,
+            'update_app': self.update_app,
+            'entities': self.entities,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.update_app:
+            flags |= (1 << 0)
+        if self.entities is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.message))
+        if self.entities is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.entities)))
+            for item in self.entities:
+                buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['update_app'] = bool(flags & (1 << 0))
+        _val_message = reader.tgread_string()
+        _args['message'] = _val_message
+        if flags & (1 << 1):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_entities = []
+            for _ in range(_count_entities):
+                _item_entities = reader.tgread_object()
+                _list_entities.append(_item_entities)
+            _args['entities'] = _list_entities
+        else:
+            _args['entities'] = None
+        return cls(**_args)
 
 
 class DeepLinkInfoEmpty(TLObject):
@@ -265,6 +560,87 @@ class PassportConfigNotModified(TLObject):
     @classmethod
     def from_reader(cls, reader):
         return cls()
+
+
+class PeerColorOption(TLObject):
+    """TL type: help.peerColorOption"""
+    CONSTRUCTOR_ID = 0xadec6ebe
+    SUBCLASS_OF_ID = 0x56b8ae98
+
+    def __init__(self, color_id: int, hidden: Optional[bool] = None, colors: Optional['TypePeerColorSet'] = None, dark_colors: Optional['TypePeerColorSet'] = None, channel_min_level: Optional[int] = None, group_min_level: Optional[int] = None):
+        self.color_id = color_id
+        self.hidden = hidden
+        self.colors = colors
+        self.dark_colors = dark_colors
+        self.channel_min_level = channel_min_level
+        self.group_min_level = group_min_level
+
+    def to_dict(self):
+        return {
+            '_': 'PeerColorOption',
+            'color_id': self.color_id,
+            'hidden': self.hidden,
+            'colors': self.colors,
+            'dark_colors': self.dark_colors,
+            'channel_min_level': self.channel_min_level,
+            'group_min_level': self.group_min_level,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.hidden:
+            flags |= (1 << 0)
+        if self.colors is not None:
+            flags |= (1 << 1)
+        if self.dark_colors is not None:
+            flags |= (1 << 2)
+        if self.channel_min_level is not None:
+            flags |= (1 << 3)
+        if self.group_min_level is not None:
+            flags |= (1 << 4)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.color_id))
+        if self.colors is not None:
+            buf.write(bytes(self.colors))
+        if self.dark_colors is not None:
+            buf.write(bytes(self.dark_colors))
+        if self.channel_min_level is not None:
+            buf.write(struct.pack('<i', self.channel_min_level))
+        if self.group_min_level is not None:
+            buf.write(struct.pack('<i', self.group_min_level))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['hidden'] = bool(flags & (1 << 0))
+        _val_color_id = reader.read_int()
+        _args['color_id'] = _val_color_id
+        if flags & (1 << 1):
+            _val_colors = reader.tgread_object()
+            _args['colors'] = _val_colors
+        else:
+            _args['colors'] = None
+        if flags & (1 << 2):
+            _val_dark_colors = reader.tgread_object()
+            _args['dark_colors'] = _val_dark_colors
+        else:
+            _args['dark_colors'] = None
+        if flags & (1 << 3):
+            _val_channel_min_level = reader.read_int()
+            _args['channel_min_level'] = _val_channel_min_level
+        else:
+            _args['channel_min_level'] = None
+        if flags & (1 << 4):
+            _val_group_min_level = reader.read_int()
+            _args['group_min_level'] = _val_group_min_level
+        else:
+            _args['group_min_level'] = None
+        return cls(**_args)
 
 
 class PeerColorProfileSet(TLObject):
@@ -547,6 +923,147 @@ class PremiumPromo(TLObject):
         return cls(**_args)
 
 
+class PromoData(TLObject):
+    """TL type: help.promoData"""
+    CONSTRUCTOR_ID = 0x08a4d87a
+    SUBCLASS_OF_ID = 0x9d595542
+
+    def __init__(self, expires: Optional[datetime], pending_suggestions: List[str], dismissed_suggestions: List[str], chats: List['TypeChat'], users: List['TypeUser'], proxy: Optional[bool] = None, peer: Optional['TypePeer'] = None, psa_type: Optional[str] = None, psa_message: Optional[str] = None, custom_pending_suggestion: Optional['TypePendingSuggestion'] = None):
+        self.expires = expires
+        self.pending_suggestions = pending_suggestions
+        self.dismissed_suggestions = dismissed_suggestions
+        self.chats = chats
+        self.users = users
+        self.proxy = proxy
+        self.peer = peer
+        self.psa_type = psa_type
+        self.psa_message = psa_message
+        self.custom_pending_suggestion = custom_pending_suggestion
+
+    def to_dict(self):
+        return {
+            '_': 'PromoData',
+            'expires': self.expires,
+            'pending_suggestions': self.pending_suggestions,
+            'dismissed_suggestions': self.dismissed_suggestions,
+            'chats': self.chats,
+            'users': self.users,
+            'proxy': self.proxy,
+            'peer': self.peer,
+            'psa_type': self.psa_type,
+            'psa_message': self.psa_message,
+            'custom_pending_suggestion': self.custom_pending_suggestion,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.proxy:
+            flags |= (1 << 0)
+        if self.peer is not None:
+            flags |= (1 << 3)
+        if self.psa_type is not None:
+            flags |= (1 << 1)
+        if self.psa_message is not None:
+            flags |= (1 << 2)
+        if self.custom_pending_suggestion is not None:
+            flags |= (1 << 4)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_datetime(self.expires))
+        if self.peer is not None:
+            buf.write(bytes(self.peer))
+        if self.psa_type is not None:
+            buf.write(TLObject.serialize_bytes(self.psa_type))
+        if self.psa_message is not None:
+            buf.write(TLObject.serialize_bytes(self.psa_message))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.pending_suggestions)))
+        for item in self.pending_suggestions:
+            buf.write(TLObject.serialize_bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.dismissed_suggestions)))
+        for item in self.dismissed_suggestions:
+            buf.write(TLObject.serialize_bytes(item))
+        if self.custom_pending_suggestion is not None:
+            buf.write(bytes(self.custom_pending_suggestion))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.chats)))
+        for item in self.chats:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['proxy'] = bool(flags & (1 << 0))
+        _val_expires = reader.tgread_date()
+        _args['expires'] = _val_expires
+        if flags & (1 << 3):
+            _val_peer = reader.tgread_object()
+            _args['peer'] = _val_peer
+        else:
+            _args['peer'] = None
+        if flags & (1 << 1):
+            _val_psa_type = reader.tgread_string()
+            _args['psa_type'] = _val_psa_type
+        else:
+            _args['psa_type'] = None
+        if flags & (1 << 2):
+            _val_psa_message = reader.tgread_string()
+            _args['psa_message'] = _val_psa_message
+        else:
+            _args['psa_message'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_pending_suggestions = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_pending_suggestions = []
+        for _ in range(_count_pending_suggestions):
+            _item_pending_suggestions = reader.tgread_string()
+            _list_pending_suggestions.append(_item_pending_suggestions)
+        _args['pending_suggestions'] = _list_pending_suggestions
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_dismissed_suggestions = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_dismissed_suggestions = []
+        for _ in range(_count_dismissed_suggestions):
+            _item_dismissed_suggestions = reader.tgread_string()
+            _list_dismissed_suggestions.append(_item_dismissed_suggestions)
+        _args['dismissed_suggestions'] = _list_dismissed_suggestions
+        if flags & (1 << 4):
+            _val_custom_pending_suggestion = reader.tgread_object()
+            _args['custom_pending_suggestion'] = _val_custom_pending_suggestion
+        else:
+            _args['custom_pending_suggestion'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_chats = []
+        for _ in range(_count_chats):
+            _item_chats = reader.tgread_object()
+            _list_chats.append(_item_chats)
+        _args['chats'] = _list_chats
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        return cls(**_args)
+
+
 class PromoDataEmpty(TLObject):
     """TL type: help.promoDataEmpty"""
     CONSTRUCTOR_ID = 0x98f6ac75
@@ -705,6 +1222,108 @@ class SupportName(TLObject):
         _args = {}
         _val_name = reader.tgread_string()
         _args['name'] = _val_name
+        return cls(**_args)
+
+
+class TermsOfService(TLObject):
+    """TL type: help.termsOfService"""
+    CONSTRUCTOR_ID = 0x780a0310
+    SUBCLASS_OF_ID = 0x20ee8312
+
+    def __init__(self, id: 'TypeDataJSON', text: str, entities: List['TypeMessageEntity'], popup: Optional[bool] = None, min_age_confirm: Optional[int] = None):
+        self.id = id
+        self.text = text
+        self.entities = entities
+        self.popup = popup
+        self.min_age_confirm = min_age_confirm
+
+    def to_dict(self):
+        return {
+            '_': 'TermsOfService',
+            'id': self.id,
+            'text': self.text,
+            'entities': self.entities,
+            'popup': self.popup,
+            'min_age_confirm': self.min_age_confirm,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.popup:
+            flags |= (1 << 0)
+        if self.min_age_confirm is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.id))
+        buf.write(TLObject.serialize_bytes(self.text))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.entities)))
+        for item in self.entities:
+            buf.write(bytes(item))
+        if self.min_age_confirm is not None:
+            buf.write(struct.pack('<i', self.min_age_confirm))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['popup'] = bool(flags & (1 << 0))
+        _val_id = reader.tgread_object()
+        _args['id'] = _val_id
+        _val_text = reader.tgread_string()
+        _args['text'] = _val_text
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_entities = []
+        for _ in range(_count_entities):
+            _item_entities = reader.tgread_object()
+            _list_entities.append(_item_entities)
+        _args['entities'] = _list_entities
+        if flags & (1 << 1):
+            _val_min_age_confirm = reader.read_int()
+            _args['min_age_confirm'] = _val_min_age_confirm
+        else:
+            _args['min_age_confirm'] = None
+        return cls(**_args)
+
+
+class TermsOfServiceUpdate(TLObject):
+    """TL type: help.termsOfServiceUpdate"""
+    CONSTRUCTOR_ID = 0x28ecf961
+    SUBCLASS_OF_ID = 0x293c2977
+
+    def __init__(self, expires: Optional[datetime], terms_of_service: 'TypeTermsOfService'):
+        self.expires = expires
+        self.terms_of_service = terms_of_service
+
+    def to_dict(self):
+        return {
+            '_': 'TermsOfServiceUpdate',
+            'expires': self.expires,
+            'terms_of_service': self.terms_of_service,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(TLObject.serialize_datetime(self.expires))
+        buf.write(bytes(self.terms_of_service))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_expires = reader.tgread_date()
+        _args['expires'] = _val_expires
+        _val_terms_of_service = reader.tgread_object()
+        _args['terms_of_service'] = _val_terms_of_service
         return cls(**_args)
 
 

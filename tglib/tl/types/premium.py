@@ -6,6 +6,206 @@ import struct
 from datetime import datetime
 
 
+class BoostsList(TLObject):
+    """TL type: premium.boostsList"""
+    CONSTRUCTOR_ID = 0x86f8613c
+    SUBCLASS_OF_ID = 0x2235a8bd
+
+    def __init__(self, count: int, boosts: List['TypeBoost'], users: List['TypeUser'], next_offset: Optional[str] = None):
+        self.count = count
+        self.boosts = boosts
+        self.users = users
+        self.next_offset = next_offset
+
+    def to_dict(self):
+        return {
+            '_': 'BoostsList',
+            'count': self.count,
+            'boosts': self.boosts,
+            'users': self.users,
+            'next_offset': self.next_offset,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.next_offset is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.count))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.boosts)))
+        for item in self.boosts:
+            buf.write(bytes(item))
+        if self.next_offset is not None:
+            buf.write(TLObject.serialize_bytes(self.next_offset))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_count = reader.read_int()
+        _args['count'] = _val_count
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_boosts = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_boosts = []
+        for _ in range(_count_boosts):
+            _item_boosts = reader.tgread_object()
+            _list_boosts.append(_item_boosts)
+        _args['boosts'] = _list_boosts
+        if flags & (1 << 0):
+            _val_next_offset = reader.tgread_string()
+            _args['next_offset'] = _val_next_offset
+        else:
+            _args['next_offset'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        return cls(**_args)
+
+
+class BoostsStatus(TLObject):
+    """TL type: premium.boostsStatus"""
+    CONSTRUCTOR_ID = 0x4959427a
+    SUBCLASS_OF_ID = 0xc31b1ab9
+
+    def __init__(self, level: int, current_level_boosts: int, boosts: int, boost_url: str, my_boost: Optional[bool] = None, gift_boosts: Optional[int] = None, next_level_boosts: Optional[int] = None, premium_audience: Optional['TypeStatsPercentValue'] = None, prepaid_giveaways: Optional[List['TypePrepaidGiveaway']] = None, my_boost_slots: Optional[List[int]] = None):
+        self.level = level
+        self.current_level_boosts = current_level_boosts
+        self.boosts = boosts
+        self.boost_url = boost_url
+        self.my_boost = my_boost
+        self.gift_boosts = gift_boosts
+        self.next_level_boosts = next_level_boosts
+        self.premium_audience = premium_audience
+        self.prepaid_giveaways = prepaid_giveaways
+        self.my_boost_slots = my_boost_slots
+
+    def to_dict(self):
+        return {
+            '_': 'BoostsStatus',
+            'level': self.level,
+            'current_level_boosts': self.current_level_boosts,
+            'boosts': self.boosts,
+            'boost_url': self.boost_url,
+            'my_boost': self.my_boost,
+            'gift_boosts': self.gift_boosts,
+            'next_level_boosts': self.next_level_boosts,
+            'premium_audience': self.premium_audience,
+            'prepaid_giveaways': self.prepaid_giveaways,
+            'my_boost_slots': self.my_boost_slots,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.my_boost:
+            flags |= (1 << 2)
+        if self.my_boost_slots is not None:
+            flags |= (1 << 2)
+        if self.gift_boosts is not None:
+            flags |= (1 << 4)
+        if self.next_level_boosts is not None:
+            flags |= (1 << 0)
+        if self.premium_audience is not None:
+            flags |= (1 << 1)
+        if self.prepaid_giveaways is not None:
+            flags |= (1 << 3)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.level))
+        buf.write(struct.pack('<i', self.current_level_boosts))
+        buf.write(struct.pack('<i', self.boosts))
+        if self.gift_boosts is not None:
+            buf.write(struct.pack('<i', self.gift_boosts))
+        if self.next_level_boosts is not None:
+            buf.write(struct.pack('<i', self.next_level_boosts))
+        if self.premium_audience is not None:
+            buf.write(bytes(self.premium_audience))
+        buf.write(TLObject.serialize_bytes(self.boost_url))
+        if self.prepaid_giveaways is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.prepaid_giveaways)))
+            for item in self.prepaid_giveaways:
+                buf.write(bytes(item))
+        if self.my_boost_slots is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.my_boost_slots)))
+            for item in self.my_boost_slots:
+                buf.write(struct.pack('<i', item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['my_boost'] = bool(flags & (1 << 2))
+        _val_level = reader.read_int()
+        _args['level'] = _val_level
+        _val_current_level_boosts = reader.read_int()
+        _args['current_level_boosts'] = _val_current_level_boosts
+        _val_boosts = reader.read_int()
+        _args['boosts'] = _val_boosts
+        if flags & (1 << 4):
+            _val_gift_boosts = reader.read_int()
+            _args['gift_boosts'] = _val_gift_boosts
+        else:
+            _args['gift_boosts'] = None
+        if flags & (1 << 0):
+            _val_next_level_boosts = reader.read_int()
+            _args['next_level_boosts'] = _val_next_level_boosts
+        else:
+            _args['next_level_boosts'] = None
+        if flags & (1 << 1):
+            _val_premium_audience = reader.tgread_object()
+            _args['premium_audience'] = _val_premium_audience
+        else:
+            _args['premium_audience'] = None
+        _val_boost_url = reader.tgread_string()
+        _args['boost_url'] = _val_boost_url
+        if flags & (1 << 3):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_prepaid_giveaways = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_prepaid_giveaways = []
+            for _ in range(_count_prepaid_giveaways):
+                _item_prepaid_giveaways = reader.tgread_object()
+                _list_prepaid_giveaways.append(_item_prepaid_giveaways)
+            _args['prepaid_giveaways'] = _list_prepaid_giveaways
+        else:
+            _args['prepaid_giveaways'] = None
+        if flags & (1 << 2):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_my_boost_slots = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_my_boost_slots = []
+            for _ in range(_count_my_boost_slots):
+                _item_my_boost_slots = reader.read_int()
+                _list_my_boost_slots.append(_item_my_boost_slots)
+            _args['my_boost_slots'] = _list_my_boost_slots
+        else:
+            _args['my_boost_slots'] = None
+        return cls(**_args)
+
+
 class MyBoosts(TLObject):
     """TL type: premium.myBoosts"""
     CONSTRUCTOR_ID = 0x9ae228e2

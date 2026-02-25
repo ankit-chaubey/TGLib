@@ -103,6 +103,122 @@ class CheckCanSendGiftResultOk(TLObject):
         return cls()
 
 
+class CheckedGiftCode(TLObject):
+    """TL type: payments.checkedGiftCode"""
+    CONSTRUCTOR_ID = 0xeb983f8f
+    SUBCLASS_OF_ID = 0x5b2997e8
+
+    def __init__(self, date: Optional[datetime], days: int, chats: List['TypeChat'], users: List['TypeUser'], via_giveaway: Optional[bool] = None, from_id: Optional['TypePeer'] = None, giveaway_msg_id: Optional[int] = None, to_id: Optional[int] = None, used_date: Optional[datetime] = None):
+        self.date = date
+        self.days = days
+        self.chats = chats
+        self.users = users
+        self.via_giveaway = via_giveaway
+        self.from_id = from_id
+        self.giveaway_msg_id = giveaway_msg_id
+        self.to_id = to_id
+        self.used_date = used_date
+
+    def to_dict(self):
+        return {
+            '_': 'CheckedGiftCode',
+            'date': self.date,
+            'days': self.days,
+            'chats': self.chats,
+            'users': self.users,
+            'via_giveaway': self.via_giveaway,
+            'from_id': self.from_id,
+            'giveaway_msg_id': self.giveaway_msg_id,
+            'to_id': self.to_id,
+            'used_date': self.used_date,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.via_giveaway:
+            flags |= (1 << 2)
+        if self.from_id is not None:
+            flags |= (1 << 4)
+        if self.giveaway_msg_id is not None:
+            flags |= (1 << 3)
+        if self.to_id is not None:
+            flags |= (1 << 0)
+        if self.used_date is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        if self.from_id is not None:
+            buf.write(bytes(self.from_id))
+        if self.giveaway_msg_id is not None:
+            buf.write(struct.pack('<i', self.giveaway_msg_id))
+        if self.to_id is not None:
+            buf.write(struct.pack('<q', self.to_id))
+        buf.write(TLObject.serialize_datetime(self.date))
+        buf.write(struct.pack('<i', self.days))
+        if self.used_date is not None:
+            buf.write(TLObject.serialize_datetime(self.used_date))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.chats)))
+        for item in self.chats:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['via_giveaway'] = bool(flags & (1 << 2))
+        if flags & (1 << 4):
+            _val_from_id = reader.tgread_object()
+            _args['from_id'] = _val_from_id
+        else:
+            _args['from_id'] = None
+        if flags & (1 << 3):
+            _val_giveaway_msg_id = reader.read_int()
+            _args['giveaway_msg_id'] = _val_giveaway_msg_id
+        else:
+            _args['giveaway_msg_id'] = None
+        if flags & (1 << 0):
+            _val_to_id = reader.read_long()
+            _args['to_id'] = _val_to_id
+        else:
+            _args['to_id'] = None
+        _val_date = reader.tgread_date()
+        _args['date'] = _val_date
+        _val_days = reader.read_int()
+        _args['days'] = _val_days
+        if flags & (1 << 1):
+            _val_used_date = reader.tgread_date()
+            _args['used_date'] = _val_used_date
+        else:
+            _args['used_date'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_chats = []
+        for _ in range(_count_chats):
+            _item_chats = reader.tgread_object()
+            _list_chats.append(_item_chats)
+        _args['chats'] = _list_chats
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        return cls(**_args)
+
+
 class ConnectedStarRefBots(TLObject):
     """TL type: payments.connectedStarRefBots"""
     CONSTRUCTOR_ID = 0x98d5ea1d
@@ -191,6 +307,339 @@ class ExportedInvoice(TLObject):
         return cls(**_args)
 
 
+class GiveawayInfo(TLObject):
+    """TL type: payments.giveawayInfo"""
+    CONSTRUCTOR_ID = 0x4367daa0
+    SUBCLASS_OF_ID = 0x96a377bd
+
+    def __init__(self, start_date: Optional[datetime], participating: Optional[bool] = None, preparing_results: Optional[bool] = None, joined_too_early_date: Optional[datetime] = None, admin_disallowed_chat_id: Optional[int] = None, disallowed_country: Optional[str] = None):
+        self.start_date = start_date
+        self.participating = participating
+        self.preparing_results = preparing_results
+        self.joined_too_early_date = joined_too_early_date
+        self.admin_disallowed_chat_id = admin_disallowed_chat_id
+        self.disallowed_country = disallowed_country
+
+    def to_dict(self):
+        return {
+            '_': 'GiveawayInfo',
+            'start_date': self.start_date,
+            'participating': self.participating,
+            'preparing_results': self.preparing_results,
+            'joined_too_early_date': self.joined_too_early_date,
+            'admin_disallowed_chat_id': self.admin_disallowed_chat_id,
+            'disallowed_country': self.disallowed_country,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.participating:
+            flags |= (1 << 0)
+        if self.preparing_results:
+            flags |= (1 << 3)
+        if self.joined_too_early_date is not None:
+            flags |= (1 << 1)
+        if self.admin_disallowed_chat_id is not None:
+            flags |= (1 << 2)
+        if self.disallowed_country is not None:
+            flags |= (1 << 4)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_datetime(self.start_date))
+        if self.joined_too_early_date is not None:
+            buf.write(TLObject.serialize_datetime(self.joined_too_early_date))
+        if self.admin_disallowed_chat_id is not None:
+            buf.write(struct.pack('<q', self.admin_disallowed_chat_id))
+        if self.disallowed_country is not None:
+            buf.write(TLObject.serialize_bytes(self.disallowed_country))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['participating'] = bool(flags & (1 << 0))
+        _args['preparing_results'] = bool(flags & (1 << 3))
+        _val_start_date = reader.tgread_date()
+        _args['start_date'] = _val_start_date
+        if flags & (1 << 1):
+            _val_joined_too_early_date = reader.tgread_date()
+            _args['joined_too_early_date'] = _val_joined_too_early_date
+        else:
+            _args['joined_too_early_date'] = None
+        if flags & (1 << 2):
+            _val_admin_disallowed_chat_id = reader.read_long()
+            _args['admin_disallowed_chat_id'] = _val_admin_disallowed_chat_id
+        else:
+            _args['admin_disallowed_chat_id'] = None
+        if flags & (1 << 4):
+            _val_disallowed_country = reader.tgread_string()
+            _args['disallowed_country'] = _val_disallowed_country
+        else:
+            _args['disallowed_country'] = None
+        return cls(**_args)
+
+
+class GiveawayInfoResults(TLObject):
+    """TL type: payments.giveawayInfoResults"""
+    CONSTRUCTOR_ID = 0xe175e66f
+    SUBCLASS_OF_ID = 0x96a377bd
+
+    def __init__(self, start_date: Optional[datetime], finish_date: Optional[datetime], winners_count: int, winner: Optional[bool] = None, refunded: Optional[bool] = None, gift_code_slug: Optional[str] = None, stars_prize: Optional[int] = None, activated_count: Optional[int] = None):
+        self.start_date = start_date
+        self.finish_date = finish_date
+        self.winners_count = winners_count
+        self.winner = winner
+        self.refunded = refunded
+        self.gift_code_slug = gift_code_slug
+        self.stars_prize = stars_prize
+        self.activated_count = activated_count
+
+    def to_dict(self):
+        return {
+            '_': 'GiveawayInfoResults',
+            'start_date': self.start_date,
+            'finish_date': self.finish_date,
+            'winners_count': self.winners_count,
+            'winner': self.winner,
+            'refunded': self.refunded,
+            'gift_code_slug': self.gift_code_slug,
+            'stars_prize': self.stars_prize,
+            'activated_count': self.activated_count,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.winner:
+            flags |= (1 << 0)
+        if self.refunded:
+            flags |= (1 << 1)
+        if self.gift_code_slug is not None:
+            flags |= (1 << 3)
+        if self.stars_prize is not None:
+            flags |= (1 << 4)
+        if self.activated_count is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_datetime(self.start_date))
+        if self.gift_code_slug is not None:
+            buf.write(TLObject.serialize_bytes(self.gift_code_slug))
+        if self.stars_prize is not None:
+            buf.write(struct.pack('<q', self.stars_prize))
+        buf.write(TLObject.serialize_datetime(self.finish_date))
+        buf.write(struct.pack('<i', self.winners_count))
+        if self.activated_count is not None:
+            buf.write(struct.pack('<i', self.activated_count))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['winner'] = bool(flags & (1 << 0))
+        _args['refunded'] = bool(flags & (1 << 1))
+        _val_start_date = reader.tgread_date()
+        _args['start_date'] = _val_start_date
+        if flags & (1 << 3):
+            _val_gift_code_slug = reader.tgread_string()
+            _args['gift_code_slug'] = _val_gift_code_slug
+        else:
+            _args['gift_code_slug'] = None
+        if flags & (1 << 4):
+            _val_stars_prize = reader.read_long()
+            _args['stars_prize'] = _val_stars_prize
+        else:
+            _args['stars_prize'] = None
+        _val_finish_date = reader.tgread_date()
+        _args['finish_date'] = _val_finish_date
+        _val_winners_count = reader.read_int()
+        _args['winners_count'] = _val_winners_count
+        if flags & (1 << 2):
+            _val_activated_count = reader.read_int()
+            _args['activated_count'] = _val_activated_count
+        else:
+            _args['activated_count'] = None
+        return cls(**_args)
+
+
+class PaymentForm(TLObject):
+    """TL type: payments.paymentForm"""
+    CONSTRUCTOR_ID = 0xa0058751
+    SUBCLASS_OF_ID = 0xa0483f19
+
+    def __init__(self, form_id: int, bot_id: int, title: str, description: str, invoice: 'TypeInvoice', provider_id: int, url: str, users: List['TypeUser'], can_save_credentials: Optional[bool] = None, password_missing: Optional[bool] = None, photo: Optional['TypeWebDocument'] = None, native_provider: Optional[str] = None, native_params: Optional['TypeDataJSON'] = None, additional_methods: Optional[List['TypePaymentFormMethod']] = None, saved_info: Optional['TypePaymentRequestedInfo'] = None, saved_credentials: Optional[List['TypePaymentSavedCredentials']] = None):
+        self.form_id = form_id
+        self.bot_id = bot_id
+        self.title = title
+        self.description = description
+        self.invoice = invoice
+        self.provider_id = provider_id
+        self.url = url
+        self.users = users
+        self.can_save_credentials = can_save_credentials
+        self.password_missing = password_missing
+        self.photo = photo
+        self.native_provider = native_provider
+        self.native_params = native_params
+        self.additional_methods = additional_methods
+        self.saved_info = saved_info
+        self.saved_credentials = saved_credentials
+
+    def to_dict(self):
+        return {
+            '_': 'PaymentForm',
+            'form_id': self.form_id,
+            'bot_id': self.bot_id,
+            'title': self.title,
+            'description': self.description,
+            'invoice': self.invoice,
+            'provider_id': self.provider_id,
+            'url': self.url,
+            'users': self.users,
+            'can_save_credentials': self.can_save_credentials,
+            'password_missing': self.password_missing,
+            'photo': self.photo,
+            'native_provider': self.native_provider,
+            'native_params': self.native_params,
+            'additional_methods': self.additional_methods,
+            'saved_info': self.saved_info,
+            'saved_credentials': self.saved_credentials,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.can_save_credentials:
+            flags |= (1 << 2)
+        if self.password_missing:
+            flags |= (1 << 3)
+        if self.photo is not None:
+            flags |= (1 << 5)
+        if self.native_provider is not None:
+            flags |= (1 << 4)
+        if self.native_params is not None:
+            flags |= (1 << 4)
+        if self.additional_methods is not None:
+            flags |= (1 << 6)
+        if self.saved_info is not None:
+            flags |= (1 << 0)
+        if self.saved_credentials is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<q', self.form_id))
+        buf.write(struct.pack('<q', self.bot_id))
+        buf.write(TLObject.serialize_bytes(self.title))
+        buf.write(TLObject.serialize_bytes(self.description))
+        if self.photo is not None:
+            buf.write(bytes(self.photo))
+        buf.write(bytes(self.invoice))
+        buf.write(struct.pack('<q', self.provider_id))
+        buf.write(TLObject.serialize_bytes(self.url))
+        if self.native_provider is not None:
+            buf.write(TLObject.serialize_bytes(self.native_provider))
+        if self.native_params is not None:
+            buf.write(bytes(self.native_params))
+        if self.additional_methods is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.additional_methods)))
+            for item in self.additional_methods:
+                buf.write(bytes(item))
+        if self.saved_info is not None:
+            buf.write(bytes(self.saved_info))
+        if self.saved_credentials is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.saved_credentials)))
+            for item in self.saved_credentials:
+                buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['can_save_credentials'] = bool(flags & (1 << 2))
+        _args['password_missing'] = bool(flags & (1 << 3))
+        _val_form_id = reader.read_long()
+        _args['form_id'] = _val_form_id
+        _val_bot_id = reader.read_long()
+        _args['bot_id'] = _val_bot_id
+        _val_title = reader.tgread_string()
+        _args['title'] = _val_title
+        _val_description = reader.tgread_string()
+        _args['description'] = _val_description
+        if flags & (1 << 5):
+            _val_photo = reader.tgread_object()
+            _args['photo'] = _val_photo
+        else:
+            _args['photo'] = None
+        _val_invoice = reader.tgread_object()
+        _args['invoice'] = _val_invoice
+        _val_provider_id = reader.read_long()
+        _args['provider_id'] = _val_provider_id
+        _val_url = reader.tgread_string()
+        _args['url'] = _val_url
+        if flags & (1 << 4):
+            _val_native_provider = reader.tgread_string()
+            _args['native_provider'] = _val_native_provider
+        else:
+            _args['native_provider'] = None
+        if flags & (1 << 4):
+            _val_native_params = reader.tgread_object()
+            _args['native_params'] = _val_native_params
+        else:
+            _args['native_params'] = None
+        if flags & (1 << 6):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_additional_methods = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_additional_methods = []
+            for _ in range(_count_additional_methods):
+                _item_additional_methods = reader.tgread_object()
+                _list_additional_methods.append(_item_additional_methods)
+            _args['additional_methods'] = _list_additional_methods
+        else:
+            _args['additional_methods'] = None
+        if flags & (1 << 0):
+            _val_saved_info = reader.tgread_object()
+            _args['saved_info'] = _val_saved_info
+        else:
+            _args['saved_info'] = None
+        if flags & (1 << 1):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_saved_credentials = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_saved_credentials = []
+            for _ in range(_count_saved_credentials):
+                _item_saved_credentials = reader.tgread_object()
+                _list_saved_credentials.append(_item_saved_credentials)
+            _args['saved_credentials'] = _list_saved_credentials
+        else:
+            _args['saved_credentials'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        return cls(**_args)
+
+
 class PaymentFormStarGift(TLObject):
     """TL type: payments.paymentFormStarGift"""
     CONSTRUCTOR_ID = 0xb425cfe1
@@ -222,6 +671,308 @@ class PaymentFormStarGift(TLObject):
         _args['form_id'] = _val_form_id
         _val_invoice = reader.tgread_object()
         _args['invoice'] = _val_invoice
+        return cls(**_args)
+
+
+class PaymentFormStars(TLObject):
+    """TL type: payments.paymentFormStars"""
+    CONSTRUCTOR_ID = 0x7bf6b15c
+    SUBCLASS_OF_ID = 0xa0483f19
+
+    def __init__(self, form_id: int, bot_id: int, title: str, description: str, invoice: 'TypeInvoice', users: List['TypeUser'], photo: Optional['TypeWebDocument'] = None):
+        self.form_id = form_id
+        self.bot_id = bot_id
+        self.title = title
+        self.description = description
+        self.invoice = invoice
+        self.users = users
+        self.photo = photo
+
+    def to_dict(self):
+        return {
+            '_': 'PaymentFormStars',
+            'form_id': self.form_id,
+            'bot_id': self.bot_id,
+            'title': self.title,
+            'description': self.description,
+            'invoice': self.invoice,
+            'users': self.users,
+            'photo': self.photo,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.photo is not None:
+            flags |= (1 << 5)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<q', self.form_id))
+        buf.write(struct.pack('<q', self.bot_id))
+        buf.write(TLObject.serialize_bytes(self.title))
+        buf.write(TLObject.serialize_bytes(self.description))
+        if self.photo is not None:
+            buf.write(bytes(self.photo))
+        buf.write(bytes(self.invoice))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_form_id = reader.read_long()
+        _args['form_id'] = _val_form_id
+        _val_bot_id = reader.read_long()
+        _args['bot_id'] = _val_bot_id
+        _val_title = reader.tgread_string()
+        _args['title'] = _val_title
+        _val_description = reader.tgread_string()
+        _args['description'] = _val_description
+        if flags & (1 << 5):
+            _val_photo = reader.tgread_object()
+            _args['photo'] = _val_photo
+        else:
+            _args['photo'] = None
+        _val_invoice = reader.tgread_object()
+        _args['invoice'] = _val_invoice
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        return cls(**_args)
+
+
+class PaymentReceipt(TLObject):
+    """TL type: payments.paymentReceipt"""
+    CONSTRUCTOR_ID = 0x70c4fe03
+    SUBCLASS_OF_ID = 0x590093c9
+
+    def __init__(self, date: Optional[datetime], bot_id: int, provider_id: int, title: str, description: str, invoice: 'TypeInvoice', currency: str, total_amount: int, credentials_title: str, users: List['TypeUser'], photo: Optional['TypeWebDocument'] = None, info: Optional['TypePaymentRequestedInfo'] = None, shipping: Optional['TypeShippingOption'] = None, tip_amount: Optional[int] = None):
+        self.date = date
+        self.bot_id = bot_id
+        self.provider_id = provider_id
+        self.title = title
+        self.description = description
+        self.invoice = invoice
+        self.currency = currency
+        self.total_amount = total_amount
+        self.credentials_title = credentials_title
+        self.users = users
+        self.photo = photo
+        self.info = info
+        self.shipping = shipping
+        self.tip_amount = tip_amount
+
+    def to_dict(self):
+        return {
+            '_': 'PaymentReceipt',
+            'date': self.date,
+            'bot_id': self.bot_id,
+            'provider_id': self.provider_id,
+            'title': self.title,
+            'description': self.description,
+            'invoice': self.invoice,
+            'currency': self.currency,
+            'total_amount': self.total_amount,
+            'credentials_title': self.credentials_title,
+            'users': self.users,
+            'photo': self.photo,
+            'info': self.info,
+            'shipping': self.shipping,
+            'tip_amount': self.tip_amount,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.photo is not None:
+            flags |= (1 << 2)
+        if self.info is not None:
+            flags |= (1 << 0)
+        if self.shipping is not None:
+            flags |= (1 << 1)
+        if self.tip_amount is not None:
+            flags |= (1 << 3)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_datetime(self.date))
+        buf.write(struct.pack('<q', self.bot_id))
+        buf.write(struct.pack('<q', self.provider_id))
+        buf.write(TLObject.serialize_bytes(self.title))
+        buf.write(TLObject.serialize_bytes(self.description))
+        if self.photo is not None:
+            buf.write(bytes(self.photo))
+        buf.write(bytes(self.invoice))
+        if self.info is not None:
+            buf.write(bytes(self.info))
+        if self.shipping is not None:
+            buf.write(bytes(self.shipping))
+        if self.tip_amount is not None:
+            buf.write(struct.pack('<q', self.tip_amount))
+        buf.write(TLObject.serialize_bytes(self.currency))
+        buf.write(struct.pack('<q', self.total_amount))
+        buf.write(TLObject.serialize_bytes(self.credentials_title))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_date = reader.tgread_date()
+        _args['date'] = _val_date
+        _val_bot_id = reader.read_long()
+        _args['bot_id'] = _val_bot_id
+        _val_provider_id = reader.read_long()
+        _args['provider_id'] = _val_provider_id
+        _val_title = reader.tgread_string()
+        _args['title'] = _val_title
+        _val_description = reader.tgread_string()
+        _args['description'] = _val_description
+        if flags & (1 << 2):
+            _val_photo = reader.tgread_object()
+            _args['photo'] = _val_photo
+        else:
+            _args['photo'] = None
+        _val_invoice = reader.tgread_object()
+        _args['invoice'] = _val_invoice
+        if flags & (1 << 0):
+            _val_info = reader.tgread_object()
+            _args['info'] = _val_info
+        else:
+            _args['info'] = None
+        if flags & (1 << 1):
+            _val_shipping = reader.tgread_object()
+            _args['shipping'] = _val_shipping
+        else:
+            _args['shipping'] = None
+        if flags & (1 << 3):
+            _val_tip_amount = reader.read_long()
+            _args['tip_amount'] = _val_tip_amount
+        else:
+            _args['tip_amount'] = None
+        _val_currency = reader.tgread_string()
+        _args['currency'] = _val_currency
+        _val_total_amount = reader.read_long()
+        _args['total_amount'] = _val_total_amount
+        _val_credentials_title = reader.tgread_string()
+        _args['credentials_title'] = _val_credentials_title
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        return cls(**_args)
+
+
+class PaymentReceiptStars(TLObject):
+    """TL type: payments.paymentReceiptStars"""
+    CONSTRUCTOR_ID = 0xdabbf83a
+    SUBCLASS_OF_ID = 0x590093c9
+
+    def __init__(self, date: Optional[datetime], bot_id: int, title: str, description: str, invoice: 'TypeInvoice', currency: str, total_amount: int, transaction_id: str, users: List['TypeUser'], photo: Optional['TypeWebDocument'] = None):
+        self.date = date
+        self.bot_id = bot_id
+        self.title = title
+        self.description = description
+        self.invoice = invoice
+        self.currency = currency
+        self.total_amount = total_amount
+        self.transaction_id = transaction_id
+        self.users = users
+        self.photo = photo
+
+    def to_dict(self):
+        return {
+            '_': 'PaymentReceiptStars',
+            'date': self.date,
+            'bot_id': self.bot_id,
+            'title': self.title,
+            'description': self.description,
+            'invoice': self.invoice,
+            'currency': self.currency,
+            'total_amount': self.total_amount,
+            'transaction_id': self.transaction_id,
+            'users': self.users,
+            'photo': self.photo,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.photo is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_datetime(self.date))
+        buf.write(struct.pack('<q', self.bot_id))
+        buf.write(TLObject.serialize_bytes(self.title))
+        buf.write(TLObject.serialize_bytes(self.description))
+        if self.photo is not None:
+            buf.write(bytes(self.photo))
+        buf.write(bytes(self.invoice))
+        buf.write(TLObject.serialize_bytes(self.currency))
+        buf.write(struct.pack('<q', self.total_amount))
+        buf.write(TLObject.serialize_bytes(self.transaction_id))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_date = reader.tgread_date()
+        _args['date'] = _val_date
+        _val_bot_id = reader.read_long()
+        _args['bot_id'] = _val_bot_id
+        _val_title = reader.tgread_string()
+        _args['title'] = _val_title
+        _val_description = reader.tgread_string()
+        _args['description'] = _val_description
+        if flags & (1 << 2):
+            _val_photo = reader.tgread_object()
+            _args['photo'] = _val_photo
+        else:
+            _args['photo'] = None
+        _val_invoice = reader.tgread_object()
+        _args['invoice'] = _val_invoice
+        _val_currency = reader.tgread_string()
+        _args['currency'] = _val_currency
+        _val_total_amount = reader.read_long()
+        _args['total_amount'] = _val_total_amount
+        _val_transaction_id = reader.tgread_string()
+        _args['transaction_id'] = _val_transaction_id
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
         return cls(**_args)
 
 
@@ -280,6 +1031,289 @@ class PaymentVerificationNeeded(TLObject):
         _args = {}
         _val_url = reader.tgread_string()
         _args['url'] = _val_url
+        return cls(**_args)
+
+
+class ResaleStarGifts(TLObject):
+    """TL type: payments.resaleStarGifts"""
+    CONSTRUCTOR_ID = 0x947a12df
+    SUBCLASS_OF_ID = 0xb2dbb7e3
+
+    def __init__(self, count: int, gifts: List['TypeStarGift'], chats: List['TypeChat'], users: List['TypeUser'], next_offset: Optional[str] = None, attributes: Optional[List['TypeStarGiftAttribute']] = None, attributes_hash: Optional[int] = None, counters: Optional[List['TypeStarGiftAttributeCounter']] = None):
+        self.count = count
+        self.gifts = gifts
+        self.chats = chats
+        self.users = users
+        self.next_offset = next_offset
+        self.attributes = attributes
+        self.attributes_hash = attributes_hash
+        self.counters = counters
+
+    def to_dict(self):
+        return {
+            '_': 'ResaleStarGifts',
+            'count': self.count,
+            'gifts': self.gifts,
+            'chats': self.chats,
+            'users': self.users,
+            'next_offset': self.next_offset,
+            'attributes': self.attributes,
+            'attributes_hash': self.attributes_hash,
+            'counters': self.counters,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.next_offset is not None:
+            flags |= (1 << 0)
+        if self.attributes is not None:
+            flags |= (1 << 1)
+        if self.attributes_hash is not None:
+            flags |= (1 << 1)
+        if self.counters is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.count))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.gifts)))
+        for item in self.gifts:
+            buf.write(bytes(item))
+        if self.next_offset is not None:
+            buf.write(TLObject.serialize_bytes(self.next_offset))
+        if self.attributes is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.attributes)))
+            for item in self.attributes:
+                buf.write(bytes(item))
+        if self.attributes_hash is not None:
+            buf.write(struct.pack('<q', self.attributes_hash))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.chats)))
+        for item in self.chats:
+            buf.write(bytes(item))
+        if self.counters is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.counters)))
+            for item in self.counters:
+                buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_count = reader.read_int()
+        _args['count'] = _val_count
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_gifts = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_gifts = []
+        for _ in range(_count_gifts):
+            _item_gifts = reader.tgread_object()
+            _list_gifts.append(_item_gifts)
+        _args['gifts'] = _list_gifts
+        if flags & (1 << 0):
+            _val_next_offset = reader.tgread_string()
+            _args['next_offset'] = _val_next_offset
+        else:
+            _args['next_offset'] = None
+        if flags & (1 << 1):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_attributes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_attributes = []
+            for _ in range(_count_attributes):
+                _item_attributes = reader.tgread_object()
+                _list_attributes.append(_item_attributes)
+            _args['attributes'] = _list_attributes
+        else:
+            _args['attributes'] = None
+        if flags & (1 << 1):
+            _val_attributes_hash = reader.read_long()
+            _args['attributes_hash'] = _val_attributes_hash
+        else:
+            _args['attributes_hash'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_chats = []
+        for _ in range(_count_chats):
+            _item_chats = reader.tgread_object()
+            _list_chats.append(_item_chats)
+        _args['chats'] = _list_chats
+        if flags & (1 << 2):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_counters = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_counters = []
+            for _ in range(_count_counters):
+                _item_counters = reader.tgread_object()
+                _list_counters.append(_item_counters)
+            _args['counters'] = _list_counters
+        else:
+            _args['counters'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        return cls(**_args)
+
+
+class SavedInfo(TLObject):
+    """TL type: payments.savedInfo"""
+    CONSTRUCTOR_ID = 0xfb8fe43c
+    SUBCLASS_OF_ID = 0xad3cf146
+
+    def __init__(self, has_saved_credentials: Optional[bool] = None, saved_info: Optional['TypePaymentRequestedInfo'] = None):
+        self.has_saved_credentials = has_saved_credentials
+        self.saved_info = saved_info
+
+    def to_dict(self):
+        return {
+            '_': 'SavedInfo',
+            'has_saved_credentials': self.has_saved_credentials,
+            'saved_info': self.saved_info,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.has_saved_credentials:
+            flags |= (1 << 1)
+        if self.saved_info is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.saved_info is not None:
+            buf.write(bytes(self.saved_info))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['has_saved_credentials'] = bool(flags & (1 << 1))
+        if flags & (1 << 0):
+            _val_saved_info = reader.tgread_object()
+            _args['saved_info'] = _val_saved_info
+        else:
+            _args['saved_info'] = None
+        return cls(**_args)
+
+
+class SavedStarGifts(TLObject):
+    """TL type: payments.savedStarGifts"""
+    CONSTRUCTOR_ID = 0x95f389b1
+    SUBCLASS_OF_ID = 0xd5112897
+
+    def __init__(self, count: int, gifts: List['TypeSavedStarGift'], chats: List['TypeChat'], users: List['TypeUser'], chat_notifications_enabled: Optional[bool] = None, next_offset: Optional[str] = None):
+        self.count = count
+        self.gifts = gifts
+        self.chats = chats
+        self.users = users
+        self.chat_notifications_enabled = chat_notifications_enabled
+        self.next_offset = next_offset
+
+    def to_dict(self):
+        return {
+            '_': 'SavedStarGifts',
+            'count': self.count,
+            'gifts': self.gifts,
+            'chats': self.chats,
+            'users': self.users,
+            'chat_notifications_enabled': self.chat_notifications_enabled,
+            'next_offset': self.next_offset,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.chat_notifications_enabled is not None:
+            flags |= (1 << 1)
+        if self.next_offset is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.count))
+        if self.chat_notifications_enabled is not None:
+            buf.write(struct.pack('<I', 0x997275b5 if self.chat_notifications_enabled else 0xbc799737))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.gifts)))
+        for item in self.gifts:
+            buf.write(bytes(item))
+        if self.next_offset is not None:
+            buf.write(TLObject.serialize_bytes(self.next_offset))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.chats)))
+        for item in self.chats:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_count = reader.read_int()
+        _args['count'] = _val_count
+        if flags & (1 << 1):
+            _val_chat_notifications_enabled = reader.tgread_bool()
+            _args['chat_notifications_enabled'] = _val_chat_notifications_enabled
+        else:
+            _args['chat_notifications_enabled'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_gifts = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_gifts = []
+        for _ in range(_count_gifts):
+            _item_gifts = reader.tgread_object()
+            _list_gifts.append(_item_gifts)
+        _args['gifts'] = _list_gifts
+        if flags & (1 << 0):
+            _val_next_offset = reader.tgread_string()
+            _args['next_offset'] = _val_next_offset
+        else:
+            _args['next_offset'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_chats = []
+        for _ in range(_count_chats):
+            _item_chats = reader.tgread_object()
+            _list_chats.append(_item_chats)
+        _args['chats'] = _list_chats
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
         return cls(**_args)
 
 
@@ -846,6 +1880,59 @@ class StarsRevenueAdsAccountUrl(TLObject):
         return cls(**_args)
 
 
+class StarsRevenueStats(TLObject):
+    """TL type: payments.starsRevenueStats"""
+    CONSTRUCTOR_ID = 0x6c207376
+    SUBCLASS_OF_ID = 0xa54755f3
+
+    def __init__(self, revenue_graph: 'TypeStatsGraph', status: 'TypeStarsRevenueStatus', usd_rate: float, top_hours_graph: Optional['TypeStatsGraph'] = None):
+        self.revenue_graph = revenue_graph
+        self.status = status
+        self.usd_rate = usd_rate
+        self.top_hours_graph = top_hours_graph
+
+    def to_dict(self):
+        return {
+            '_': 'StarsRevenueStats',
+            'revenue_graph': self.revenue_graph,
+            'status': self.status,
+            'usd_rate': self.usd_rate,
+            'top_hours_graph': self.top_hours_graph,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.top_hours_graph is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.top_hours_graph is not None:
+            buf.write(bytes(self.top_hours_graph))
+        buf.write(bytes(self.revenue_graph))
+        buf.write(bytes(self.status))
+        buf.write(struct.pack('<d', self.usd_rate))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_top_hours_graph = reader.tgread_object()
+            _args['top_hours_graph'] = _val_top_hours_graph
+        else:
+            _args['top_hours_graph'] = None
+        _val_revenue_graph = reader.tgread_object()
+        _args['revenue_graph'] = _val_revenue_graph
+        _val_status = reader.tgread_object()
+        _args['status'] = _val_status
+        _val_usd_rate = reader.read_double()
+        _args['usd_rate'] = _val_usd_rate
+        return cls(**_args)
+
+
 class StarsRevenueWithdrawalUrl(TLObject):
     """TL type: payments.starsRevenueWithdrawalUrl"""
     CONSTRUCTOR_ID = 0x1dab80b7
@@ -872,6 +1959,216 @@ class StarsRevenueWithdrawalUrl(TLObject):
         _args = {}
         _val_url = reader.tgread_string()
         _args['url'] = _val_url
+        return cls(**_args)
+
+
+class StarsStatus(TLObject):
+    """TL type: payments.starsStatus"""
+    CONSTRUCTOR_ID = 0x6c9ce8ed
+    SUBCLASS_OF_ID = 0x6e9c1d6f
+
+    def __init__(self, balance: 'TypeStarsAmount', chats: List['TypeChat'], users: List['TypeUser'], subscriptions: Optional[List['TypeStarsSubscription']] = None, subscriptions_next_offset: Optional[str] = None, subscriptions_missing_balance: Optional[int] = None, history: Optional[List['TypeStarsTransaction']] = None, next_offset: Optional[str] = None):
+        self.balance = balance
+        self.chats = chats
+        self.users = users
+        self.subscriptions = subscriptions
+        self.subscriptions_next_offset = subscriptions_next_offset
+        self.subscriptions_missing_balance = subscriptions_missing_balance
+        self.history = history
+        self.next_offset = next_offset
+
+    def to_dict(self):
+        return {
+            '_': 'StarsStatus',
+            'balance': self.balance,
+            'chats': self.chats,
+            'users': self.users,
+            'subscriptions': self.subscriptions,
+            'subscriptions_next_offset': self.subscriptions_next_offset,
+            'subscriptions_missing_balance': self.subscriptions_missing_balance,
+            'history': self.history,
+            'next_offset': self.next_offset,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.subscriptions is not None:
+            flags |= (1 << 1)
+        if self.subscriptions_next_offset is not None:
+            flags |= (1 << 2)
+        if self.subscriptions_missing_balance is not None:
+            flags |= (1 << 4)
+        if self.history is not None:
+            flags |= (1 << 3)
+        if self.next_offset is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.balance))
+        if self.subscriptions is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.subscriptions)))
+            for item in self.subscriptions:
+                buf.write(bytes(item))
+        if self.subscriptions_next_offset is not None:
+            buf.write(TLObject.serialize_bytes(self.subscriptions_next_offset))
+        if self.subscriptions_missing_balance is not None:
+            buf.write(struct.pack('<q', self.subscriptions_missing_balance))
+        if self.history is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.history)))
+            for item in self.history:
+                buf.write(bytes(item))
+        if self.next_offset is not None:
+            buf.write(TLObject.serialize_bytes(self.next_offset))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.chats)))
+        for item in self.chats:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_balance = reader.tgread_object()
+        _args['balance'] = _val_balance
+        if flags & (1 << 1):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_subscriptions = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_subscriptions = []
+            for _ in range(_count_subscriptions):
+                _item_subscriptions = reader.tgread_object()
+                _list_subscriptions.append(_item_subscriptions)
+            _args['subscriptions'] = _list_subscriptions
+        else:
+            _args['subscriptions'] = None
+        if flags & (1 << 2):
+            _val_subscriptions_next_offset = reader.tgread_string()
+            _args['subscriptions_next_offset'] = _val_subscriptions_next_offset
+        else:
+            _args['subscriptions_next_offset'] = None
+        if flags & (1 << 4):
+            _val_subscriptions_missing_balance = reader.read_long()
+            _args['subscriptions_missing_balance'] = _val_subscriptions_missing_balance
+        else:
+            _args['subscriptions_missing_balance'] = None
+        if flags & (1 << 3):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_history = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_history = []
+            for _ in range(_count_history):
+                _item_history = reader.tgread_object()
+                _list_history.append(_item_history)
+            _args['history'] = _list_history
+        else:
+            _args['history'] = None
+        if flags & (1 << 0):
+            _val_next_offset = reader.tgread_string()
+            _args['next_offset'] = _val_next_offset
+        else:
+            _args['next_offset'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_chats = []
+        for _ in range(_count_chats):
+            _item_chats = reader.tgread_object()
+            _list_chats.append(_item_chats)
+        _args['chats'] = _list_chats
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        return cls(**_args)
+
+
+class SuggestedStarRefBots(TLObject):
+    """TL type: payments.suggestedStarRefBots"""
+    CONSTRUCTOR_ID = 0xb4d5d859
+    SUBCLASS_OF_ID = 0x70189243
+
+    def __init__(self, count: int, suggested_bots: List['TypeStarRefProgram'], users: List['TypeUser'], next_offset: Optional[str] = None):
+        self.count = count
+        self.suggested_bots = suggested_bots
+        self.users = users
+        self.next_offset = next_offset
+
+    def to_dict(self):
+        return {
+            '_': 'SuggestedStarRefBots',
+            'count': self.count,
+            'suggested_bots': self.suggested_bots,
+            'users': self.users,
+            'next_offset': self.next_offset,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.next_offset is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.count))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.suggested_bots)))
+        for item in self.suggested_bots:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        if self.next_offset is not None:
+            buf.write(TLObject.serialize_bytes(self.next_offset))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_count = reader.read_int()
+        _args['count'] = _val_count
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_suggested_bots = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_suggested_bots = []
+        for _ in range(_count_suggested_bots):
+            _item_suggested_bots = reader.tgread_object()
+            _list_suggested_bots.append(_item_suggested_bots)
+        _args['suggested_bots'] = _list_suggested_bots
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        if flags & (1 << 0):
+            _val_next_offset = reader.tgread_string()
+            _args['next_offset'] = _val_next_offset
+        else:
+            _args['next_offset'] = None
         return cls(**_args)
 
 
@@ -931,5 +2228,203 @@ class UniqueStarGift(TLObject):
             _item_users = reader.tgread_object()
             _list_users.append(_item_users)
         _args['users'] = _list_users
+        return cls(**_args)
+
+
+class UniqueStarGiftValueInfo(TLObject):
+    """TL type: payments.uniqueStarGiftValueInfo"""
+    CONSTRUCTOR_ID = 0x512fe446
+    SUBCLASS_OF_ID = 0x16355bc4
+
+    def __init__(self, currency: str, value: int, initial_sale_date: Optional[datetime], initial_sale_stars: int, initial_sale_price: int, last_sale_on_fragment: Optional[bool] = None, value_is_average: Optional[bool] = None, last_sale_date: Optional[datetime] = None, last_sale_price: Optional[int] = None, floor_price: Optional[int] = None, average_price: Optional[int] = None, listed_count: Optional[int] = None, fragment_listed_count: Optional[int] = None, fragment_listed_url: Optional[str] = None):
+        self.currency = currency
+        self.value = value
+        self.initial_sale_date = initial_sale_date
+        self.initial_sale_stars = initial_sale_stars
+        self.initial_sale_price = initial_sale_price
+        self.last_sale_on_fragment = last_sale_on_fragment
+        self.value_is_average = value_is_average
+        self.last_sale_date = last_sale_date
+        self.last_sale_price = last_sale_price
+        self.floor_price = floor_price
+        self.average_price = average_price
+        self.listed_count = listed_count
+        self.fragment_listed_count = fragment_listed_count
+        self.fragment_listed_url = fragment_listed_url
+
+    def to_dict(self):
+        return {
+            '_': 'UniqueStarGiftValueInfo',
+            'currency': self.currency,
+            'value': self.value,
+            'initial_sale_date': self.initial_sale_date,
+            'initial_sale_stars': self.initial_sale_stars,
+            'initial_sale_price': self.initial_sale_price,
+            'last_sale_on_fragment': self.last_sale_on_fragment,
+            'value_is_average': self.value_is_average,
+            'last_sale_date': self.last_sale_date,
+            'last_sale_price': self.last_sale_price,
+            'floor_price': self.floor_price,
+            'average_price': self.average_price,
+            'listed_count': self.listed_count,
+            'fragment_listed_count': self.fragment_listed_count,
+            'fragment_listed_url': self.fragment_listed_url,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.last_sale_on_fragment:
+            flags |= (1 << 1)
+        if self.value_is_average:
+            flags |= (1 << 6)
+        if self.last_sale_date is not None:
+            flags |= (1 << 0)
+        if self.last_sale_price is not None:
+            flags |= (1 << 0)
+        if self.floor_price is not None:
+            flags |= (1 << 2)
+        if self.average_price is not None:
+            flags |= (1 << 3)
+        if self.listed_count is not None:
+            flags |= (1 << 4)
+        if self.fragment_listed_count is not None:
+            flags |= (1 << 5)
+        if self.fragment_listed_url is not None:
+            flags |= (1 << 5)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.currency))
+        buf.write(struct.pack('<q', self.value))
+        buf.write(TLObject.serialize_datetime(self.initial_sale_date))
+        buf.write(struct.pack('<q', self.initial_sale_stars))
+        buf.write(struct.pack('<q', self.initial_sale_price))
+        if self.last_sale_date is not None:
+            buf.write(TLObject.serialize_datetime(self.last_sale_date))
+        if self.last_sale_price is not None:
+            buf.write(struct.pack('<q', self.last_sale_price))
+        if self.floor_price is not None:
+            buf.write(struct.pack('<q', self.floor_price))
+        if self.average_price is not None:
+            buf.write(struct.pack('<q', self.average_price))
+        if self.listed_count is not None:
+            buf.write(struct.pack('<i', self.listed_count))
+        if self.fragment_listed_count is not None:
+            buf.write(struct.pack('<i', self.fragment_listed_count))
+        if self.fragment_listed_url is not None:
+            buf.write(TLObject.serialize_bytes(self.fragment_listed_url))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['last_sale_on_fragment'] = bool(flags & (1 << 1))
+        _args['value_is_average'] = bool(flags & (1 << 6))
+        _val_currency = reader.tgread_string()
+        _args['currency'] = _val_currency
+        _val_value = reader.read_long()
+        _args['value'] = _val_value
+        _val_initial_sale_date = reader.tgread_date()
+        _args['initial_sale_date'] = _val_initial_sale_date
+        _val_initial_sale_stars = reader.read_long()
+        _args['initial_sale_stars'] = _val_initial_sale_stars
+        _val_initial_sale_price = reader.read_long()
+        _args['initial_sale_price'] = _val_initial_sale_price
+        if flags & (1 << 0):
+            _val_last_sale_date = reader.tgread_date()
+            _args['last_sale_date'] = _val_last_sale_date
+        else:
+            _args['last_sale_date'] = None
+        if flags & (1 << 0):
+            _val_last_sale_price = reader.read_long()
+            _args['last_sale_price'] = _val_last_sale_price
+        else:
+            _args['last_sale_price'] = None
+        if flags & (1 << 2):
+            _val_floor_price = reader.read_long()
+            _args['floor_price'] = _val_floor_price
+        else:
+            _args['floor_price'] = None
+        if flags & (1 << 3):
+            _val_average_price = reader.read_long()
+            _args['average_price'] = _val_average_price
+        else:
+            _args['average_price'] = None
+        if flags & (1 << 4):
+            _val_listed_count = reader.read_int()
+            _args['listed_count'] = _val_listed_count
+        else:
+            _args['listed_count'] = None
+        if flags & (1 << 5):
+            _val_fragment_listed_count = reader.read_int()
+            _args['fragment_listed_count'] = _val_fragment_listed_count
+        else:
+            _args['fragment_listed_count'] = None
+        if flags & (1 << 5):
+            _val_fragment_listed_url = reader.tgread_string()
+            _args['fragment_listed_url'] = _val_fragment_listed_url
+        else:
+            _args['fragment_listed_url'] = None
+        return cls(**_args)
+
+
+class ValidatedRequestedInfo(TLObject):
+    """TL type: payments.validatedRequestedInfo"""
+    CONSTRUCTOR_ID = 0xd1451883
+    SUBCLASS_OF_ID = 0x8f8044b7
+
+    def __init__(self, id: Optional[str] = None, shipping_options: Optional[List['TypeShippingOption']] = None):
+        self.id = id
+        self.shipping_options = shipping_options
+
+    def to_dict(self):
+        return {
+            '_': 'ValidatedRequestedInfo',
+            'id': self.id,
+            'shipping_options': self.shipping_options,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.id is not None:
+            flags |= (1 << 0)
+        if self.shipping_options is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        if self.id is not None:
+            buf.write(TLObject.serialize_bytes(self.id))
+        if self.shipping_options is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.shipping_options)))
+            for item in self.shipping_options:
+                buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_id = reader.tgread_string()
+            _args['id'] = _val_id
+        else:
+            _args['id'] = None
+        if flags & (1 << 1):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_shipping_options = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_shipping_options = []
+            for _ in range(_count_shipping_options):
+                _item_shipping_options = reader.tgread_object()
+                _list_shipping_options.append(_item_shipping_options)
+            _args['shipping_options'] = _list_shipping_options
+        else:
+            _args['shipping_options'] = None
         return cls(**_args)
 

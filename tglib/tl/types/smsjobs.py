@@ -39,3 +39,76 @@ class EligibleToJoin(TLObject):
         _args['monthly_sent_sms'] = _val_monthly_sent_sms
         return cls(**_args)
 
+
+class Status(TLObject):
+    """TL type: smsjobs.status"""
+    CONSTRUCTOR_ID = 0x2aee9191
+    SUBCLASS_OF_ID = 0xcd8f2b25
+
+    def __init__(self, recent_sent: int, recent_since: Optional[datetime], recent_remains: int, total_sent: int, total_since: Optional[datetime], terms_url: str, allow_international: Optional[bool] = None, last_gift_slug: Optional[str] = None):
+        self.recent_sent = recent_sent
+        self.recent_since = recent_since
+        self.recent_remains = recent_remains
+        self.total_sent = total_sent
+        self.total_since = total_since
+        self.terms_url = terms_url
+        self.allow_international = allow_international
+        self.last_gift_slug = last_gift_slug
+
+    def to_dict(self):
+        return {
+            '_': 'Status',
+            'recent_sent': self.recent_sent,
+            'recent_since': self.recent_since,
+            'recent_remains': self.recent_remains,
+            'total_sent': self.total_sent,
+            'total_since': self.total_since,
+            'terms_url': self.terms_url,
+            'allow_international': self.allow_international,
+            'last_gift_slug': self.last_gift_slug,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.allow_international:
+            flags |= (1 << 0)
+        if self.last_gift_slug is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.recent_sent))
+        buf.write(TLObject.serialize_datetime(self.recent_since))
+        buf.write(struct.pack('<i', self.recent_remains))
+        buf.write(struct.pack('<i', self.total_sent))
+        buf.write(TLObject.serialize_datetime(self.total_since))
+        if self.last_gift_slug is not None:
+            buf.write(TLObject.serialize_bytes(self.last_gift_slug))
+        buf.write(TLObject.serialize_bytes(self.terms_url))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['allow_international'] = bool(flags & (1 << 0))
+        _val_recent_sent = reader.read_int()
+        _args['recent_sent'] = _val_recent_sent
+        _val_recent_since = reader.tgread_date()
+        _args['recent_since'] = _val_recent_since
+        _val_recent_remains = reader.read_int()
+        _args['recent_remains'] = _val_recent_remains
+        _val_total_sent = reader.read_int()
+        _args['total_sent'] = _val_total_sent
+        _val_total_since = reader.tgread_date()
+        _args['total_since'] = _val_total_since
+        if flags & (1 << 1):
+            _val_last_gift_slug = reader.tgread_string()
+            _args['last_gift_slug'] = _val_last_gift_slug
+        else:
+            _args['last_gift_slug'] = None
+        _val_terms_url = reader.tgread_string()
+        _args['terms_url'] = _val_terms_url
+        return cls(**_args)
+

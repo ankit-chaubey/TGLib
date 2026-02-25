@@ -328,6 +328,60 @@ class ExportLoginTokenRequest(TLRequest):
         return cls(**_args)
 
 
+class FinishPasskeyLoginRequest(TLRequest):
+    """TL type: auth.finishPasskeyLogin"""
+    CONSTRUCTOR_ID = 0x9857ad07
+    SUBCLASS_OF_ID = 0xb9e04e39
+
+    def __init__(self, credential: 'TypeInputPasskeyCredential', from_dc_id: Optional[int] = None, from_auth_key_id: Optional[int] = None):
+        self.credential = credential
+        self.from_dc_id = from_dc_id
+        self.from_auth_key_id = from_auth_key_id
+
+    def to_dict(self):
+        return {
+            '_': 'FinishPasskeyLoginRequest',
+            'credential': self.credential,
+            'from_dc_id': self.from_dc_id,
+            'from_auth_key_id': self.from_auth_key_id,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.from_dc_id is not None:
+            flags |= (1 << 0)
+        if self.from_auth_key_id is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.credential))
+        if self.from_dc_id is not None:
+            buf.write(struct.pack('<i', self.from_dc_id))
+        if self.from_auth_key_id is not None:
+            buf.write(struct.pack('<q', self.from_auth_key_id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_credential = reader.tgread_object()
+        _args['credential'] = _val_credential
+        if flags & (1 << 0):
+            _val_from_dc_id = reader.read_int()
+            _args['from_dc_id'] = _val_from_dc_id
+        else:
+            _args['from_dc_id'] = None
+        if flags & (1 << 0):
+            _val_from_auth_key_id = reader.read_long()
+            _args['from_auth_key_id'] = _val_from_auth_key_id
+        else:
+            _args['from_auth_key_id'] = None
+        return cls(**_args)
+
+
 class ImportAuthorizationRequest(TLRequest):
     """TL type: auth.importAuthorization"""
     CONSTRUCTOR_ID = 0xa57a7dad
@@ -532,6 +586,49 @@ class LogOutRequest(TLRequest):
         return cls()
 
 
+class RecoverPasswordRequest(TLRequest):
+    """TL type: auth.recoverPassword"""
+    CONSTRUCTOR_ID = 0x37096c70
+    SUBCLASS_OF_ID = 0xb9e04e39
+
+    def __init__(self, code: str, new_settings: Optional['TypePasswordInputSettings'] = None):
+        self.code = code
+        self.new_settings = new_settings
+
+    def to_dict(self):
+        return {
+            '_': 'RecoverPasswordRequest',
+            'code': self.code,
+            'new_settings': self.new_settings,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.new_settings is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.code))
+        if self.new_settings is not None:
+            buf.write(bytes(self.new_settings))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_code = reader.tgread_string()
+        _args['code'] = _val_code
+        if flags & (1 << 0):
+            _val_new_settings = reader.tgread_object()
+            _args['new_settings'] = _val_new_settings
+        else:
+            _args['new_settings'] = None
+        return cls(**_args)
+
+
 class ReportMissingCodeRequest(TLRequest):
     """TL type: auth.reportMissingCode"""
     CONSTRUCTOR_ID = 0xcb9deff6
@@ -571,6 +668,76 @@ class ReportMissingCodeRequest(TLRequest):
         return cls(**_args)
 
 
+class RequestFirebaseSmsRequest(TLRequest):
+    """TL type: auth.requestFirebaseSms"""
+    CONSTRUCTOR_ID = 0x8e39261e
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, phone_number: str, phone_code_hash: str, safety_net_token: Optional[str] = None, play_integrity_token: Optional[str] = None, ios_push_secret: Optional[str] = None):
+        self.phone_number = phone_number
+        self.phone_code_hash = phone_code_hash
+        self.safety_net_token = safety_net_token
+        self.play_integrity_token = play_integrity_token
+        self.ios_push_secret = ios_push_secret
+
+    def to_dict(self):
+        return {
+            '_': 'RequestFirebaseSmsRequest',
+            'phone_number': self.phone_number,
+            'phone_code_hash': self.phone_code_hash,
+            'safety_net_token': self.safety_net_token,
+            'play_integrity_token': self.play_integrity_token,
+            'ios_push_secret': self.ios_push_secret,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.safety_net_token is not None:
+            flags |= (1 << 0)
+        if self.play_integrity_token is not None:
+            flags |= (1 << 2)
+        if self.ios_push_secret is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.phone_number))
+        buf.write(TLObject.serialize_bytes(self.phone_code_hash))
+        if self.safety_net_token is not None:
+            buf.write(TLObject.serialize_bytes(self.safety_net_token))
+        if self.play_integrity_token is not None:
+            buf.write(TLObject.serialize_bytes(self.play_integrity_token))
+        if self.ios_push_secret is not None:
+            buf.write(TLObject.serialize_bytes(self.ios_push_secret))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_phone_number = reader.tgread_string()
+        _args['phone_number'] = _val_phone_number
+        _val_phone_code_hash = reader.tgread_string()
+        _args['phone_code_hash'] = _val_phone_code_hash
+        if flags & (1 << 0):
+            _val_safety_net_token = reader.tgread_string()
+            _args['safety_net_token'] = _val_safety_net_token
+        else:
+            _args['safety_net_token'] = None
+        if flags & (1 << 2):
+            _val_play_integrity_token = reader.tgread_string()
+            _args['play_integrity_token'] = _val_play_integrity_token
+        else:
+            _args['play_integrity_token'] = None
+        if flags & (1 << 1):
+            _val_ios_push_secret = reader.tgread_string()
+            _args['ios_push_secret'] = _val_ios_push_secret
+        else:
+            _args['ios_push_secret'] = None
+        return cls(**_args)
+
+
 class RequestPasswordRecoveryRequest(TLRequest):
     """TL type: auth.requestPasswordRecovery"""
     CONSTRUCTOR_ID = 0xd897bc66
@@ -593,6 +760,54 @@ class RequestPasswordRecoveryRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         return cls()
+
+
+class ResendCodeRequest(TLRequest):
+    """TL type: auth.resendCode"""
+    CONSTRUCTOR_ID = 0xcae47523
+    SUBCLASS_OF_ID = 0x6ce87081
+
+    def __init__(self, phone_number: str, phone_code_hash: str, reason: Optional[str] = None):
+        self.phone_number = phone_number
+        self.phone_code_hash = phone_code_hash
+        self.reason = reason
+
+    def to_dict(self):
+        return {
+            '_': 'ResendCodeRequest',
+            'phone_number': self.phone_number,
+            'phone_code_hash': self.phone_code_hash,
+            'reason': self.reason,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.reason is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.phone_number))
+        buf.write(TLObject.serialize_bytes(self.phone_code_hash))
+        if self.reason is not None:
+            buf.write(TLObject.serialize_bytes(self.reason))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_phone_number = reader.tgread_string()
+        _args['phone_number'] = _val_phone_number
+        _val_phone_code_hash = reader.tgread_string()
+        _args['phone_code_hash'] = _val_phone_code_hash
+        if flags & (1 << 0):
+            _val_reason = reader.tgread_string()
+            _args['reason'] = _val_reason
+        else:
+            _args['reason'] = None
+        return cls(**_args)
 
 
 class ResetAuthorizationsRequest(TLRequest):
@@ -694,5 +909,116 @@ class SendCodeRequest(TLRequest):
         _args['api_hash'] = _val_api_hash
         _val_settings = reader.tgread_object()
         _args['settings'] = _val_settings
+        return cls(**_args)
+
+
+class SignInRequest(TLRequest):
+    """TL type: auth.signIn"""
+    CONSTRUCTOR_ID = 0x8d52a951
+    SUBCLASS_OF_ID = 0xb9e04e39
+
+    def __init__(self, phone_number: str, phone_code_hash: str, phone_code: Optional[str] = None, email_verification: Optional['TypeEmailVerification'] = None):
+        self.phone_number = phone_number
+        self.phone_code_hash = phone_code_hash
+        self.phone_code = phone_code
+        self.email_verification = email_verification
+
+    def to_dict(self):
+        return {
+            '_': 'SignInRequest',
+            'phone_number': self.phone_number,
+            'phone_code_hash': self.phone_code_hash,
+            'phone_code': self.phone_code,
+            'email_verification': self.email_verification,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.phone_code is not None:
+            flags |= (1 << 0)
+        if self.email_verification is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.phone_number))
+        buf.write(TLObject.serialize_bytes(self.phone_code_hash))
+        if self.phone_code is not None:
+            buf.write(TLObject.serialize_bytes(self.phone_code))
+        if self.email_verification is not None:
+            buf.write(bytes(self.email_verification))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_phone_number = reader.tgread_string()
+        _args['phone_number'] = _val_phone_number
+        _val_phone_code_hash = reader.tgread_string()
+        _args['phone_code_hash'] = _val_phone_code_hash
+        if flags & (1 << 0):
+            _val_phone_code = reader.tgread_string()
+            _args['phone_code'] = _val_phone_code
+        else:
+            _args['phone_code'] = None
+        if flags & (1 << 1):
+            _val_email_verification = reader.tgread_object()
+            _args['email_verification'] = _val_email_verification
+        else:
+            _args['email_verification'] = None
+        return cls(**_args)
+
+
+class SignUpRequest(TLRequest):
+    """TL type: auth.signUp"""
+    CONSTRUCTOR_ID = 0xaac7b717
+    SUBCLASS_OF_ID = 0xb9e04e39
+
+    def __init__(self, phone_number: str, phone_code_hash: str, first_name: str, last_name: str, no_joined_notifications: Optional[bool] = None):
+        self.phone_number = phone_number
+        self.phone_code_hash = phone_code_hash
+        self.first_name = first_name
+        self.last_name = last_name
+        self.no_joined_notifications = no_joined_notifications
+
+    def to_dict(self):
+        return {
+            '_': 'SignUpRequest',
+            'phone_number': self.phone_number,
+            'phone_code_hash': self.phone_code_hash,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'no_joined_notifications': self.no_joined_notifications,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.no_joined_notifications:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.phone_number))
+        buf.write(TLObject.serialize_bytes(self.phone_code_hash))
+        buf.write(TLObject.serialize_bytes(self.first_name))
+        buf.write(TLObject.serialize_bytes(self.last_name))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['no_joined_notifications'] = bool(flags & (1 << 0))
+        _val_phone_number = reader.tgread_string()
+        _args['phone_number'] = _val_phone_number
+        _val_phone_code_hash = reader.tgread_string()
+        _args['phone_code_hash'] = _val_phone_code_hash
+        _val_first_name = reader.tgread_string()
+        _args['first_name'] = _val_first_name
+        _val_last_name = reader.tgread_string()
+        _args['last_name'] = _val_last_name
         return cls(**_args)
 

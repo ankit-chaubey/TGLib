@@ -396,6 +396,122 @@ class AvailableReactionsNotModified(TLObject):
         return cls()
 
 
+class BotApp(TLObject):
+    """TL type: messages.botApp"""
+    CONSTRUCTOR_ID = 0xeb50adf5
+    SUBCLASS_OF_ID = 0x8f7243a7
+
+    def __init__(self, app: 'TypeBotApp', inactive: Optional[bool] = None, request_write_access: Optional[bool] = None, has_settings: Optional[bool] = None):
+        self.app = app
+        self.inactive = inactive
+        self.request_write_access = request_write_access
+        self.has_settings = has_settings
+
+    def to_dict(self):
+        return {
+            '_': 'BotApp',
+            'app': self.app,
+            'inactive': self.inactive,
+            'request_write_access': self.request_write_access,
+            'has_settings': self.has_settings,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.inactive:
+            flags |= (1 << 0)
+        if self.request_write_access:
+            flags |= (1 << 1)
+        if self.has_settings:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.app))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['inactive'] = bool(flags & (1 << 0))
+        _args['request_write_access'] = bool(flags & (1 << 1))
+        _args['has_settings'] = bool(flags & (1 << 2))
+        _val_app = reader.tgread_object()
+        _args['app'] = _val_app
+        return cls(**_args)
+
+
+class BotCallbackAnswer(TLObject):
+    """TL type: messages.botCallbackAnswer"""
+    CONSTRUCTOR_ID = 0x36585ea4
+    SUBCLASS_OF_ID = 0x6c4dd18c
+
+    def __init__(self, cache_time: int, alert: Optional[bool] = None, has_url: Optional[bool] = None, native_ui: Optional[bool] = None, message: Optional[str] = None, url: Optional[str] = None):
+        self.cache_time = cache_time
+        self.alert = alert
+        self.has_url = has_url
+        self.native_ui = native_ui
+        self.message = message
+        self.url = url
+
+    def to_dict(self):
+        return {
+            '_': 'BotCallbackAnswer',
+            'cache_time': self.cache_time,
+            'alert': self.alert,
+            'has_url': self.has_url,
+            'native_ui': self.native_ui,
+            'message': self.message,
+            'url': self.url,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.alert:
+            flags |= (1 << 1)
+        if self.has_url:
+            flags |= (1 << 3)
+        if self.native_ui:
+            flags |= (1 << 4)
+        if self.message is not None:
+            flags |= (1 << 0)
+        if self.url is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        if self.message is not None:
+            buf.write(TLObject.serialize_bytes(self.message))
+        if self.url is not None:
+            buf.write(TLObject.serialize_bytes(self.url))
+        buf.write(struct.pack('<i', self.cache_time))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['alert'] = bool(flags & (1 << 1))
+        _args['has_url'] = bool(flags & (1 << 3))
+        _args['native_ui'] = bool(flags & (1 << 4))
+        if flags & (1 << 0):
+            _val_message = reader.tgread_string()
+            _args['message'] = _val_message
+        else:
+            _args['message'] = None
+        if flags & (1 << 2):
+            _val_url = reader.tgread_string()
+            _args['url'] = _val_url
+        else:
+            _args['url'] = None
+        _val_cache_time = reader.read_int()
+        _args['cache_time'] = _val_cache_time
+        return cls(**_args)
+
+
 class BotPreparedInlineMessage(TLObject):
     """TL type: messages.botPreparedInlineMessage"""
     CONSTRUCTOR_ID = 0x8ecf0511
@@ -427,6 +543,224 @@ class BotPreparedInlineMessage(TLObject):
         _args['id'] = _val_id
         _val_expire_date = reader.tgread_date()
         _args['expire_date'] = _val_expire_date
+        return cls(**_args)
+
+
+class BotResults(TLObject):
+    """TL type: messages.botResults"""
+    CONSTRUCTOR_ID = 0xe021f2f6
+    SUBCLASS_OF_ID = 0x3ed4d9c9
+
+    def __init__(self, query_id: int, results: List['TypeBotInlineResult'], cache_time: int, users: List['TypeUser'], gallery: Optional[bool] = None, next_offset: Optional[str] = None, switch_pm: Optional['TypeInlineBotSwitchPM'] = None, switch_webview: Optional['TypeInlineBotWebView'] = None):
+        self.query_id = query_id
+        self.results = results
+        self.cache_time = cache_time
+        self.users = users
+        self.gallery = gallery
+        self.next_offset = next_offset
+        self.switch_pm = switch_pm
+        self.switch_webview = switch_webview
+
+    def to_dict(self):
+        return {
+            '_': 'BotResults',
+            'query_id': self.query_id,
+            'results': self.results,
+            'cache_time': self.cache_time,
+            'users': self.users,
+            'gallery': self.gallery,
+            'next_offset': self.next_offset,
+            'switch_pm': self.switch_pm,
+            'switch_webview': self.switch_webview,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.gallery:
+            flags |= (1 << 0)
+        if self.next_offset is not None:
+            flags |= (1 << 1)
+        if self.switch_pm is not None:
+            flags |= (1 << 2)
+        if self.switch_webview is not None:
+            flags |= (1 << 3)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<q', self.query_id))
+        if self.next_offset is not None:
+            buf.write(TLObject.serialize_bytes(self.next_offset))
+        if self.switch_pm is not None:
+            buf.write(bytes(self.switch_pm))
+        if self.switch_webview is not None:
+            buf.write(bytes(self.switch_webview))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.results)))
+        for item in self.results:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', self.cache_time))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['gallery'] = bool(flags & (1 << 0))
+        _val_query_id = reader.read_long()
+        _args['query_id'] = _val_query_id
+        if flags & (1 << 1):
+            _val_next_offset = reader.tgread_string()
+            _args['next_offset'] = _val_next_offset
+        else:
+            _args['next_offset'] = None
+        if flags & (1 << 2):
+            _val_switch_pm = reader.tgread_object()
+            _args['switch_pm'] = _val_switch_pm
+        else:
+            _args['switch_pm'] = None
+        if flags & (1 << 3):
+            _val_switch_webview = reader.tgread_object()
+            _args['switch_webview'] = _val_switch_webview
+        else:
+            _args['switch_webview'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_results = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_results = []
+        for _ in range(_count_results):
+            _item_results = reader.tgread_object()
+            _list_results.append(_item_results)
+        _args['results'] = _list_results
+        _val_cache_time = reader.read_int()
+        _args['cache_time'] = _val_cache_time
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        return cls(**_args)
+
+
+class ChannelMessages(TLObject):
+    """TL type: messages.channelMessages"""
+    CONSTRUCTOR_ID = 0xc776ba4e
+    SUBCLASS_OF_ID = 0xd4b40b5e
+
+    def __init__(self, pts: int, count: int, messages: List['TypeMessage'], topics: List['TypeForumTopic'], chats: List['TypeChat'], users: List['TypeUser'], inexact: Optional[bool] = None, offset_id_offset: Optional[int] = None):
+        self.pts = pts
+        self.count = count
+        self.messages = messages
+        self.topics = topics
+        self.chats = chats
+        self.users = users
+        self.inexact = inexact
+        self.offset_id_offset = offset_id_offset
+
+    def to_dict(self):
+        return {
+            '_': 'ChannelMessages',
+            'pts': self.pts,
+            'count': self.count,
+            'messages': self.messages,
+            'topics': self.topics,
+            'chats': self.chats,
+            'users': self.users,
+            'inexact': self.inexact,
+            'offset_id_offset': self.offset_id_offset,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.inexact:
+            flags |= (1 << 1)
+        if self.offset_id_offset is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.pts))
+        buf.write(struct.pack('<i', self.count))
+        if self.offset_id_offset is not None:
+            buf.write(struct.pack('<i', self.offset_id_offset))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.messages)))
+        for item in self.messages:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.topics)))
+        for item in self.topics:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.chats)))
+        for item in self.chats:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['inexact'] = bool(flags & (1 << 1))
+        _val_pts = reader.read_int()
+        _args['pts'] = _val_pts
+        _val_count = reader.read_int()
+        _args['count'] = _val_count
+        if flags & (1 << 2):
+            _val_offset_id_offset = reader.read_int()
+            _args['offset_id_offset'] = _val_offset_id_offset
+        else:
+            _args['offset_id_offset'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_messages = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_messages = []
+        for _ in range(_count_messages):
+            _item_messages = reader.tgread_object()
+            _list_messages.append(_item_messages)
+        _args['messages'] = _list_messages
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_topics = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_topics = []
+        for _ in range(_count_topics):
+            _item_topics = reader.tgread_object()
+            _list_topics.append(_item_topics)
+        _args['topics'] = _list_topics
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_chats = []
+        for _ in range(_count_chats):
+            _item_chats = reader.tgread_object()
+            _list_chats.append(_item_chats)
+        _args['chats'] = _list_chats
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
         return cls(**_args)
 
 
@@ -787,6 +1121,53 @@ class DhConfigNotModified(TLObject):
         return cls(**_args)
 
 
+class DialogFilters(TLObject):
+    """TL type: messages.dialogFilters"""
+    CONSTRUCTOR_ID = 0x2ad93719
+    SUBCLASS_OF_ID = 0xa5fff1b7
+
+    def __init__(self, filters: List['TypeDialogFilter'], tags_enabled: Optional[bool] = None):
+        self.filters = filters
+        self.tags_enabled = tags_enabled
+
+    def to_dict(self):
+        return {
+            '_': 'DialogFilters',
+            'filters': self.filters,
+            'tags_enabled': self.tags_enabled,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.tags_enabled:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.filters)))
+        for item in self.filters:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['tags_enabled'] = bool(flags & (1 << 0))
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_filters = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_filters = []
+        for _ in range(_count_filters):
+            _item_filters = reader.tgread_object()
+            _list_filters.append(_item_filters)
+        _args['filters'] = _list_filters
+        return cls(**_args)
+
+
 class Dialogs(TLObject):
     """TL type: messages.dialogs"""
     CONSTRUCTOR_ID = 0x15ba6c40
@@ -986,6 +1367,184 @@ class DialogsSlice(TLObject):
             _item_users = reader.tgread_object()
             _list_users.append(_item_users)
         _args['users'] = _list_users
+        return cls(**_args)
+
+
+class DiscussionMessage(TLObject):
+    """TL type: messages.discussionMessage"""
+    CONSTRUCTOR_ID = 0xa6341782
+    SUBCLASS_OF_ID = 0x53f8e3e8
+
+    def __init__(self, messages: List['TypeMessage'], unread_count: int, chats: List['TypeChat'], users: List['TypeUser'], max_id: Optional[int] = None, read_inbox_max_id: Optional[int] = None, read_outbox_max_id: Optional[int] = None):
+        self.messages = messages
+        self.unread_count = unread_count
+        self.chats = chats
+        self.users = users
+        self.max_id = max_id
+        self.read_inbox_max_id = read_inbox_max_id
+        self.read_outbox_max_id = read_outbox_max_id
+
+    def to_dict(self):
+        return {
+            '_': 'DiscussionMessage',
+            'messages': self.messages,
+            'unread_count': self.unread_count,
+            'chats': self.chats,
+            'users': self.users,
+            'max_id': self.max_id,
+            'read_inbox_max_id': self.read_inbox_max_id,
+            'read_outbox_max_id': self.read_outbox_max_id,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.max_id is not None:
+            flags |= (1 << 0)
+        if self.read_inbox_max_id is not None:
+            flags |= (1 << 1)
+        if self.read_outbox_max_id is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.messages)))
+        for item in self.messages:
+            buf.write(bytes(item))
+        if self.max_id is not None:
+            buf.write(struct.pack('<i', self.max_id))
+        if self.read_inbox_max_id is not None:
+            buf.write(struct.pack('<i', self.read_inbox_max_id))
+        if self.read_outbox_max_id is not None:
+            buf.write(struct.pack('<i', self.read_outbox_max_id))
+        buf.write(struct.pack('<i', self.unread_count))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.chats)))
+        for item in self.chats:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_messages = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_messages = []
+        for _ in range(_count_messages):
+            _item_messages = reader.tgread_object()
+            _list_messages.append(_item_messages)
+        _args['messages'] = _list_messages
+        if flags & (1 << 0):
+            _val_max_id = reader.read_int()
+            _args['max_id'] = _val_max_id
+        else:
+            _args['max_id'] = None
+        if flags & (1 << 1):
+            _val_read_inbox_max_id = reader.read_int()
+            _args['read_inbox_max_id'] = _val_read_inbox_max_id
+        else:
+            _args['read_inbox_max_id'] = None
+        if flags & (1 << 2):
+            _val_read_outbox_max_id = reader.read_int()
+            _args['read_outbox_max_id'] = _val_read_outbox_max_id
+        else:
+            _args['read_outbox_max_id'] = None
+        _val_unread_count = reader.read_int()
+        _args['unread_count'] = _val_unread_count
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_chats = []
+        for _ in range(_count_chats):
+            _item_chats = reader.tgread_object()
+            _list_chats.append(_item_chats)
+        _args['chats'] = _list_chats
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        return cls(**_args)
+
+
+class EmojiGameDiceInfo(TLObject):
+    """TL type: messages.emojiGameDiceInfo"""
+    CONSTRUCTOR_ID = 0x44e56023
+    SUBCLASS_OF_ID = 0x064b3022
+
+    def __init__(self, game_hash: str, prev_stake: int, current_streak: int, params: List[int], plays_left: Optional[int] = None):
+        self.game_hash = game_hash
+        self.prev_stake = prev_stake
+        self.current_streak = current_streak
+        self.params = params
+        self.plays_left = plays_left
+
+    def to_dict(self):
+        return {
+            '_': 'EmojiGameDiceInfo',
+            'game_hash': self.game_hash,
+            'prev_stake': self.prev_stake,
+            'current_streak': self.current_streak,
+            'params': self.params,
+            'plays_left': self.plays_left,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.plays_left is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.game_hash))
+        buf.write(struct.pack('<q', self.prev_stake))
+        buf.write(struct.pack('<i', self.current_streak))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.params)))
+        for item in self.params:
+            buf.write(struct.pack('<i', item))
+        if self.plays_left is not None:
+            buf.write(struct.pack('<i', self.plays_left))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_game_hash = reader.tgread_string()
+        _args['game_hash'] = _val_game_hash
+        _val_prev_stake = reader.read_long()
+        _args['prev_stake'] = _val_prev_stake
+        _val_current_streak = reader.read_int()
+        _args['current_streak'] = _val_current_streak
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_params = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_params = []
+        for _ in range(_count_params):
+            _item_params = reader.read_int()
+            _list_params.append(_item_params)
+        _args['params'] = _list_params
+        if flags & (1 << 0):
+            _val_plays_left = reader.read_int()
+            _args['plays_left'] = _val_plays_left
+        else:
+            _args['plays_left'] = None
         return cls(**_args)
 
 
@@ -1355,6 +1914,78 @@ class FavedStickersNotModified(TLObject):
         return cls()
 
 
+class FeaturedStickers(TLObject):
+    """TL type: messages.featuredStickers"""
+    CONSTRUCTOR_ID = 0xbe382906
+    SUBCLASS_OF_ID = 0x2614b722
+
+    def __init__(self, hash: int, count: int, sets: List['TypeStickerSetCovered'], unread: List[int], premium: Optional[bool] = None):
+        self.hash = hash
+        self.count = count
+        self.sets = sets
+        self.unread = unread
+        self.premium = premium
+
+    def to_dict(self):
+        return {
+            '_': 'FeaturedStickers',
+            'hash': self.hash,
+            'count': self.count,
+            'sets': self.sets,
+            'unread': self.unread,
+            'premium': self.premium,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.premium:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<q', self.hash))
+        buf.write(struct.pack('<i', self.count))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.sets)))
+        for item in self.sets:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.unread)))
+        for item in self.unread:
+            buf.write(struct.pack('<q', item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['premium'] = bool(flags & (1 << 0))
+        _val_hash = reader.read_long()
+        _args['hash'] = _val_hash
+        _val_count = reader.read_int()
+        _args['count'] = _val_count
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_sets = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_sets = []
+        for _ in range(_count_sets):
+            _item_sets = reader.tgread_object()
+            _list_sets.append(_item_sets)
+        _args['sets'] = _list_sets
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_unread = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_unread = []
+        for _ in range(_count_unread):
+            _item_unread = reader.read_long()
+            _list_unread.append(_item_unread)
+        _args['unread'] = _list_unread
+        return cls(**_args)
+
+
 class FeaturedStickersNotModified(TLObject):
     """TL type: messages.featuredStickersNotModified"""
     CONSTRUCTOR_ID = 0xc6dc0c66
@@ -1381,6 +2012,108 @@ class FeaturedStickersNotModified(TLObject):
         _args = {}
         _val_count = reader.read_int()
         _args['count'] = _val_count
+        return cls(**_args)
+
+
+class ForumTopics(TLObject):
+    """TL type: messages.forumTopics"""
+    CONSTRUCTOR_ID = 0x367617d3
+    SUBCLASS_OF_ID = 0x8e1d3e1e
+
+    def __init__(self, count: int, topics: List['TypeForumTopic'], messages: List['TypeMessage'], chats: List['TypeChat'], users: List['TypeUser'], pts: int, order_by_create_date: Optional[bool] = None):
+        self.count = count
+        self.topics = topics
+        self.messages = messages
+        self.chats = chats
+        self.users = users
+        self.pts = pts
+        self.order_by_create_date = order_by_create_date
+
+    def to_dict(self):
+        return {
+            '_': 'ForumTopics',
+            'count': self.count,
+            'topics': self.topics,
+            'messages': self.messages,
+            'chats': self.chats,
+            'users': self.users,
+            'pts': self.pts,
+            'order_by_create_date': self.order_by_create_date,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.order_by_create_date:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.count))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.topics)))
+        for item in self.topics:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.messages)))
+        for item in self.messages:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.chats)))
+        for item in self.chats:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', self.pts))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['order_by_create_date'] = bool(flags & (1 << 0))
+        _val_count = reader.read_int()
+        _args['count'] = _val_count
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_topics = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_topics = []
+        for _ in range(_count_topics):
+            _item_topics = reader.tgread_object()
+            _list_topics.append(_item_topics)
+        _args['topics'] = _list_topics
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_messages = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_messages = []
+        for _ in range(_count_messages):
+            _item_messages = reader.tgread_object()
+            _list_messages.append(_item_messages)
+        _args['messages'] = _list_messages
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_chats = []
+        for _ in range(_count_chats):
+            _item_chats = reader.tgread_object()
+            _list_chats.append(_item_chats)
+        _args['chats'] = _list_chats
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        _val_pts = reader.read_int()
+        _args['pts'] = _val_pts
         return cls(**_args)
 
 
@@ -1450,6 +2183,102 @@ class FoundStickerSetsNotModified(TLObject):
     @classmethod
     def from_reader(cls, reader):
         return cls()
+
+
+class FoundStickers(TLObject):
+    """TL type: messages.foundStickers"""
+    CONSTRUCTOR_ID = 0x82c9e290
+    SUBCLASS_OF_ID = 0x06402151
+
+    def __init__(self, hash: int, stickers: List['TypeDocument'], next_offset: Optional[int] = None):
+        self.hash = hash
+        self.stickers = stickers
+        self.next_offset = next_offset
+
+    def to_dict(self):
+        return {
+            '_': 'FoundStickers',
+            'hash': self.hash,
+            'stickers': self.stickers,
+            'next_offset': self.next_offset,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.next_offset is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.next_offset is not None:
+            buf.write(struct.pack('<i', self.next_offset))
+        buf.write(struct.pack('<q', self.hash))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.stickers)))
+        for item in self.stickers:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_next_offset = reader.read_int()
+            _args['next_offset'] = _val_next_offset
+        else:
+            _args['next_offset'] = None
+        _val_hash = reader.read_long()
+        _args['hash'] = _val_hash
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_stickers = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_stickers = []
+        for _ in range(_count_stickers):
+            _item_stickers = reader.tgread_object()
+            _list_stickers.append(_item_stickers)
+        _args['stickers'] = _list_stickers
+        return cls(**_args)
+
+
+class FoundStickersNotModified(TLObject):
+    """TL type: messages.foundStickersNotModified"""
+    CONSTRUCTOR_ID = 0x6010c534
+    SUBCLASS_OF_ID = 0x06402151
+
+    def __init__(self, next_offset: Optional[int] = None):
+        self.next_offset = next_offset
+
+    def to_dict(self):
+        return {
+            '_': 'FoundStickersNotModified',
+            'next_offset': self.next_offset,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.next_offset is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.next_offset is not None:
+            buf.write(struct.pack('<i', self.next_offset))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_next_offset = reader.read_int()
+            _args['next_offset'] = _val_next_offset
+        else:
+            _args['next_offset'] = None
+        return cls(**_args)
 
 
 class HighScores(TLObject):
@@ -1532,6 +2361,54 @@ class HistoryImport(TLObject):
         _args = {}
         _val_id = reader.read_long()
         _args['id'] = _val_id
+        return cls(**_args)
+
+
+class HistoryImportParsed(TLObject):
+    """TL type: messages.historyImportParsed"""
+    CONSTRUCTOR_ID = 0x5e0fb7b9
+    SUBCLASS_OF_ID = 0x5bb2720b
+
+    def __init__(self, pm: Optional[bool] = None, group: Optional[bool] = None, title: Optional[str] = None):
+        self.pm = pm
+        self.group = group
+        self.title = title
+
+    def to_dict(self):
+        return {
+            '_': 'HistoryImportParsed',
+            'pm': self.pm,
+            'group': self.group,
+            'title': self.title,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.pm:
+            flags |= (1 << 0)
+        if self.group:
+            flags |= (1 << 1)
+        if self.title is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        if self.title is not None:
+            buf.write(TLObject.serialize_bytes(self.title))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['pm'] = bool(flags & (1 << 0))
+        _args['group'] = bool(flags & (1 << 1))
+        if flags & (1 << 2):
+            _val_title = reader.tgread_string()
+            _args['title'] = _val_title
+        else:
+            _args['title'] = None
         return cls(**_args)
 
 
@@ -1648,28 +2525,124 @@ class InvitedUsers(TLObject):
         return cls(**_args)
 
 
-class MessageEmpty(TLObject):
-    """TL type: messages.messageEmpty"""
-    CONSTRUCTOR_ID = 0x3f4e0648
-    SUBCLASS_OF_ID = 0xd6824adf
+class MessageEditData(TLObject):
+    """TL type: messages.messageEditData"""
+    CONSTRUCTOR_ID = 0x26b5dde6
+    SUBCLASS_OF_ID = 0xfb47949d
 
-    def __init__(self):
-        pass
+    def __init__(self, caption: Optional[bool] = None):
+        self.caption = caption
 
     def to_dict(self):
         return {
-            '_': 'MessageEmpty',
+            '_': 'MessageEditData',
+            'caption': self.caption,
         }
 
     def _bytes(self) -> bytes:
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.caption:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
-        return cls()
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['caption'] = bool(flags & (1 << 0))
+        return cls(**_args)
+
+
+class MessageReactionsList(TLObject):
+    """TL type: messages.messageReactionsList"""
+    CONSTRUCTOR_ID = 0x31bd492d
+    SUBCLASS_OF_ID = 0x60fce5e6
+
+    def __init__(self, count: int, reactions: List['TypeMessagePeerReaction'], chats: List['TypeChat'], users: List['TypeUser'], next_offset: Optional[str] = None):
+        self.count = count
+        self.reactions = reactions
+        self.chats = chats
+        self.users = users
+        self.next_offset = next_offset
+
+    def to_dict(self):
+        return {
+            '_': 'MessageReactionsList',
+            'count': self.count,
+            'reactions': self.reactions,
+            'chats': self.chats,
+            'users': self.users,
+            'next_offset': self.next_offset,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.next_offset is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.count))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.reactions)))
+        for item in self.reactions:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.chats)))
+        for item in self.chats:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        if self.next_offset is not None:
+            buf.write(TLObject.serialize_bytes(self.next_offset))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_count = reader.read_int()
+        _args['count'] = _val_count
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_reactions = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_reactions = []
+        for _ in range(_count_reactions):
+            _item_reactions = reader.tgread_object()
+            _list_reactions.append(_item_reactions)
+        _args['reactions'] = _list_reactions
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_chats = []
+        for _ in range(_count_chats):
+            _item_chats = reader.tgread_object()
+            _list_chats.append(_item_chats)
+        _args['chats'] = _list_chats
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        if flags & (1 << 0):
+            _val_next_offset = reader.tgread_string()
+            _args['next_offset'] = _val_next_offset
+        else:
+            _args['next_offset'] = None
+        return cls(**_args)
 
 
 class MessageViews(TLObject):
@@ -1854,6 +2827,136 @@ class MessagesNotModified(TLObject):
         return cls(**_args)
 
 
+class MessagesSlice(TLObject):
+    """TL type: messages.messagesSlice"""
+    CONSTRUCTOR_ID = 0x5f206716
+    SUBCLASS_OF_ID = 0xd4b40b5e
+
+    def __init__(self, count: int, messages: List['TypeMessage'], topics: List['TypeForumTopic'], chats: List['TypeChat'], users: List['TypeUser'], inexact: Optional[bool] = None, next_rate: Optional[int] = None, offset_id_offset: Optional[int] = None, search_flood: Optional['TypeSearchPostsFlood'] = None):
+        self.count = count
+        self.messages = messages
+        self.topics = topics
+        self.chats = chats
+        self.users = users
+        self.inexact = inexact
+        self.next_rate = next_rate
+        self.offset_id_offset = offset_id_offset
+        self.search_flood = search_flood
+
+    def to_dict(self):
+        return {
+            '_': 'MessagesSlice',
+            'count': self.count,
+            'messages': self.messages,
+            'topics': self.topics,
+            'chats': self.chats,
+            'users': self.users,
+            'inexact': self.inexact,
+            'next_rate': self.next_rate,
+            'offset_id_offset': self.offset_id_offset,
+            'search_flood': self.search_flood,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.inexact:
+            flags |= (1 << 1)
+        if self.next_rate is not None:
+            flags |= (1 << 0)
+        if self.offset_id_offset is not None:
+            flags |= (1 << 2)
+        if self.search_flood is not None:
+            flags |= (1 << 3)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.count))
+        if self.next_rate is not None:
+            buf.write(struct.pack('<i', self.next_rate))
+        if self.offset_id_offset is not None:
+            buf.write(struct.pack('<i', self.offset_id_offset))
+        if self.search_flood is not None:
+            buf.write(bytes(self.search_flood))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.messages)))
+        for item in self.messages:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.topics)))
+        for item in self.topics:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.chats)))
+        for item in self.chats:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['inexact'] = bool(flags & (1 << 1))
+        _val_count = reader.read_int()
+        _args['count'] = _val_count
+        if flags & (1 << 0):
+            _val_next_rate = reader.read_int()
+            _args['next_rate'] = _val_next_rate
+        else:
+            _args['next_rate'] = None
+        if flags & (1 << 2):
+            _val_offset_id_offset = reader.read_int()
+            _args['offset_id_offset'] = _val_offset_id_offset
+        else:
+            _args['offset_id_offset'] = None
+        if flags & (1 << 3):
+            _val_search_flood = reader.tgread_object()
+            _args['search_flood'] = _val_search_flood
+        else:
+            _args['search_flood'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_messages = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_messages = []
+        for _ in range(_count_messages):
+            _item_messages = reader.tgread_object()
+            _list_messages.append(_item_messages)
+        _args['messages'] = _list_messages
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_topics = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_topics = []
+        for _ in range(_count_topics):
+            _item_topics = reader.tgread_object()
+            _list_topics.append(_item_topics)
+        _args['topics'] = _list_topics
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_chats = []
+        for _ in range(_count_chats):
+            _item_chats = reader.tgread_object()
+            _list_chats.append(_item_chats)
+        _args['chats'] = _list_chats
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        return cls(**_args)
+
+
 class MyStickers(TLObject):
     """TL type: messages.myStickers"""
     CONSTRUCTOR_ID = 0xfaff629d
@@ -1895,6 +2998,95 @@ class MyStickers(TLObject):
             _item_sets = reader.tgread_object()
             _list_sets.append(_item_sets)
         _args['sets'] = _list_sets
+        return cls(**_args)
+
+
+class PeerDialogs(TLObject):
+    """TL type: messages.peerDialogs"""
+    CONSTRUCTOR_ID = 0x3371c354
+    SUBCLASS_OF_ID = 0x3ac70132
+
+    def __init__(self, dialogs: List['TypeDialog'], messages: List['TypeMessage'], chats: List['TypeChat'], users: List['TypeUser'], state: 'TypeState'):
+        self.dialogs = dialogs
+        self.messages = messages
+        self.chats = chats
+        self.users = users
+        self.state = state
+
+    def to_dict(self):
+        return {
+            '_': 'PeerDialogs',
+            'dialogs': self.dialogs,
+            'messages': self.messages,
+            'chats': self.chats,
+            'users': self.users,
+            'state': self.state,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.dialogs)))
+        for item in self.dialogs:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.messages)))
+        for item in self.messages:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.chats)))
+        for item in self.chats:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        buf.write(bytes(self.state))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_dialogs = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_dialogs = []
+        for _ in range(_count_dialogs):
+            _item_dialogs = reader.tgread_object()
+            _list_dialogs.append(_item_dialogs)
+        _args['dialogs'] = _list_dialogs
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_messages = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_messages = []
+        for _ in range(_count_messages):
+            _item_messages = reader.tgread_object()
+            _list_messages.append(_item_messages)
+        _args['messages'] = _list_messages
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_chats = []
+        for _ in range(_count_chats):
+            _item_chats = reader.tgread_object()
+            _list_chats.append(_item_chats)
+        _args['chats'] = _list_chats
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        _val_state = reader.tgread_object()
+        _args['state'] = _val_state
         return cls(**_args)
 
 
@@ -2638,6 +3830,166 @@ class SavedReactionTagsNotModified(TLObject):
         return cls()
 
 
+class SearchCounter(TLObject):
+    """TL type: messages.searchCounter"""
+    CONSTRUCTOR_ID = 0xe844ebff
+    SUBCLASS_OF_ID = 0xd6a7bfa2
+
+    def __init__(self, filter: 'TypeMessagesFilter', count: int, inexact: Optional[bool] = None):
+        self.filter = filter
+        self.count = count
+        self.inexact = inexact
+
+    def to_dict(self):
+        return {
+            '_': 'SearchCounter',
+            'filter': self.filter,
+            'count': self.count,
+            'inexact': self.inexact,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.inexact:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.filter))
+        buf.write(struct.pack('<i', self.count))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['inexact'] = bool(flags & (1 << 1))
+        _val_filter = reader.tgread_object()
+        _args['filter'] = _val_filter
+        _val_count = reader.read_int()
+        _args['count'] = _val_count
+        return cls(**_args)
+
+
+class SearchResultsCalendar(TLObject):
+    """TL type: messages.searchResultsCalendar"""
+    CONSTRUCTOR_ID = 0x147ee23c
+    SUBCLASS_OF_ID = 0x92c5640f
+
+    def __init__(self, count: int, min_date: Optional[datetime], min_msg_id: int, periods: List['TypeSearchResultsCalendarPeriod'], messages: List['TypeMessage'], chats: List['TypeChat'], users: List['TypeUser'], inexact: Optional[bool] = None, offset_id_offset: Optional[int] = None):
+        self.count = count
+        self.min_date = min_date
+        self.min_msg_id = min_msg_id
+        self.periods = periods
+        self.messages = messages
+        self.chats = chats
+        self.users = users
+        self.inexact = inexact
+        self.offset_id_offset = offset_id_offset
+
+    def to_dict(self):
+        return {
+            '_': 'SearchResultsCalendar',
+            'count': self.count,
+            'min_date': self.min_date,
+            'min_msg_id': self.min_msg_id,
+            'periods': self.periods,
+            'messages': self.messages,
+            'chats': self.chats,
+            'users': self.users,
+            'inexact': self.inexact,
+            'offset_id_offset': self.offset_id_offset,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.inexact:
+            flags |= (1 << 0)
+        if self.offset_id_offset is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.count))
+        buf.write(TLObject.serialize_datetime(self.min_date))
+        buf.write(struct.pack('<i', self.min_msg_id))
+        if self.offset_id_offset is not None:
+            buf.write(struct.pack('<i', self.offset_id_offset))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.periods)))
+        for item in self.periods:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.messages)))
+        for item in self.messages:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.chats)))
+        for item in self.chats:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['inexact'] = bool(flags & (1 << 0))
+        _val_count = reader.read_int()
+        _args['count'] = _val_count
+        _val_min_date = reader.tgread_date()
+        _args['min_date'] = _val_min_date
+        _val_min_msg_id = reader.read_int()
+        _args['min_msg_id'] = _val_min_msg_id
+        if flags & (1 << 1):
+            _val_offset_id_offset = reader.read_int()
+            _args['offset_id_offset'] = _val_offset_id_offset
+        else:
+            _args['offset_id_offset'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_periods = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_periods = []
+        for _ in range(_count_periods):
+            _item_periods = reader.tgread_object()
+            _list_periods.append(_item_periods)
+        _args['periods'] = _list_periods
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_messages = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_messages = []
+        for _ in range(_count_messages):
+            _item_messages = reader.tgread_object()
+            _list_messages.append(_item_messages)
+        _args['messages'] = _list_messages
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_chats = []
+        for _ in range(_count_chats):
+            _item_chats = reader.tgread_object()
+            _list_chats.append(_item_chats)
+        _args['chats'] = _list_chats
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        return cls(**_args)
+
+
 class SearchResultsPositions(TLObject):
     """TL type: messages.searchResultsPositions"""
     CONSTRUCTOR_ID = 0x53b22baf
@@ -2742,6 +4094,111 @@ class SentEncryptedMessage(TLObject):
         _args = {}
         _val_date = reader.tgread_date()
         _args['date'] = _val_date
+        return cls(**_args)
+
+
+class SponsoredMessages(TLObject):
+    """TL type: messages.sponsoredMessages"""
+    CONSTRUCTOR_ID = 0xffda656d
+    SUBCLASS_OF_ID = 0x7f4169e0
+
+    def __init__(self, messages: List['TypeSponsoredMessage'], chats: List['TypeChat'], users: List['TypeUser'], posts_between: Optional[int] = None, start_delay: Optional[int] = None, between_delay: Optional[int] = None):
+        self.messages = messages
+        self.chats = chats
+        self.users = users
+        self.posts_between = posts_between
+        self.start_delay = start_delay
+        self.between_delay = between_delay
+
+    def to_dict(self):
+        return {
+            '_': 'SponsoredMessages',
+            'messages': self.messages,
+            'chats': self.chats,
+            'users': self.users,
+            'posts_between': self.posts_between,
+            'start_delay': self.start_delay,
+            'between_delay': self.between_delay,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.posts_between is not None:
+            flags |= (1 << 0)
+        if self.start_delay is not None:
+            flags |= (1 << 1)
+        if self.between_delay is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        if self.posts_between is not None:
+            buf.write(struct.pack('<i', self.posts_between))
+        if self.start_delay is not None:
+            buf.write(struct.pack('<i', self.start_delay))
+        if self.between_delay is not None:
+            buf.write(struct.pack('<i', self.between_delay))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.messages)))
+        for item in self.messages:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.chats)))
+        for item in self.chats:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_posts_between = reader.read_int()
+            _args['posts_between'] = _val_posts_between
+        else:
+            _args['posts_between'] = None
+        if flags & (1 << 1):
+            _val_start_delay = reader.read_int()
+            _args['start_delay'] = _val_start_delay
+        else:
+            _args['start_delay'] = None
+        if flags & (1 << 2):
+            _val_between_delay = reader.read_int()
+            _args['between_delay'] = _val_between_delay
+        else:
+            _args['between_delay'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_messages = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_messages = []
+        for _ in range(_count_messages):
+            _item_messages = reader.tgread_object()
+            _list_messages.append(_item_messages)
+        _args['messages'] = _list_messages
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_chats = []
+        for _ in range(_count_chats):
+            _item_chats = reader.tgread_object()
+            _list_chats.append(_item_chats)
+        _args['chats'] = _list_chats
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
         return cls(**_args)
 
 
@@ -2998,6 +4455,70 @@ class StickersNotModified(TLObject):
         return cls()
 
 
+class TranscribedAudio(TLObject):
+    """TL type: messages.transcribedAudio"""
+    CONSTRUCTOR_ID = 0xcfb9d957
+    SUBCLASS_OF_ID = 0x21b24936
+
+    def __init__(self, transcription_id: int, text: str, pending: Optional[bool] = None, trial_remains_num: Optional[int] = None, trial_remains_until_date: Optional[datetime] = None):
+        self.transcription_id = transcription_id
+        self.text = text
+        self.pending = pending
+        self.trial_remains_num = trial_remains_num
+        self.trial_remains_until_date = trial_remains_until_date
+
+    def to_dict(self):
+        return {
+            '_': 'TranscribedAudio',
+            'transcription_id': self.transcription_id,
+            'text': self.text,
+            'pending': self.pending,
+            'trial_remains_num': self.trial_remains_num,
+            'trial_remains_until_date': self.trial_remains_until_date,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.pending:
+            flags |= (1 << 0)
+        if self.trial_remains_num is not None:
+            flags |= (1 << 1)
+        if self.trial_remains_until_date is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<q', self.transcription_id))
+        buf.write(TLObject.serialize_bytes(self.text))
+        if self.trial_remains_num is not None:
+            buf.write(struct.pack('<i', self.trial_remains_num))
+        if self.trial_remains_until_date is not None:
+            buf.write(TLObject.serialize_datetime(self.trial_remains_until_date))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['pending'] = bool(flags & (1 << 0))
+        _val_transcription_id = reader.read_long()
+        _args['transcription_id'] = _val_transcription_id
+        _val_text = reader.tgread_string()
+        _args['text'] = _val_text
+        if flags & (1 << 1):
+            _val_trial_remains_num = reader.read_int()
+            _args['trial_remains_num'] = _val_trial_remains_num
+        else:
+            _args['trial_remains_num'] = None
+        if flags & (1 << 1):
+            _val_trial_remains_until_date = reader.tgread_date()
+            _args['trial_remains_until_date'] = _val_trial_remains_until_date
+        else:
+            _args['trial_remains_until_date'] = None
+        return cls(**_args)
+
+
 class TranslateResult(TLObject):
     """TL type: messages.translateResult"""
     CONSTRUCTOR_ID = 0x33db32f8
@@ -3034,6 +4555,94 @@ class TranslateResult(TLObject):
             _item_result = reader.tgread_object()
             _list_result.append(_item_result)
         _args['result'] = _list_result
+        return cls(**_args)
+
+
+class VotesList(TLObject):
+    """TL type: messages.votesList"""
+    CONSTRUCTOR_ID = 0x4899484e
+    SUBCLASS_OF_ID = 0xc2199885
+
+    def __init__(self, count: int, votes: List['TypeMessagePeerVote'], chats: List['TypeChat'], users: List['TypeUser'], next_offset: Optional[str] = None):
+        self.count = count
+        self.votes = votes
+        self.chats = chats
+        self.users = users
+        self.next_offset = next_offset
+
+    def to_dict(self):
+        return {
+            '_': 'VotesList',
+            'count': self.count,
+            'votes': self.votes,
+            'chats': self.chats,
+            'users': self.users,
+            'next_offset': self.next_offset,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.next_offset is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.count))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.votes)))
+        for item in self.votes:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.chats)))
+        for item in self.chats:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.users)))
+        for item in self.users:
+            buf.write(bytes(item))
+        if self.next_offset is not None:
+            buf.write(TLObject.serialize_bytes(self.next_offset))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_count = reader.read_int()
+        _args['count'] = _val_count
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_votes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_votes = []
+        for _ in range(_count_votes):
+            _item_votes = reader.tgread_object()
+            _list_votes.append(_item_votes)
+        _args['votes'] = _list_votes
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_chats = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_chats = []
+        for _ in range(_count_chats):
+            _item_chats = reader.tgread_object()
+            _list_chats.append(_item_chats)
+        _args['chats'] = _list_chats
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_users = []
+        for _ in range(_count_users):
+            _item_users = reader.tgread_object()
+            _list_users.append(_item_users)
+        _args['users'] = _list_users
+        if flags & (1 << 0):
+            _val_next_offset = reader.tgread_string()
+            _args['next_offset'] = _val_next_offset
+        else:
+            _args['next_offset'] = None
         return cls(**_args)
 
 
@@ -3143,50 +4752,6 @@ class WebPagePreview(TLObject):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
-        _vec_id = reader.read_int(signed=False)
-        if _vec_id != 0x1cb5c415:
-            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
-        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
-        _list_users = []
-        for _ in range(_count_users):
-            _item_users = reader.tgread_object()
-            _list_users.append(_item_users)
-        _args['users'] = _list_users
-        return cls(**_args)
-
-
-class WebViewResult(TLObject):
-    """TL type: messages.webViewResult"""
-    CONSTRUCTOR_ID = 0xaadf159b
-    SUBCLASS_OF_ID = 0xd8597669
-
-    def __init__(self, result: 'TypeBotInlineResult', users: List['TypeUser']):
-        self.result = result
-        self.users = users
-
-    def to_dict(self):
-        return {
-            '_': 'WebViewResult',
-            'result': self.result,
-            'users': self.users,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(bytes(self.result))
-        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-        buf.write(struct.pack('<i', len(self.users)))
-        for item in self.users:
-            buf.write(bytes(item))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_result = reader.tgread_object()
-        _args['result'] = _val_result
         _vec_id = reader.read_int(signed=False)
         if _vec_id != 0x1cb5c415:
             raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')

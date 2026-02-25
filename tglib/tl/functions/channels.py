@@ -7,6 +7,44 @@ import struct
 from datetime import datetime
 
 
+class CheckSearchPostsFloodRequest(TLRequest):
+    """TL type: channels.checkSearchPostsFlood"""
+    CONSTRUCTOR_ID = 0x22567115
+    SUBCLASS_OF_ID = 0xc2c0ccc1
+
+    def __init__(self, query: Optional[str] = None):
+        self.query = query
+
+    def to_dict(self):
+        return {
+            '_': 'CheckSearchPostsFloodRequest',
+            'query': self.query,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.query is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.query is not None:
+            buf.write(TLObject.serialize_bytes(self.query))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_query = reader.tgread_string()
+            _args['query'] = _val_query
+        else:
+            _args['query'] = None
+        return cls(**_args)
+
+
 class CheckUsernameRequest(TLRequest):
     """TL type: channels.checkUsername"""
     CONSTRUCTOR_ID = 0x10e6bd2c
@@ -70,6 +108,96 @@ class ConvertToGigagroupRequest(TLRequest):
         return cls(**_args)
 
 
+class CreateChannelRequest(TLRequest):
+    """TL type: channels.createChannel"""
+    CONSTRUCTOR_ID = 0x91006707
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, title: str, about: str, broadcast: Optional[bool] = None, megagroup: Optional[bool] = None, for_import: Optional[bool] = None, forum: Optional[bool] = None, geo_point: Optional['TypeInputGeoPoint'] = None, address: Optional[str] = None, ttl_period: Optional[int] = None):
+        self.title = title
+        self.about = about
+        self.broadcast = broadcast
+        self.megagroup = megagroup
+        self.for_import = for_import
+        self.forum = forum
+        self.geo_point = geo_point
+        self.address = address
+        self.ttl_period = ttl_period
+
+    def to_dict(self):
+        return {
+            '_': 'CreateChannelRequest',
+            'title': self.title,
+            'about': self.about,
+            'broadcast': self.broadcast,
+            'megagroup': self.megagroup,
+            'for_import': self.for_import,
+            'forum': self.forum,
+            'geo_point': self.geo_point,
+            'address': self.address,
+            'ttl_period': self.ttl_period,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.broadcast:
+            flags |= (1 << 0)
+        if self.megagroup:
+            flags |= (1 << 1)
+        if self.for_import:
+            flags |= (1 << 3)
+        if self.forum:
+            flags |= (1 << 5)
+        if self.geo_point is not None:
+            flags |= (1 << 2)
+        if self.address is not None:
+            flags |= (1 << 2)
+        if self.ttl_period is not None:
+            flags |= (1 << 4)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.title))
+        buf.write(TLObject.serialize_bytes(self.about))
+        if self.geo_point is not None:
+            buf.write(bytes(self.geo_point))
+        if self.address is not None:
+            buf.write(TLObject.serialize_bytes(self.address))
+        if self.ttl_period is not None:
+            buf.write(struct.pack('<i', self.ttl_period))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['broadcast'] = bool(flags & (1 << 0))
+        _args['megagroup'] = bool(flags & (1 << 1))
+        _args['for_import'] = bool(flags & (1 << 3))
+        _args['forum'] = bool(flags & (1 << 5))
+        _val_title = reader.tgread_string()
+        _args['title'] = _val_title
+        _val_about = reader.tgread_string()
+        _args['about'] = _val_about
+        if flags & (1 << 2):
+            _val_geo_point = reader.tgread_object()
+            _args['geo_point'] = _val_geo_point
+        else:
+            _args['geo_point'] = None
+        if flags & (1 << 2):
+            _val_address = reader.tgread_string()
+            _args['address'] = _val_address
+        else:
+            _args['address'] = None
+        if flags & (1 << 4):
+            _val_ttl_period = reader.read_int()
+            _args['ttl_period'] = _val_ttl_period
+        else:
+            _args['ttl_period'] = None
+        return cls(**_args)
+
+
 class DeactivateAllUsernamesRequest(TLRequest):
     """TL type: channels.deactivateAllUsernames"""
     CONSTRUCTOR_ID = 0x0a245dd3
@@ -125,6 +253,48 @@ class DeleteChannelRequest(TLRequest):
         _args = {}
         _val_channel = reader.tgread_object()
         _args['channel'] = _val_channel
+        return cls(**_args)
+
+
+class DeleteHistoryRequest(TLRequest):
+    """TL type: channels.deleteHistory"""
+    CONSTRUCTOR_ID = 0x9baa9647
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, channel: 'TypeInputChannel', max_id: int, for_everyone: Optional[bool] = None):
+        self.channel = channel
+        self.max_id = max_id
+        self.for_everyone = for_everyone
+
+    def to_dict(self):
+        return {
+            '_': 'DeleteHistoryRequest',
+            'channel': self.channel,
+            'max_id': self.max_id,
+            'for_everyone': self.for_everyone,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.for_everyone:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.channel))
+        buf.write(struct.pack('<i', self.max_id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['for_everyone'] = bool(flags & (1 << 0))
+        _val_channel = reader.tgread_object()
+        _args['channel'] = _val_channel
+        _val_max_id = reader.read_int()
+        _args['max_id'] = _val_max_id
         return cls(**_args)
 
 
@@ -203,6 +373,50 @@ class DeleteParticipantHistoryRequest(TLRequest):
         _args['channel'] = _val_channel
         _val_participant = reader.tgread_object()
         _args['participant'] = _val_participant
+        return cls(**_args)
+
+
+class EditAdminRequest(TLRequest):
+    """TL type: channels.editAdmin"""
+    CONSTRUCTOR_ID = 0xd33c8902
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, channel: 'TypeInputChannel', user_id: 'TypeInputUser', admin_rights: 'TypeChatAdminRights', rank: str):
+        self.channel = channel
+        self.user_id = user_id
+        self.admin_rights = admin_rights
+        self.rank = rank
+
+    def to_dict(self):
+        return {
+            '_': 'EditAdminRequest',
+            'channel': self.channel,
+            'user_id': self.user_id,
+            'admin_rights': self.admin_rights,
+            'rank': self.rank,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(bytes(self.channel))
+        buf.write(bytes(self.user_id))
+        buf.write(bytes(self.admin_rights))
+        buf.write(TLObject.serialize_bytes(self.rank))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_channel = reader.tgread_object()
+        _args['channel'] = _val_channel
+        _val_user_id = reader.tgread_object()
+        _args['user_id'] = _val_user_id
+        _val_admin_rights = reader.tgread_object()
+        _args['admin_rights'] = _val_admin_rights
+        _val_rank = reader.tgread_string()
+        _args['rank'] = _val_rank
         return cls(**_args)
 
 
@@ -388,6 +602,217 @@ class EditTitleRequest(TLRequest):
         _args['channel'] = _val_channel
         _val_title = reader.tgread_string()
         _args['title'] = _val_title
+        return cls(**_args)
+
+
+class ExportMessageLinkRequest(TLRequest):
+    """TL type: channels.exportMessageLink"""
+    CONSTRUCTOR_ID = 0xe63fadeb
+    SUBCLASS_OF_ID = 0xdee644cc
+
+    def __init__(self, channel: 'TypeInputChannel', id: int, grouped: Optional[bool] = None, thread: Optional[bool] = None):
+        self.channel = channel
+        self.id = id
+        self.grouped = grouped
+        self.thread = thread
+
+    def to_dict(self):
+        return {
+            '_': 'ExportMessageLinkRequest',
+            'channel': self.channel,
+            'id': self.id,
+            'grouped': self.grouped,
+            'thread': self.thread,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.grouped:
+            flags |= (1 << 0)
+        if self.thread:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.channel))
+        buf.write(struct.pack('<i', self.id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['grouped'] = bool(flags & (1 << 0))
+        _args['thread'] = bool(flags & (1 << 1))
+        _val_channel = reader.tgread_object()
+        _args['channel'] = _val_channel
+        _val_id = reader.read_int()
+        _args['id'] = _val_id
+        return cls(**_args)
+
+
+class GetAdminLogRequest(TLRequest):
+    """TL type: channels.getAdminLog"""
+    CONSTRUCTOR_ID = 0x33ddf480
+    SUBCLASS_OF_ID = 0x51f076bc
+
+    def __init__(self, channel: 'TypeInputChannel', q: str, max_id: int, min_id: int, limit: int, events_filter: Optional['TypeChannelAdminLogEventsFilter'] = None, admins: Optional[List['TypeInputUser']] = None):
+        self.channel = channel
+        self.q = q
+        self.max_id = max_id
+        self.min_id = min_id
+        self.limit = limit
+        self.events_filter = events_filter
+        self.admins = admins
+
+    def to_dict(self):
+        return {
+            '_': 'GetAdminLogRequest',
+            'channel': self.channel,
+            'q': self.q,
+            'max_id': self.max_id,
+            'min_id': self.min_id,
+            'limit': self.limit,
+            'events_filter': self.events_filter,
+            'admins': self.admins,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.events_filter is not None:
+            flags |= (1 << 0)
+        if self.admins is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.channel))
+        buf.write(TLObject.serialize_bytes(self.q))
+        if self.events_filter is not None:
+            buf.write(bytes(self.events_filter))
+        if self.admins is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.admins)))
+            for item in self.admins:
+                buf.write(bytes(item))
+        buf.write(struct.pack('<q', self.max_id))
+        buf.write(struct.pack('<q', self.min_id))
+        buf.write(struct.pack('<i', self.limit))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_channel = reader.tgread_object()
+        _args['channel'] = _val_channel
+        _val_q = reader.tgread_string()
+        _args['q'] = _val_q
+        if flags & (1 << 0):
+            _val_events_filter = reader.tgread_object()
+            _args['events_filter'] = _val_events_filter
+        else:
+            _args['events_filter'] = None
+        if flags & (1 << 1):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_admins = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_admins = []
+            for _ in range(_count_admins):
+                _item_admins = reader.tgread_object()
+                _list_admins.append(_item_admins)
+            _args['admins'] = _list_admins
+        else:
+            _args['admins'] = None
+        _val_max_id = reader.read_long()
+        _args['max_id'] = _val_max_id
+        _val_min_id = reader.read_long()
+        _args['min_id'] = _val_min_id
+        _val_limit = reader.read_int()
+        _args['limit'] = _val_limit
+        return cls(**_args)
+
+
+class GetAdminedPublicChannelsRequest(TLRequest):
+    """TL type: channels.getAdminedPublicChannels"""
+    CONSTRUCTOR_ID = 0xf8b036af
+    SUBCLASS_OF_ID = 0x99d5cb14
+
+    def __init__(self, by_location: Optional[bool] = None, check_limit: Optional[bool] = None, for_personal: Optional[bool] = None):
+        self.by_location = by_location
+        self.check_limit = check_limit
+        self.for_personal = for_personal
+
+    def to_dict(self):
+        return {
+            '_': 'GetAdminedPublicChannelsRequest',
+            'by_location': self.by_location,
+            'check_limit': self.check_limit,
+            'for_personal': self.for_personal,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.by_location:
+            flags |= (1 << 0)
+        if self.check_limit:
+            flags |= (1 << 1)
+        if self.for_personal:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['by_location'] = bool(flags & (1 << 0))
+        _args['check_limit'] = bool(flags & (1 << 1))
+        _args['for_personal'] = bool(flags & (1 << 2))
+        return cls(**_args)
+
+
+class GetChannelRecommendationsRequest(TLRequest):
+    """TL type: channels.getChannelRecommendations"""
+    CONSTRUCTOR_ID = 0x25a71742
+    SUBCLASS_OF_ID = 0x99d5cb14
+
+    def __init__(self, channel: Optional['TypeInputChannel'] = None):
+        self.channel = channel
+
+    def to_dict(self):
+        return {
+            '_': 'GetChannelRecommendationsRequest',
+            'channel': self.channel,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.channel is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.channel is not None:
+            buf.write(bytes(self.channel))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_channel = reader.tgread_object()
+            _args['channel'] = _val_channel
+        else:
+            _args['channel'] = None
         return cls(**_args)
 
 
@@ -723,6 +1148,48 @@ class GetParticipantsRequest(TLRequest):
         _args['limit'] = _val_limit
         _val_hash = reader.read_long()
         _args['hash'] = _val_hash
+        return cls(**_args)
+
+
+class GetSendAsRequest(TLRequest):
+    """TL type: channels.getSendAs"""
+    CONSTRUCTOR_ID = 0xe785a43f
+    SUBCLASS_OF_ID = 0x38cb8d21
+
+    def __init__(self, peer: 'TypeInputPeer', for_paid_reactions: Optional[bool] = None, for_live_stories: Optional[bool] = None):
+        self.peer = peer
+        self.for_paid_reactions = for_paid_reactions
+        self.for_live_stories = for_live_stories
+
+    def to_dict(self):
+        return {
+            '_': 'GetSendAsRequest',
+            'peer': self.peer,
+            'for_paid_reactions': self.for_paid_reactions,
+            'for_live_stories': self.for_live_stories,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.for_paid_reactions:
+            flags |= (1 << 0)
+        if self.for_live_stories:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.peer))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['for_paid_reactions'] = bool(flags & (1 << 0))
+        _args['for_live_stories'] = bool(flags & (1 << 1))
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
         return cls(**_args)
 
 
@@ -1064,6 +1531,86 @@ class RestrictSponsoredMessagesRequest(TLRequest):
         _args['channel'] = _val_channel
         _val_restricted = reader.tgread_bool()
         _args['restricted'] = _val_restricted
+        return cls(**_args)
+
+
+class SearchPostsRequest(TLRequest):
+    """TL type: channels.searchPosts"""
+    CONSTRUCTOR_ID = 0xf2c4f24d
+    SUBCLASS_OF_ID = 0xd4b40b5e
+
+    def __init__(self, offset_rate: int, offset_peer: 'TypeInputPeer', offset_id: int, limit: int, hashtag: Optional[str] = None, query: Optional[str] = None, allow_paid_stars: Optional[int] = None):
+        self.offset_rate = offset_rate
+        self.offset_peer = offset_peer
+        self.offset_id = offset_id
+        self.limit = limit
+        self.hashtag = hashtag
+        self.query = query
+        self.allow_paid_stars = allow_paid_stars
+
+    def to_dict(self):
+        return {
+            '_': 'SearchPostsRequest',
+            'offset_rate': self.offset_rate,
+            'offset_peer': self.offset_peer,
+            'offset_id': self.offset_id,
+            'limit': self.limit,
+            'hashtag': self.hashtag,
+            'query': self.query,
+            'allow_paid_stars': self.allow_paid_stars,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.hashtag is not None:
+            flags |= (1 << 0)
+        if self.query is not None:
+            flags |= (1 << 1)
+        if self.allow_paid_stars is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        if self.hashtag is not None:
+            buf.write(TLObject.serialize_bytes(self.hashtag))
+        if self.query is not None:
+            buf.write(TLObject.serialize_bytes(self.query))
+        buf.write(struct.pack('<i', self.offset_rate))
+        buf.write(bytes(self.offset_peer))
+        buf.write(struct.pack('<i', self.offset_id))
+        buf.write(struct.pack('<i', self.limit))
+        if self.allow_paid_stars is not None:
+            buf.write(struct.pack('<q', self.allow_paid_stars))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_hashtag = reader.tgread_string()
+            _args['hashtag'] = _val_hashtag
+        else:
+            _args['hashtag'] = None
+        if flags & (1 << 1):
+            _val_query = reader.tgread_string()
+            _args['query'] = _val_query
+        else:
+            _args['query'] = None
+        _val_offset_rate = reader.read_int()
+        _args['offset_rate'] = _val_offset_rate
+        _val_offset_peer = reader.tgread_object()
+        _args['offset_peer'] = _val_offset_peer
+        _val_offset_id = reader.read_int()
+        _args['offset_id'] = _val_offset_id
+        _val_limit = reader.read_int()
+        _args['limit'] = _val_limit
+        if flags & (1 << 2):
+            _val_allow_paid_stars = reader.read_long()
+            _args['allow_paid_stars'] = _val_allow_paid_stars
+        else:
+            _args['allow_paid_stars'] = None
         return cls(**_args)
 
 
@@ -1480,6 +2027,48 @@ class TogglePreHistoryHiddenRequest(TLRequest):
         return cls(**_args)
 
 
+class ToggleSignaturesRequest(TLRequest):
+    """TL type: channels.toggleSignatures"""
+    CONSTRUCTOR_ID = 0x418d549c
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, channel: 'TypeInputChannel', signatures_enabled: Optional[bool] = None, profiles_enabled: Optional[bool] = None):
+        self.channel = channel
+        self.signatures_enabled = signatures_enabled
+        self.profiles_enabled = profiles_enabled
+
+    def to_dict(self):
+        return {
+            '_': 'ToggleSignaturesRequest',
+            'channel': self.channel,
+            'signatures_enabled': self.signatures_enabled,
+            'profiles_enabled': self.profiles_enabled,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.signatures_enabled:
+            flags |= (1 << 0)
+        if self.profiles_enabled:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.channel))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['signatures_enabled'] = bool(flags & (1 << 0))
+        _args['profiles_enabled'] = bool(flags & (1 << 1))
+        _val_channel = reader.tgread_object()
+        _args['channel'] = _val_channel
+        return cls(**_args)
+
+
 class ToggleSlowModeRequest(TLRequest):
     """TL type: channels.toggleSlowMode"""
     CONSTRUCTOR_ID = 0xedd49ef0
@@ -1587,6 +2176,65 @@ class ToggleViewForumAsMessagesRequest(TLRequest):
         return cls(**_args)
 
 
+class UpdateColorRequest(TLRequest):
+    """TL type: channels.updateColor"""
+    CONSTRUCTOR_ID = 0xd8aa3671
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, channel: 'TypeInputChannel', for_profile: Optional[bool] = None, color: Optional[int] = None, background_emoji_id: Optional[int] = None):
+        self.channel = channel
+        self.for_profile = for_profile
+        self.color = color
+        self.background_emoji_id = background_emoji_id
+
+    def to_dict(self):
+        return {
+            '_': 'UpdateColorRequest',
+            'channel': self.channel,
+            'for_profile': self.for_profile,
+            'color': self.color,
+            'background_emoji_id': self.background_emoji_id,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.for_profile:
+            flags |= (1 << 1)
+        if self.color is not None:
+            flags |= (1 << 2)
+        if self.background_emoji_id is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.channel))
+        if self.color is not None:
+            buf.write(struct.pack('<i', self.color))
+        if self.background_emoji_id is not None:
+            buf.write(struct.pack('<q', self.background_emoji_id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['for_profile'] = bool(flags & (1 << 1))
+        _val_channel = reader.tgread_object()
+        _args['channel'] = _val_channel
+        if flags & (1 << 2):
+            _val_color = reader.read_int()
+            _args['color'] = _val_color
+        else:
+            _args['color'] = None
+        if flags & (1 << 0):
+            _val_background_emoji_id = reader.read_long()
+            _args['background_emoji_id'] = _val_background_emoji_id
+        else:
+            _args['background_emoji_id'] = None
+        return cls(**_args)
+
+
 class UpdateEmojiStatusRequest(TLRequest):
     """TL type: channels.updateEmojiStatus"""
     CONSTRUCTOR_ID = 0xf0d3e6a8
@@ -1618,6 +2266,48 @@ class UpdateEmojiStatusRequest(TLRequest):
         _args['channel'] = _val_channel
         _val_emoji_status = reader.tgread_object()
         _args['emoji_status'] = _val_emoji_status
+        return cls(**_args)
+
+
+class UpdatePaidMessagesPriceRequest(TLRequest):
+    """TL type: channels.updatePaidMessagesPrice"""
+    CONSTRUCTOR_ID = 0x4b12327b
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, channel: 'TypeInputChannel', send_paid_messages_stars: int, broadcast_messages_allowed: Optional[bool] = None):
+        self.channel = channel
+        self.send_paid_messages_stars = send_paid_messages_stars
+        self.broadcast_messages_allowed = broadcast_messages_allowed
+
+    def to_dict(self):
+        return {
+            '_': 'UpdatePaidMessagesPriceRequest',
+            'channel': self.channel,
+            'send_paid_messages_stars': self.send_paid_messages_stars,
+            'broadcast_messages_allowed': self.broadcast_messages_allowed,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.broadcast_messages_allowed:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.channel))
+        buf.write(struct.pack('<q', self.send_paid_messages_stars))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['broadcast_messages_allowed'] = bool(flags & (1 << 0))
+        _val_channel = reader.tgread_object()
+        _args['channel'] = _val_channel
+        _val_send_paid_messages_stars = reader.read_long()
+        _args['send_paid_messages_stars'] = _val_send_paid_messages_stars
         return cls(**_args)
 
 

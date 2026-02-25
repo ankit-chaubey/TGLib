@@ -7,6 +7,43 @@ import struct
 from datetime import datetime
 
 
+class ActivateStealthModeRequest(TLRequest):
+    """TL type: stories.activateStealthMode"""
+    CONSTRUCTOR_ID = 0x57bbd166
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, past: Optional[bool] = None, future: Optional[bool] = None):
+        self.past = past
+        self.future = future
+
+    def to_dict(self):
+        return {
+            '_': 'ActivateStealthModeRequest',
+            'past': self.past,
+            'future': self.future,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.past:
+            flags |= (1 << 0)
+        if self.future:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['past'] = bool(flags & (1 << 0))
+        _args['future'] = bool(flags & (1 << 1))
+        return cls(**_args)
+
+
 class CanSendStoryRequest(TLRequest):
     """TL type: stories.canSendStory"""
     CONSTRUCTOR_ID = 0x30eb63f0
@@ -163,6 +200,128 @@ class DeleteStoriesRequest(TLRequest):
         return cls(**_args)
 
 
+class EditStoryRequest(TLRequest):
+    """TL type: stories.editStory"""
+    CONSTRUCTOR_ID = 0xb583ba46
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, peer: 'TypeInputPeer', id: int, media: Optional['TypeInputMedia'] = None, media_areas: Optional[List['TypeMediaArea']] = None, caption: Optional[str] = None, entities: Optional[List['TypeMessageEntity']] = None, privacy_rules: Optional[List['TypeInputPrivacyRule']] = None):
+        self.peer = peer
+        self.id = id
+        self.media = media
+        self.media_areas = media_areas
+        self.caption = caption
+        self.entities = entities
+        self.privacy_rules = privacy_rules
+
+    def to_dict(self):
+        return {
+            '_': 'EditStoryRequest',
+            'peer': self.peer,
+            'id': self.id,
+            'media': self.media,
+            'media_areas': self.media_areas,
+            'caption': self.caption,
+            'entities': self.entities,
+            'privacy_rules': self.privacy_rules,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.media is not None:
+            flags |= (1 << 0)
+        if self.media_areas is not None:
+            flags |= (1 << 3)
+        if self.caption is not None:
+            flags |= (1 << 1)
+        if self.entities is not None:
+            flags |= (1 << 1)
+        if self.privacy_rules is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.peer))
+        buf.write(struct.pack('<i', self.id))
+        if self.media is not None:
+            buf.write(bytes(self.media))
+        if self.media_areas is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.media_areas)))
+            for item in self.media_areas:
+                buf.write(bytes(item))
+        if self.caption is not None:
+            buf.write(TLObject.serialize_bytes(self.caption))
+        if self.entities is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.entities)))
+            for item in self.entities:
+                buf.write(bytes(item))
+        if self.privacy_rules is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.privacy_rules)))
+            for item in self.privacy_rules:
+                buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        _val_id = reader.read_int()
+        _args['id'] = _val_id
+        if flags & (1 << 0):
+            _val_media = reader.tgread_object()
+            _args['media'] = _val_media
+        else:
+            _args['media'] = None
+        if flags & (1 << 3):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_media_areas = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_media_areas = []
+            for _ in range(_count_media_areas):
+                _item_media_areas = reader.tgread_object()
+                _list_media_areas.append(_item_media_areas)
+            _args['media_areas'] = _list_media_areas
+        else:
+            _args['media_areas'] = None
+        if flags & (1 << 1):
+            _val_caption = reader.tgread_string()
+            _args['caption'] = _val_caption
+        else:
+            _args['caption'] = None
+        if flags & (1 << 1):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_entities = []
+            for _ in range(_count_entities):
+                _item_entities = reader.tgread_object()
+                _list_entities.append(_item_entities)
+            _args['entities'] = _list_entities
+        else:
+            _args['entities'] = None
+        if flags & (1 << 2):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_privacy_rules = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_privacy_rules = []
+            for _ in range(_count_privacy_rules):
+                _item_privacy_rules = reader.tgread_object()
+                _list_privacy_rules.append(_item_privacy_rules)
+            _args['privacy_rules'] = _list_privacy_rules
+        else:
+            _args['privacy_rules'] = None
+        return cls(**_args)
+
+
 class ExportStoryLinkRequest(TLRequest):
     """TL type: stories.exportStoryLink"""
     CONSTRUCTOR_ID = 0x7b8def20
@@ -297,6 +456,54 @@ class GetAllReadPeerStoriesRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         return cls()
+
+
+class GetAllStoriesRequest(TLRequest):
+    """TL type: stories.getAllStories"""
+    CONSTRUCTOR_ID = 0xeeb0d625
+    SUBCLASS_OF_ID = 0x7e60d0cd
+
+    def __init__(self, next: Optional[bool] = None, hidden: Optional[bool] = None, state: Optional[str] = None):
+        self.next = next
+        self.hidden = hidden
+        self.state = state
+
+    def to_dict(self):
+        return {
+            '_': 'GetAllStoriesRequest',
+            'next': self.next,
+            'hidden': self.hidden,
+            'state': self.state,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.next:
+            flags |= (1 << 1)
+        if self.hidden:
+            flags |= (1 << 2)
+        if self.state is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.state is not None:
+            buf.write(TLObject.serialize_bytes(self.state))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['next'] = bool(flags & (1 << 1))
+        _args['hidden'] = bool(flags & (1 << 2))
+        if flags & (1 << 0):
+            _val_state = reader.tgread_string()
+            _args['state'] = _val_state
+        else:
+            _args['state'] = None
+        return cls(**_args)
 
 
 class GetChatsToSendRequest(TLRequest):
@@ -557,6 +764,148 @@ class GetStoriesViewsRequest(TLRequest):
         return cls(**_args)
 
 
+class GetStoryReactionsListRequest(TLRequest):
+    """TL type: stories.getStoryReactionsList"""
+    CONSTRUCTOR_ID = 0xb9b2881f
+    SUBCLASS_OF_ID = 0x046f91e3
+
+    def __init__(self, peer: 'TypeInputPeer', id: int, limit: int, forwards_first: Optional[bool] = None, reaction: Optional['TypeReaction'] = None, offset: Optional[str] = None):
+        self.peer = peer
+        self.id = id
+        self.limit = limit
+        self.forwards_first = forwards_first
+        self.reaction = reaction
+        self.offset = offset
+
+    def to_dict(self):
+        return {
+            '_': 'GetStoryReactionsListRequest',
+            'peer': self.peer,
+            'id': self.id,
+            'limit': self.limit,
+            'forwards_first': self.forwards_first,
+            'reaction': self.reaction,
+            'offset': self.offset,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.forwards_first:
+            flags |= (1 << 2)
+        if self.reaction is not None:
+            flags |= (1 << 0)
+        if self.offset is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.peer))
+        buf.write(struct.pack('<i', self.id))
+        if self.reaction is not None:
+            buf.write(bytes(self.reaction))
+        if self.offset is not None:
+            buf.write(TLObject.serialize_bytes(self.offset))
+        buf.write(struct.pack('<i', self.limit))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['forwards_first'] = bool(flags & (1 << 2))
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        _val_id = reader.read_int()
+        _args['id'] = _val_id
+        if flags & (1 << 0):
+            _val_reaction = reader.tgread_object()
+            _args['reaction'] = _val_reaction
+        else:
+            _args['reaction'] = None
+        if flags & (1 << 1):
+            _val_offset = reader.tgread_string()
+            _args['offset'] = _val_offset
+        else:
+            _args['offset'] = None
+        _val_limit = reader.read_int()
+        _args['limit'] = _val_limit
+        return cls(**_args)
+
+
+class GetStoryViewsListRequest(TLRequest):
+    """TL type: stories.getStoryViewsList"""
+    CONSTRUCTOR_ID = 0x7ed23c57
+    SUBCLASS_OF_ID = 0xb9437560
+
+    def __init__(self, peer: 'TypeInputPeer', id: int, offset: str, limit: int, just_contacts: Optional[bool] = None, reactions_first: Optional[bool] = None, forwards_first: Optional[bool] = None, q: Optional[str] = None):
+        self.peer = peer
+        self.id = id
+        self.offset = offset
+        self.limit = limit
+        self.just_contacts = just_contacts
+        self.reactions_first = reactions_first
+        self.forwards_first = forwards_first
+        self.q = q
+
+    def to_dict(self):
+        return {
+            '_': 'GetStoryViewsListRequest',
+            'peer': self.peer,
+            'id': self.id,
+            'offset': self.offset,
+            'limit': self.limit,
+            'just_contacts': self.just_contacts,
+            'reactions_first': self.reactions_first,
+            'forwards_first': self.forwards_first,
+            'q': self.q,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.just_contacts:
+            flags |= (1 << 0)
+        if self.reactions_first:
+            flags |= (1 << 2)
+        if self.forwards_first:
+            flags |= (1 << 3)
+        if self.q is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.peer))
+        if self.q is not None:
+            buf.write(TLObject.serialize_bytes(self.q))
+        buf.write(struct.pack('<i', self.id))
+        buf.write(TLObject.serialize_bytes(self.offset))
+        buf.write(struct.pack('<i', self.limit))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['just_contacts'] = bool(flags & (1 << 0))
+        _args['reactions_first'] = bool(flags & (1 << 2))
+        _args['forwards_first'] = bool(flags & (1 << 3))
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        if flags & (1 << 1):
+            _val_q = reader.tgread_string()
+            _args['q'] = _val_q
+        else:
+            _args['q'] = None
+        _val_id = reader.read_int()
+        _args['id'] = _val_id
+        _val_offset = reader.tgread_string()
+        _args['offset'] = _val_offset
+        _val_limit = reader.read_int()
+        _args['limit'] = _val_limit
+        return cls(**_args)
+
+
 class IncrementStoryViewsRequest(TLRequest):
     """TL type: stories.incrementStoryViews"""
     CONSTRUCTOR_ID = 0xb2028afb
@@ -733,6 +1082,423 @@ class ReportRequest(TLRequest):
         return cls(**_args)
 
 
+class SearchPostsRequest(TLRequest):
+    """TL type: stories.searchPosts"""
+    CONSTRUCTOR_ID = 0xd1810907
+    SUBCLASS_OF_ID = 0x17790b35
+
+    def __init__(self, offset: str, limit: int, hashtag: Optional[str] = None, area: Optional['TypeMediaArea'] = None, peer: Optional['TypeInputPeer'] = None):
+        self.offset = offset
+        self.limit = limit
+        self.hashtag = hashtag
+        self.area = area
+        self.peer = peer
+
+    def to_dict(self):
+        return {
+            '_': 'SearchPostsRequest',
+            'offset': self.offset,
+            'limit': self.limit,
+            'hashtag': self.hashtag,
+            'area': self.area,
+            'peer': self.peer,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.hashtag is not None:
+            flags |= (1 << 0)
+        if self.area is not None:
+            flags |= (1 << 1)
+        if self.peer is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        if self.hashtag is not None:
+            buf.write(TLObject.serialize_bytes(self.hashtag))
+        if self.area is not None:
+            buf.write(bytes(self.area))
+        if self.peer is not None:
+            buf.write(bytes(self.peer))
+        buf.write(TLObject.serialize_bytes(self.offset))
+        buf.write(struct.pack('<i', self.limit))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_hashtag = reader.tgread_string()
+            _args['hashtag'] = _val_hashtag
+        else:
+            _args['hashtag'] = None
+        if flags & (1 << 1):
+            _val_area = reader.tgread_object()
+            _args['area'] = _val_area
+        else:
+            _args['area'] = None
+        if flags & (1 << 2):
+            _val_peer = reader.tgread_object()
+            _args['peer'] = _val_peer
+        else:
+            _args['peer'] = None
+        _val_offset = reader.tgread_string()
+        _args['offset'] = _val_offset
+        _val_limit = reader.read_int()
+        _args['limit'] = _val_limit
+        return cls(**_args)
+
+
+class SendReactionRequest(TLRequest):
+    """TL type: stories.sendReaction"""
+    CONSTRUCTOR_ID = 0x7fd736b2
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, peer: 'TypeInputPeer', story_id: int, reaction: 'TypeReaction', add_to_recent: Optional[bool] = None):
+        self.peer = peer
+        self.story_id = story_id
+        self.reaction = reaction
+        self.add_to_recent = add_to_recent
+
+    def to_dict(self):
+        return {
+            '_': 'SendReactionRequest',
+            'peer': self.peer,
+            'story_id': self.story_id,
+            'reaction': self.reaction,
+            'add_to_recent': self.add_to_recent,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.add_to_recent:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.peer))
+        buf.write(struct.pack('<i', self.story_id))
+        buf.write(bytes(self.reaction))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['add_to_recent'] = bool(flags & (1 << 0))
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        _val_story_id = reader.read_int()
+        _args['story_id'] = _val_story_id
+        _val_reaction = reader.tgread_object()
+        _args['reaction'] = _val_reaction
+        return cls(**_args)
+
+
+class SendStoryRequest(TLRequest):
+    """TL type: stories.sendStory"""
+    CONSTRUCTOR_ID = 0x737fc2ec
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, peer: 'TypeInputPeer', media: 'TypeInputMedia', privacy_rules: List['TypeInputPrivacyRule'], pinned: Optional[bool] = None, noforwards: Optional[bool] = None, fwd_modified: Optional[bool] = None, media_areas: Optional[List['TypeMediaArea']] = None, caption: Optional[str] = None, entities: Optional[List['TypeMessageEntity']] = None, random_id: int = None, period: Optional[int] = None, fwd_from_id: Optional['TypeInputPeer'] = None, fwd_from_story: Optional[int] = None, albums: Optional[List[int]] = None):
+        self.peer = peer
+        self.media = media
+        self.privacy_rules = privacy_rules
+        self.pinned = pinned
+        self.noforwards = noforwards
+        self.fwd_modified = fwd_modified
+        self.media_areas = media_areas
+        self.caption = caption
+        self.entities = entities
+        self.random_id = random_id
+        self.period = period
+        self.fwd_from_id = fwd_from_id
+        self.fwd_from_story = fwd_from_story
+        self.albums = albums
+
+    def to_dict(self):
+        return {
+            '_': 'SendStoryRequest',
+            'peer': self.peer,
+            'media': self.media,
+            'privacy_rules': self.privacy_rules,
+            'pinned': self.pinned,
+            'noforwards': self.noforwards,
+            'fwd_modified': self.fwd_modified,
+            'media_areas': self.media_areas,
+            'caption': self.caption,
+            'entities': self.entities,
+            'random_id': self.random_id,
+            'period': self.period,
+            'fwd_from_id': self.fwd_from_id,
+            'fwd_from_story': self.fwd_from_story,
+            'albums': self.albums,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.pinned:
+            flags |= (1 << 2)
+        if self.noforwards:
+            flags |= (1 << 4)
+        if self.fwd_modified:
+            flags |= (1 << 7)
+        if self.media_areas is not None:
+            flags |= (1 << 5)
+        if self.caption is not None:
+            flags |= (1 << 0)
+        if self.entities is not None:
+            flags |= (1 << 1)
+        if self.period is not None:
+            flags |= (1 << 3)
+        if self.fwd_from_id is not None:
+            flags |= (1 << 6)
+        if self.fwd_from_story is not None:
+            flags |= (1 << 6)
+        if self.albums is not None:
+            flags |= (1 << 8)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.peer))
+        buf.write(bytes(self.media))
+        if self.media_areas is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.media_areas)))
+            for item in self.media_areas:
+                buf.write(bytes(item))
+        if self.caption is not None:
+            buf.write(TLObject.serialize_bytes(self.caption))
+        if self.entities is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.entities)))
+            for item in self.entities:
+                buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.privacy_rules)))
+        for item in self.privacy_rules:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<q', self.random_id))
+        if self.period is not None:
+            buf.write(struct.pack('<i', self.period))
+        if self.fwd_from_id is not None:
+            buf.write(bytes(self.fwd_from_id))
+        if self.fwd_from_story is not None:
+            buf.write(struct.pack('<i', self.fwd_from_story))
+        if self.albums is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.albums)))
+            for item in self.albums:
+                buf.write(struct.pack('<i', item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['pinned'] = bool(flags & (1 << 2))
+        _args['noforwards'] = bool(flags & (1 << 4))
+        _args['fwd_modified'] = bool(flags & (1 << 7))
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        _val_media = reader.tgread_object()
+        _args['media'] = _val_media
+        if flags & (1 << 5):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_media_areas = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_media_areas = []
+            for _ in range(_count_media_areas):
+                _item_media_areas = reader.tgread_object()
+                _list_media_areas.append(_item_media_areas)
+            _args['media_areas'] = _list_media_areas
+        else:
+            _args['media_areas'] = None
+        if flags & (1 << 0):
+            _val_caption = reader.tgread_string()
+            _args['caption'] = _val_caption
+        else:
+            _args['caption'] = None
+        if flags & (1 << 1):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_entities = []
+            for _ in range(_count_entities):
+                _item_entities = reader.tgread_object()
+                _list_entities.append(_item_entities)
+            _args['entities'] = _list_entities
+        else:
+            _args['entities'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_privacy_rules = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_privacy_rules = []
+        for _ in range(_count_privacy_rules):
+            _item_privacy_rules = reader.tgread_object()
+            _list_privacy_rules.append(_item_privacy_rules)
+        _args['privacy_rules'] = _list_privacy_rules
+        _val_random_id = reader.read_long()
+        _args['random_id'] = _val_random_id
+        if flags & (1 << 3):
+            _val_period = reader.read_int()
+            _args['period'] = _val_period
+        else:
+            _args['period'] = None
+        if flags & (1 << 6):
+            _val_fwd_from_id = reader.tgread_object()
+            _args['fwd_from_id'] = _val_fwd_from_id
+        else:
+            _args['fwd_from_id'] = None
+        if flags & (1 << 6):
+            _val_fwd_from_story = reader.read_int()
+            _args['fwd_from_story'] = _val_fwd_from_story
+        else:
+            _args['fwd_from_story'] = None
+        if flags & (1 << 8):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_albums = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_albums = []
+            for _ in range(_count_albums):
+                _item_albums = reader.read_int()
+                _list_albums.append(_item_albums)
+            _args['albums'] = _list_albums
+        else:
+            _args['albums'] = None
+        return cls(**_args)
+
+
+class StartLiveRequest(TLRequest):
+    """TL type: stories.startLive"""
+    CONSTRUCTOR_ID = 0xd069ccde
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, peer: 'TypeInputPeer', privacy_rules: List['TypeInputPrivacyRule'], pinned: Optional[bool] = None, noforwards: Optional[bool] = None, rtmp_stream: Optional[bool] = None, caption: Optional[str] = None, entities: Optional[List['TypeMessageEntity']] = None, random_id: int = None, messages_enabled: Optional[bool] = None, send_paid_messages_stars: Optional[int] = None):
+        self.peer = peer
+        self.privacy_rules = privacy_rules
+        self.pinned = pinned
+        self.noforwards = noforwards
+        self.rtmp_stream = rtmp_stream
+        self.caption = caption
+        self.entities = entities
+        self.random_id = random_id
+        self.messages_enabled = messages_enabled
+        self.send_paid_messages_stars = send_paid_messages_stars
+
+    def to_dict(self):
+        return {
+            '_': 'StartLiveRequest',
+            'peer': self.peer,
+            'privacy_rules': self.privacy_rules,
+            'pinned': self.pinned,
+            'noforwards': self.noforwards,
+            'rtmp_stream': self.rtmp_stream,
+            'caption': self.caption,
+            'entities': self.entities,
+            'random_id': self.random_id,
+            'messages_enabled': self.messages_enabled,
+            'send_paid_messages_stars': self.send_paid_messages_stars,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.pinned:
+            flags |= (1 << 2)
+        if self.noforwards:
+            flags |= (1 << 4)
+        if self.rtmp_stream:
+            flags |= (1 << 5)
+        if self.caption is not None:
+            flags |= (1 << 0)
+        if self.entities is not None:
+            flags |= (1 << 1)
+        if self.messages_enabled is not None:
+            flags |= (1 << 6)
+        if self.send_paid_messages_stars is not None:
+            flags |= (1 << 7)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.peer))
+        if self.caption is not None:
+            buf.write(TLObject.serialize_bytes(self.caption))
+        if self.entities is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.entities)))
+            for item in self.entities:
+                buf.write(bytes(item))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.privacy_rules)))
+        for item in self.privacy_rules:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<q', self.random_id))
+        if self.messages_enabled is not None:
+            buf.write(struct.pack('<I', 0x997275b5 if self.messages_enabled else 0xbc799737))
+        if self.send_paid_messages_stars is not None:
+            buf.write(struct.pack('<q', self.send_paid_messages_stars))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['pinned'] = bool(flags & (1 << 2))
+        _args['noforwards'] = bool(flags & (1 << 4))
+        _args['rtmp_stream'] = bool(flags & (1 << 5))
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        if flags & (1 << 0):
+            _val_caption = reader.tgread_string()
+            _args['caption'] = _val_caption
+        else:
+            _args['caption'] = None
+        if flags & (1 << 1):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_entities = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_entities = []
+            for _ in range(_count_entities):
+                _item_entities = reader.tgread_object()
+                _list_entities.append(_item_entities)
+            _args['entities'] = _list_entities
+        else:
+            _args['entities'] = None
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_privacy_rules = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_privacy_rules = []
+        for _ in range(_count_privacy_rules):
+            _item_privacy_rules = reader.tgread_object()
+            _list_privacy_rules.append(_item_privacy_rules)
+        _args['privacy_rules'] = _list_privacy_rules
+        _val_random_id = reader.read_long()
+        _args['random_id'] = _val_random_id
+        if flags & (1 << 6):
+            _val_messages_enabled = reader.tgread_bool()
+            _args['messages_enabled'] = _val_messages_enabled
+        else:
+            _args['messages_enabled'] = None
+        if flags & (1 << 7):
+            _val_send_paid_messages_stars = reader.read_long()
+            _args['send_paid_messages_stars'] = _val_send_paid_messages_stars
+        else:
+            _args['send_paid_messages_stars'] = None
+        return cls(**_args)
+
+
 class ToggleAllStoriesHiddenRequest(TLRequest):
     """TL type: stories.toggleAllStoriesHidden"""
     CONSTRUCTOR_ID = 0x7c2557c4
@@ -886,5 +1652,116 @@ class TogglePinnedToTopRequest(TLRequest):
             _item_id = reader.read_int()
             _list_id.append(_item_id)
         _args['id'] = _list_id
+        return cls(**_args)
+
+
+class UpdateAlbumRequest(TLRequest):
+    """TL type: stories.updateAlbum"""
+    CONSTRUCTOR_ID = 0x5e5259b6
+    SUBCLASS_OF_ID = 0x7c8c5ea2
+
+    def __init__(self, peer: 'TypeInputPeer', album_id: int, title: Optional[str] = None, delete_stories: Optional[List[int]] = None, add_stories: Optional[List[int]] = None, order: Optional[List[int]] = None):
+        self.peer = peer
+        self.album_id = album_id
+        self.title = title
+        self.delete_stories = delete_stories
+        self.add_stories = add_stories
+        self.order = order
+
+    def to_dict(self):
+        return {
+            '_': 'UpdateAlbumRequest',
+            'peer': self.peer,
+            'album_id': self.album_id,
+            'title': self.title,
+            'delete_stories': self.delete_stories,
+            'add_stories': self.add_stories,
+            'order': self.order,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.title is not None:
+            flags |= (1 << 0)
+        if self.delete_stories is not None:
+            flags |= (1 << 1)
+        if self.add_stories is not None:
+            flags |= (1 << 2)
+        if self.order is not None:
+            flags |= (1 << 3)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.peer))
+        buf.write(struct.pack('<i', self.album_id))
+        if self.title is not None:
+            buf.write(TLObject.serialize_bytes(self.title))
+        if self.delete_stories is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.delete_stories)))
+            for item in self.delete_stories:
+                buf.write(struct.pack('<i', item))
+        if self.add_stories is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.add_stories)))
+            for item in self.add_stories:
+                buf.write(struct.pack('<i', item))
+        if self.order is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.order)))
+            for item in self.order:
+                buf.write(struct.pack('<i', item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        _val_album_id = reader.read_int()
+        _args['album_id'] = _val_album_id
+        if flags & (1 << 0):
+            _val_title = reader.tgread_string()
+            _args['title'] = _val_title
+        else:
+            _args['title'] = None
+        if flags & (1 << 1):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_delete_stories = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_delete_stories = []
+            for _ in range(_count_delete_stories):
+                _item_delete_stories = reader.read_int()
+                _list_delete_stories.append(_item_delete_stories)
+            _args['delete_stories'] = _list_delete_stories
+        else:
+            _args['delete_stories'] = None
+        if flags & (1 << 2):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_add_stories = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_add_stories = []
+            for _ in range(_count_add_stories):
+                _item_add_stories = reader.read_int()
+                _list_add_stories.append(_item_add_stories)
+            _args['add_stories'] = _list_add_stories
+        else:
+            _args['add_stories'] = None
+        if flags & (1 << 3):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_order = []
+            for _ in range(_count_order):
+                _item_order = reader.read_int()
+                _list_order.append(_item_order)
+            _args['order'] = _list_order
+        else:
+            _args['order'] = None
         return cls(**_args)
 

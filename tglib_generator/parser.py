@@ -128,7 +128,7 @@ class TLArg:
         t = self.arg_type.lstrip('!')
 
         # Check for flag type: flags.0?RealType
-        flag_match = re.match(r'(\w+)\.(\d+)?([\w<>.]+)', t)
+        flag_match = re.match(r'(\w+)\.(\d+)\?([\w<>.]+)', t)
         if flag_match:
             self.flag = flag_match.group(1)
             self.flag_index = int(flag_match.group(2))

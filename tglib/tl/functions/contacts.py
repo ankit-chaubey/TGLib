@@ -36,6 +36,153 @@ class AcceptContactRequest(TLRequest):
         return cls(**_args)
 
 
+class AddContactRequest(TLRequest):
+    """TL type: contacts.addContact"""
+    CONSTRUCTOR_ID = 0xd9ba2e54
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, id: 'TypeInputUser', first_name: str, last_name: str, phone: str, add_phone_privacy_exception: Optional[bool] = None, note: Optional['TypeTextWithEntities'] = None):
+        self.id = id
+        self.first_name = first_name
+        self.last_name = last_name
+        self.phone = phone
+        self.add_phone_privacy_exception = add_phone_privacy_exception
+        self.note = note
+
+    def to_dict(self):
+        return {
+            '_': 'AddContactRequest',
+            'id': self.id,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'phone': self.phone,
+            'add_phone_privacy_exception': self.add_phone_privacy_exception,
+            'note': self.note,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.add_phone_privacy_exception:
+            flags |= (1 << 0)
+        if self.note is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.id))
+        buf.write(TLObject.serialize_bytes(self.first_name))
+        buf.write(TLObject.serialize_bytes(self.last_name))
+        buf.write(TLObject.serialize_bytes(self.phone))
+        if self.note is not None:
+            buf.write(bytes(self.note))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['add_phone_privacy_exception'] = bool(flags & (1 << 0))
+        _val_id = reader.tgread_object()
+        _args['id'] = _val_id
+        _val_first_name = reader.tgread_string()
+        _args['first_name'] = _val_first_name
+        _val_last_name = reader.tgread_string()
+        _args['last_name'] = _val_last_name
+        _val_phone = reader.tgread_string()
+        _args['phone'] = _val_phone
+        if flags & (1 << 1):
+            _val_note = reader.tgread_object()
+            _args['note'] = _val_note
+        else:
+            _args['note'] = None
+        return cls(**_args)
+
+
+class BlockRequest(TLRequest):
+    """TL type: contacts.block"""
+    CONSTRUCTOR_ID = 0x2e2e8734
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, id: 'TypeInputPeer', my_stories_from: Optional[bool] = None):
+        self.id = id
+        self.my_stories_from = my_stories_from
+
+    def to_dict(self):
+        return {
+            '_': 'BlockRequest',
+            'id': self.id,
+            'my_stories_from': self.my_stories_from,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.my_stories_from:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['my_stories_from'] = bool(flags & (1 << 0))
+        _val_id = reader.tgread_object()
+        _args['id'] = _val_id
+        return cls(**_args)
+
+
+class BlockFromRepliesRequest(TLRequest):
+    """TL type: contacts.blockFromReplies"""
+    CONSTRUCTOR_ID = 0x29a8962c
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, msg_id: int, delete_message: Optional[bool] = None, delete_history: Optional[bool] = None, report_spam: Optional[bool] = None):
+        self.msg_id = msg_id
+        self.delete_message = delete_message
+        self.delete_history = delete_history
+        self.report_spam = report_spam
+
+    def to_dict(self):
+        return {
+            '_': 'BlockFromRepliesRequest',
+            'msg_id': self.msg_id,
+            'delete_message': self.delete_message,
+            'delete_history': self.delete_history,
+            'report_spam': self.report_spam,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.delete_message:
+            flags |= (1 << 0)
+        if self.delete_history:
+            flags |= (1 << 1)
+        if self.report_spam:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.msg_id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['delete_message'] = bool(flags & (1 << 0))
+        _args['delete_history'] = bool(flags & (1 << 1))
+        _args['report_spam'] = bool(flags & (1 << 2))
+        _val_msg_id = reader.read_int()
+        _args['msg_id'] = _val_msg_id
+        return cls(**_args)
+
+
 class DeleteByPhonesRequest(TLRequest):
     """TL type: contacts.deleteByPhones"""
     CONSTRUCTOR_ID = 0x1013fd9e
@@ -201,6 +348,48 @@ class GetBirthdaysRequest(TLRequest):
         return cls()
 
 
+class GetBlockedRequest(TLRequest):
+    """TL type: contacts.getBlocked"""
+    CONSTRUCTOR_ID = 0x9a868f80
+    SUBCLASS_OF_ID = 0xffba4f4f
+
+    def __init__(self, offset: int, limit: int, my_stories_from: Optional[bool] = None):
+        self.offset = offset
+        self.limit = limit
+        self.my_stories_from = my_stories_from
+
+    def to_dict(self):
+        return {
+            '_': 'GetBlockedRequest',
+            'offset': self.offset,
+            'limit': self.limit,
+            'my_stories_from': self.my_stories_from,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.my_stories_from:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.offset))
+        buf.write(struct.pack('<i', self.limit))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['my_stories_from'] = bool(flags & (1 << 0))
+        _val_offset = reader.read_int()
+        _args['offset'] = _val_offset
+        _val_limit = reader.read_int()
+        _args['limit'] = _val_limit
+        return cls(**_args)
+
+
 class GetContactIdsRequest(TLRequest):
     """TL type: contacts.getContactIDs"""
     CONSTRUCTOR_ID = 0x7adc669d
@@ -256,6 +445,54 @@ class GetContactsRequest(TLRequest):
         _args = {}
         _val_hash = reader.read_long()
         _args['hash'] = _val_hash
+        return cls(**_args)
+
+
+class GetLocatedRequest(TLRequest):
+    """TL type: contacts.getLocated"""
+    CONSTRUCTOR_ID = 0xd348bc44
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, geo_point: 'TypeInputGeoPoint', background: Optional[bool] = None, self_expires: Optional[int] = None):
+        self.geo_point = geo_point
+        self.background = background
+        self.self_expires = self_expires
+
+    def to_dict(self):
+        return {
+            '_': 'GetLocatedRequest',
+            'geo_point': self.geo_point,
+            'background': self.background,
+            'self_expires': self.self_expires,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.background:
+            flags |= (1 << 1)
+        if self.self_expires is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.geo_point))
+        if self.self_expires is not None:
+            buf.write(struct.pack('<i', self.self_expires))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['background'] = bool(flags & (1 << 1))
+        _val_geo_point = reader.tgread_object()
+        _args['geo_point'] = _val_geo_point
+        if flags & (1 << 0):
+            _val_self_expires = reader.read_int()
+            _args['self_expires'] = _val_self_expires
+        else:
+            _args['self_expires'] = None
         return cls(**_args)
 
 
@@ -336,42 +573,90 @@ class GetStatusesRequest(TLRequest):
         return cls()
 
 
-class ImportCardRequest(TLRequest):
-    """TL type: contacts.importCard"""
-    CONSTRUCTOR_ID = 0x4fe196fe
-    SUBCLASS_OF_ID = 0x2da17977
+class GetTopPeersRequest(TLRequest):
+    """TL type: contacts.getTopPeers"""
+    CONSTRUCTOR_ID = 0x973478b6
+    SUBCLASS_OF_ID = 0x9ee8bb88
 
-    def __init__(self, export_card: List[int]):
-        self.export_card = export_card
+    def __init__(self, offset: int, limit: int, hash: int, correspondents: Optional[bool] = None, bots_pm: Optional[bool] = None, bots_inline: Optional[bool] = None, phone_calls: Optional[bool] = None, forward_users: Optional[bool] = None, forward_chats: Optional[bool] = None, groups: Optional[bool] = None, channels: Optional[bool] = None, bots_app: Optional[bool] = None):
+        self.offset = offset
+        self.limit = limit
+        self.hash = hash
+        self.correspondents = correspondents
+        self.bots_pm = bots_pm
+        self.bots_inline = bots_inline
+        self.phone_calls = phone_calls
+        self.forward_users = forward_users
+        self.forward_chats = forward_chats
+        self.groups = groups
+        self.channels = channels
+        self.bots_app = bots_app
 
     def to_dict(self):
         return {
-            '_': 'ImportCardRequest',
-            'export_card': self.export_card,
+            '_': 'GetTopPeersRequest',
+            'offset': self.offset,
+            'limit': self.limit,
+            'hash': self.hash,
+            'correspondents': self.correspondents,
+            'bots_pm': self.bots_pm,
+            'bots_inline': self.bots_inline,
+            'phone_calls': self.phone_calls,
+            'forward_users': self.forward_users,
+            'forward_chats': self.forward_chats,
+            'groups': self.groups,
+            'channels': self.channels,
+            'bots_app': self.bots_app,
         }
 
     def _bytes(self) -> bytes:
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-        buf.write(struct.pack('<i', len(self.export_card)))
-        for item in self.export_card:
-            buf.write(struct.pack('<i', item))
+        flags = 0
+        if self.correspondents:
+            flags |= (1 << 0)
+        if self.bots_pm:
+            flags |= (1 << 1)
+        if self.bots_inline:
+            flags |= (1 << 2)
+        if self.phone_calls:
+            flags |= (1 << 3)
+        if self.forward_users:
+            flags |= (1 << 4)
+        if self.forward_chats:
+            flags |= (1 << 5)
+        if self.groups:
+            flags |= (1 << 10)
+        if self.channels:
+            flags |= (1 << 15)
+        if self.bots_app:
+            flags |= (1 << 16)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.offset))
+        buf.write(struct.pack('<i', self.limit))
+        buf.write(struct.pack('<q', self.hash))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        _vec_id = reader.read_int(signed=False)
-        if _vec_id != 0x1cb5c415:
-            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
-        _count_export_card = reader.read_int(signed=False)  # BUG6 fix: unsigned count
-        _list_export_card = []
-        for _ in range(_count_export_card):
-            _item_export_card = reader.read_int()
-            _list_export_card.append(_item_export_card)
-        _args['export_card'] = _list_export_card
+        flags = reader.read_int(signed=False)
+        _args['correspondents'] = bool(flags & (1 << 0))
+        _args['bots_pm'] = bool(flags & (1 << 1))
+        _args['bots_inline'] = bool(flags & (1 << 2))
+        _args['phone_calls'] = bool(flags & (1 << 3))
+        _args['forward_users'] = bool(flags & (1 << 4))
+        _args['forward_chats'] = bool(flags & (1 << 5))
+        _args['groups'] = bool(flags & (1 << 10))
+        _args['channels'] = bool(flags & (1 << 15))
+        _args['bots_app'] = bool(flags & (1 << 16))
+        _val_offset = reader.read_int()
+        _args['offset'] = _val_offset
+        _val_limit = reader.read_int()
+        _args['limit'] = _val_limit
+        _val_hash = reader.read_long()
+        _args['hash'] = _val_hash
         return cls(**_args)
 
 
@@ -530,6 +815,49 @@ class ResolvePhoneRequest(TLRequest):
         return cls(**_args)
 
 
+class ResolveUsernameRequest(TLRequest):
+    """TL type: contacts.resolveUsername"""
+    CONSTRUCTOR_ID = 0x725afbbc
+    SUBCLASS_OF_ID = 0xf065b3a8
+
+    def __init__(self, username: str, referer: Optional[str] = None):
+        self.username = username
+        self.referer = referer
+
+    def to_dict(self):
+        return {
+            '_': 'ResolveUsernameRequest',
+            'username': self.username,
+            'referer': self.referer,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.referer is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.username))
+        if self.referer is not None:
+            buf.write(TLObject.serialize_bytes(self.referer))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_username = reader.tgread_string()
+        _args['username'] = _val_username
+        if flags & (1 << 0):
+            _val_referer = reader.tgread_string()
+            _args['referer'] = _val_referer
+        else:
+            _args['referer'] = None
+        return cls(**_args)
+
+
 class SearchRequest(TLRequest):
     """TL type: contacts.search"""
     CONSTRUCTOR_ID = 0x11f812d8
@@ -564,6 +892,58 @@ class SearchRequest(TLRequest):
         return cls(**_args)
 
 
+class SetBlockedRequest(TLRequest):
+    """TL type: contacts.setBlocked"""
+    CONSTRUCTOR_ID = 0x94c65c76
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, id: List['TypeInputPeer'], limit: int, my_stories_from: Optional[bool] = None):
+        self.id = id
+        self.limit = limit
+        self.my_stories_from = my_stories_from
+
+    def to_dict(self):
+        return {
+            '_': 'SetBlockedRequest',
+            'id': self.id,
+            'limit': self.limit,
+            'my_stories_from': self.my_stories_from,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.my_stories_from:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.id)))
+        for item in self.id:
+            buf.write(bytes(item))
+        buf.write(struct.pack('<i', self.limit))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['my_stories_from'] = bool(flags & (1 << 0))
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_id = []
+        for _ in range(_count_id):
+            _item_id = reader.tgread_object()
+            _list_id.append(_item_id)
+        _args['id'] = _list_id
+        _val_limit = reader.read_int()
+        _args['limit'] = _val_limit
+        return cls(**_args)
+
+
 class ToggleTopPeersRequest(TLRequest):
     """TL type: contacts.toggleTopPeers"""
     CONSTRUCTOR_ID = 0x8514bdda
@@ -590,6 +970,43 @@ class ToggleTopPeersRequest(TLRequest):
         _args = {}
         _val_enabled = reader.tgread_bool()
         _args['enabled'] = _val_enabled
+        return cls(**_args)
+
+
+class UnblockRequest(TLRequest):
+    """TL type: contacts.unblock"""
+    CONSTRUCTOR_ID = 0xb550d328
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, id: 'TypeInputPeer', my_stories_from: Optional[bool] = None):
+        self.id = id
+        self.my_stories_from = my_stories_from
+
+    def to_dict(self):
+        return {
+            '_': 'UnblockRequest',
+            'id': self.id,
+            'my_stories_from': self.my_stories_from,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.my_stories_from:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['my_stories_from'] = bool(flags & (1 << 0))
+        _val_id = reader.tgread_object()
+        _args['id'] = _val_id
         return cls(**_args)
 
 

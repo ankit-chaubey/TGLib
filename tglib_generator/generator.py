@@ -269,7 +269,7 @@ def _read_single_item(var, t, indent) -> List[str]:
     elif t == 'Bool':
         w(f'{var} = reader.tgread_bool()')
     elif t == 'true':
-        w(f'{var} = True')
+        pass #w(f'{var} = True')
     else:
         w(f'{var} = reader.tgread_object()')
 

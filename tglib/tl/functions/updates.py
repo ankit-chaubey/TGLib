@@ -7,6 +7,133 @@ import struct
 from datetime import datetime
 
 
+class GetChannelDifferenceRequest(TLRequest):
+    """TL type: updates.getChannelDifference"""
+    CONSTRUCTOR_ID = 0x03173d78
+    SUBCLASS_OF_ID = 0x29896f5d
+
+    def __init__(self, channel: 'TypeInputChannel', filter: 'TypeChannelMessagesFilter', pts: int, limit: int, force: Optional[bool] = None):
+        self.channel = channel
+        self.filter = filter
+        self.pts = pts
+        self.limit = limit
+        self.force = force
+
+    def to_dict(self):
+        return {
+            '_': 'GetChannelDifferenceRequest',
+            'channel': self.channel,
+            'filter': self.filter,
+            'pts': self.pts,
+            'limit': self.limit,
+            'force': self.force,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.force:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.channel))
+        buf.write(bytes(self.filter))
+        buf.write(struct.pack('<i', self.pts))
+        buf.write(struct.pack('<i', self.limit))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['force'] = bool(flags & (1 << 0))
+        _val_channel = reader.tgread_object()
+        _args['channel'] = _val_channel
+        _val_filter = reader.tgread_object()
+        _args['filter'] = _val_filter
+        _val_pts = reader.read_int()
+        _args['pts'] = _val_pts
+        _val_limit = reader.read_int()
+        _args['limit'] = _val_limit
+        return cls(**_args)
+
+
+class GetDifferenceRequest(TLRequest):
+    """TL type: updates.getDifference"""
+    CONSTRUCTOR_ID = 0x19c2f763
+    SUBCLASS_OF_ID = 0x20482874
+
+    def __init__(self, pts: int, date: Optional[datetime], qts: int, pts_limit: Optional[int] = None, pts_total_limit: Optional[int] = None, qts_limit: Optional[int] = None):
+        self.pts = pts
+        self.date = date
+        self.qts = qts
+        self.pts_limit = pts_limit
+        self.pts_total_limit = pts_total_limit
+        self.qts_limit = qts_limit
+
+    def to_dict(self):
+        return {
+            '_': 'GetDifferenceRequest',
+            'pts': self.pts,
+            'date': self.date,
+            'qts': self.qts,
+            'pts_limit': self.pts_limit,
+            'pts_total_limit': self.pts_total_limit,
+            'qts_limit': self.qts_limit,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.pts_limit is not None:
+            flags |= (1 << 1)
+        if self.pts_total_limit is not None:
+            flags |= (1 << 0)
+        if self.qts_limit is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.pts))
+        if self.pts_limit is not None:
+            buf.write(struct.pack('<i', self.pts_limit))
+        if self.pts_total_limit is not None:
+            buf.write(struct.pack('<i', self.pts_total_limit))
+        buf.write(TLObject.serialize_datetime(self.date))
+        buf.write(struct.pack('<i', self.qts))
+        if self.qts_limit is not None:
+            buf.write(struct.pack('<i', self.qts_limit))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_pts = reader.read_int()
+        _args['pts'] = _val_pts
+        if flags & (1 << 1):
+            _val_pts_limit = reader.read_int()
+            _args['pts_limit'] = _val_pts_limit
+        else:
+            _args['pts_limit'] = None
+        if flags & (1 << 0):
+            _val_pts_total_limit = reader.read_int()
+            _args['pts_total_limit'] = _val_pts_total_limit
+        else:
+            _args['pts_total_limit'] = None
+        _val_date = reader.tgread_date()
+        _args['date'] = _val_date
+        _val_qts = reader.read_int()
+        _args['qts'] = _val_qts
+        if flags & (1 << 2):
+            _val_qts_limit = reader.read_int()
+            _args['qts_limit'] = _val_qts_limit
+        else:
+            _args['qts_limit'] = None
+        return cls(**_args)
+
+
 class GetStateRequest(TLRequest):
     """TL type: updates.getState"""
     CONSTRUCTOR_ID = 0xedd4882a

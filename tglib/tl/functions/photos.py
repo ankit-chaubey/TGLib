@@ -89,3 +89,224 @@ class GetUserPhotosRequest(TLRequest):
         _args['limit'] = _val_limit
         return cls(**_args)
 
+
+class UpdateProfilePhotoRequest(TLRequest):
+    """TL type: photos.updateProfilePhoto"""
+    CONSTRUCTOR_ID = 0x09e82039
+    SUBCLASS_OF_ID = 0xc292bd24
+
+    def __init__(self, id: 'TypeInputPhoto', fallback: Optional[bool] = None, bot: Optional['TypeInputUser'] = None):
+        self.id = id
+        self.fallback = fallback
+        self.bot = bot
+
+    def to_dict(self):
+        return {
+            '_': 'UpdateProfilePhotoRequest',
+            'id': self.id,
+            'fallback': self.fallback,
+            'bot': self.bot,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.fallback:
+            flags |= (1 << 0)
+        if self.bot is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        if self.bot is not None:
+            buf.write(bytes(self.bot))
+        buf.write(bytes(self.id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['fallback'] = bool(flags & (1 << 0))
+        if flags & (1 << 1):
+            _val_bot = reader.tgread_object()
+            _args['bot'] = _val_bot
+        else:
+            _args['bot'] = None
+        _val_id = reader.tgread_object()
+        _args['id'] = _val_id
+        return cls(**_args)
+
+
+class UploadContactProfilePhotoRequest(TLRequest):
+    """TL type: photos.uploadContactProfilePhoto"""
+    CONSTRUCTOR_ID = 0xe14c4a71
+    SUBCLASS_OF_ID = 0xc292bd24
+
+    def __init__(self, user_id: 'TypeInputUser', suggest: Optional[bool] = None, save: Optional[bool] = None, file: Optional['TypeInputFile'] = None, video: Optional['TypeInputFile'] = None, video_start_ts: Optional[float] = None, video_emoji_markup: Optional['TypeVideoSize'] = None):
+        self.user_id = user_id
+        self.suggest = suggest
+        self.save = save
+        self.file = file
+        self.video = video
+        self.video_start_ts = video_start_ts
+        self.video_emoji_markup = video_emoji_markup
+
+    def to_dict(self):
+        return {
+            '_': 'UploadContactProfilePhotoRequest',
+            'user_id': self.user_id,
+            'suggest': self.suggest,
+            'save': self.save,
+            'file': self.file,
+            'video': self.video,
+            'video_start_ts': self.video_start_ts,
+            'video_emoji_markup': self.video_emoji_markup,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.suggest:
+            flags |= (1 << 3)
+        if self.save:
+            flags |= (1 << 4)
+        if self.file is not None:
+            flags |= (1 << 0)
+        if self.video is not None:
+            flags |= (1 << 1)
+        if self.video_start_ts is not None:
+            flags |= (1 << 2)
+        if self.video_emoji_markup is not None:
+            flags |= (1 << 5)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.user_id))
+        if self.file is not None:
+            buf.write(bytes(self.file))
+        if self.video is not None:
+            buf.write(bytes(self.video))
+        if self.video_start_ts is not None:
+            buf.write(struct.pack('<d', self.video_start_ts))
+        if self.video_emoji_markup is not None:
+            buf.write(bytes(self.video_emoji_markup))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['suggest'] = bool(flags & (1 << 3))
+        _args['save'] = bool(flags & (1 << 4))
+        _val_user_id = reader.tgread_object()
+        _args['user_id'] = _val_user_id
+        if flags & (1 << 0):
+            _val_file = reader.tgread_object()
+            _args['file'] = _val_file
+        else:
+            _args['file'] = None
+        if flags & (1 << 1):
+            _val_video = reader.tgread_object()
+            _args['video'] = _val_video
+        else:
+            _args['video'] = None
+        if flags & (1 << 2):
+            _val_video_start_ts = reader.read_double()
+            _args['video_start_ts'] = _val_video_start_ts
+        else:
+            _args['video_start_ts'] = None
+        if flags & (1 << 5):
+            _val_video_emoji_markup = reader.tgread_object()
+            _args['video_emoji_markup'] = _val_video_emoji_markup
+        else:
+            _args['video_emoji_markup'] = None
+        return cls(**_args)
+
+
+class UploadProfilePhotoRequest(TLRequest):
+    """TL type: photos.uploadProfilePhoto"""
+    CONSTRUCTOR_ID = 0x0388a3b5
+    SUBCLASS_OF_ID = 0xc292bd24
+
+    def __init__(self, fallback: Optional[bool] = None, bot: Optional['TypeInputUser'] = None, file: Optional['TypeInputFile'] = None, video: Optional['TypeInputFile'] = None, video_start_ts: Optional[float] = None, video_emoji_markup: Optional['TypeVideoSize'] = None):
+        self.fallback = fallback
+        self.bot = bot
+        self.file = file
+        self.video = video
+        self.video_start_ts = video_start_ts
+        self.video_emoji_markup = video_emoji_markup
+
+    def to_dict(self):
+        return {
+            '_': 'UploadProfilePhotoRequest',
+            'fallback': self.fallback,
+            'bot': self.bot,
+            'file': self.file,
+            'video': self.video,
+            'video_start_ts': self.video_start_ts,
+            'video_emoji_markup': self.video_emoji_markup,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.fallback:
+            flags |= (1 << 3)
+        if self.bot is not None:
+            flags |= (1 << 5)
+        if self.file is not None:
+            flags |= (1 << 0)
+        if self.video is not None:
+            flags |= (1 << 1)
+        if self.video_start_ts is not None:
+            flags |= (1 << 2)
+        if self.video_emoji_markup is not None:
+            flags |= (1 << 4)
+        buf.write(struct.pack('<I', flags))
+        if self.bot is not None:
+            buf.write(bytes(self.bot))
+        if self.file is not None:
+            buf.write(bytes(self.file))
+        if self.video is not None:
+            buf.write(bytes(self.video))
+        if self.video_start_ts is not None:
+            buf.write(struct.pack('<d', self.video_start_ts))
+        if self.video_emoji_markup is not None:
+            buf.write(bytes(self.video_emoji_markup))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['fallback'] = bool(flags & (1 << 3))
+        if flags & (1 << 5):
+            _val_bot = reader.tgread_object()
+            _args['bot'] = _val_bot
+        else:
+            _args['bot'] = None
+        if flags & (1 << 0):
+            _val_file = reader.tgread_object()
+            _args['file'] = _val_file
+        else:
+            _args['file'] = None
+        if flags & (1 << 1):
+            _val_video = reader.tgread_object()
+            _args['video'] = _val_video
+        else:
+            _args['video'] = None
+        if flags & (1 << 2):
+            _val_video_start_ts = reader.read_double()
+            _args['video_start_ts'] = _val_video_start_ts
+        else:
+            _args['video_start_ts'] = None
+        if flags & (1 << 4):
+            _val_video_emoji_markup = reader.tgread_object()
+            _args['video_emoji_markup'] = _val_video_emoji_markup
+        else:
+            _args['video_emoji_markup'] = None
+        return cls(**_args)
+

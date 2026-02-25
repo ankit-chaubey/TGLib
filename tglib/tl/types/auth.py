@@ -6,6 +6,114 @@ import struct
 from datetime import datetime
 
 
+class Authorization(TLObject):
+    """TL type: auth.authorization"""
+    CONSTRUCTOR_ID = 0x2ea2c0d4
+    SUBCLASS_OF_ID = 0xb9e04e39
+
+    def __init__(self, user: 'TypeUser', setup_password_required: Optional[bool] = None, otherwise_relogin_days: Optional[int] = None, tmp_sessions: Optional[int] = None, future_auth_token: Optional[bytes] = None):
+        self.user = user
+        self.setup_password_required = setup_password_required
+        self.otherwise_relogin_days = otherwise_relogin_days
+        self.tmp_sessions = tmp_sessions
+        self.future_auth_token = future_auth_token
+
+    def to_dict(self):
+        return {
+            '_': 'Authorization',
+            'user': self.user,
+            'setup_password_required': self.setup_password_required,
+            'otherwise_relogin_days': self.otherwise_relogin_days,
+            'tmp_sessions': self.tmp_sessions,
+            'future_auth_token': self.future_auth_token,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.setup_password_required:
+            flags |= (1 << 1)
+        if self.otherwise_relogin_days is not None:
+            flags |= (1 << 1)
+        if self.tmp_sessions is not None:
+            flags |= (1 << 0)
+        if self.future_auth_token is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        if self.otherwise_relogin_days is not None:
+            buf.write(struct.pack('<i', self.otherwise_relogin_days))
+        if self.tmp_sessions is not None:
+            buf.write(struct.pack('<i', self.tmp_sessions))
+        if self.future_auth_token is not None:
+            buf.write(TLObject.serialize_bytes(self.future_auth_token))
+        buf.write(bytes(self.user))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['setup_password_required'] = bool(flags & (1 << 1))
+        if flags & (1 << 1):
+            _val_otherwise_relogin_days = reader.read_int()
+            _args['otherwise_relogin_days'] = _val_otherwise_relogin_days
+        else:
+            _args['otherwise_relogin_days'] = None
+        if flags & (1 << 0):
+            _val_tmp_sessions = reader.read_int()
+            _args['tmp_sessions'] = _val_tmp_sessions
+        else:
+            _args['tmp_sessions'] = None
+        if flags & (1 << 2):
+            _val_future_auth_token = reader.tgread_bytes()
+            _args['future_auth_token'] = _val_future_auth_token
+        else:
+            _args['future_auth_token'] = None
+        _val_user = reader.tgread_object()
+        _args['user'] = _val_user
+        return cls(**_args)
+
+
+class AuthorizationSignUpRequired(TLObject):
+    """TL type: auth.authorizationSignUpRequired"""
+    CONSTRUCTOR_ID = 0x44747e9a
+    SUBCLASS_OF_ID = 0xb9e04e39
+
+    def __init__(self, terms_of_service: Optional['TypeTermsOfService'] = None):
+        self.terms_of_service = terms_of_service
+
+    def to_dict(self):
+        return {
+            '_': 'AuthorizationSignUpRequired',
+            'terms_of_service': self.terms_of_service,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.terms_of_service is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.terms_of_service is not None:
+            buf.write(bytes(self.terms_of_service))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_terms_of_service = reader.tgread_object()
+            _args['terms_of_service'] = _val_terms_of_service
+        else:
+            _args['terms_of_service'] = None
+        return cls(**_args)
+
+
 class CodeTypeCall(TLObject):
     """TL type: auth.codeTypeCall"""
     CONSTRUCTOR_ID = 0x741cd3e3
@@ -160,6 +268,44 @@ class ExportedAuthorization(TLObject):
         return cls(**_args)
 
 
+class LoggedOut(TLObject):
+    """TL type: auth.loggedOut"""
+    CONSTRUCTOR_ID = 0xc3a2835f
+    SUBCLASS_OF_ID = 0x0a804315
+
+    def __init__(self, future_auth_token: Optional[bytes] = None):
+        self.future_auth_token = future_auth_token
+
+    def to_dict(self):
+        return {
+            '_': 'LoggedOut',
+            'future_auth_token': self.future_auth_token,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.future_auth_token is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.future_auth_token is not None:
+            buf.write(TLObject.serialize_bytes(self.future_auth_token))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_future_auth_token = reader.tgread_bytes()
+            _args['future_auth_token'] = _val_future_auth_token
+        else:
+            _args['future_auth_token'] = None
+        return cls(**_args)
+
+
 class LoginToken(TLObject):
     """TL type: auth.loginToken"""
     CONSTRUCTOR_ID = 0x629f1980
@@ -228,6 +374,35 @@ class LoginTokenMigrateTo(TLObject):
         return cls(**_args)
 
 
+class LoginTokenSuccess(TLObject):
+    """TL type: auth.loginTokenSuccess"""
+    CONSTRUCTOR_ID = 0x390d5c5e
+    SUBCLASS_OF_ID = 0x6b55f636
+
+    def __init__(self, authorization: 'TypeAuthorization'):
+        self.authorization = authorization
+
+    def to_dict(self):
+        return {
+            '_': 'LoginTokenSuccess',
+            'authorization': self.authorization,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(bytes(self.authorization))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_authorization = reader.tgread_object()
+        _args['authorization'] = _val_authorization
+        return cls(**_args)
+
+
 class PasskeyLoginOptions(TLObject):
     """TL type: auth.passkeyLoginOptions"""
     CONSTRUCTOR_ID = 0xe2037789
@@ -286,6 +461,65 @@ class PasswordRecovery(TLObject):
         return cls(**_args)
 
 
+class SentCode(TLObject):
+    """TL type: auth.sentCode"""
+    CONSTRUCTOR_ID = 0x5e002502
+    SUBCLASS_OF_ID = 0x6ce87081
+
+    def __init__(self, type: 'TypeSentCodeType', phone_code_hash: str, next_type: Optional['TypeCodeType'] = None, timeout: Optional[int] = None):
+        self.type = type
+        self.phone_code_hash = phone_code_hash
+        self.next_type = next_type
+        self.timeout = timeout
+
+    def to_dict(self):
+        return {
+            '_': 'SentCode',
+            'type': self.type,
+            'phone_code_hash': self.phone_code_hash,
+            'next_type': self.next_type,
+            'timeout': self.timeout,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.next_type is not None:
+            flags |= (1 << 1)
+        if self.timeout is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.type))
+        buf.write(TLObject.serialize_bytes(self.phone_code_hash))
+        if self.next_type is not None:
+            buf.write(bytes(self.next_type))
+        if self.timeout is not None:
+            buf.write(struct.pack('<i', self.timeout))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_type = reader.tgread_object()
+        _args['type'] = _val_type
+        _val_phone_code_hash = reader.tgread_string()
+        _args['phone_code_hash'] = _val_phone_code_hash
+        if flags & (1 << 1):
+            _val_next_type = reader.tgread_object()
+            _args['next_type'] = _val_next_type
+        else:
+            _args['next_type'] = None
+        if flags & (1 << 2):
+            _val_timeout = reader.read_int()
+            _args['timeout'] = _val_timeout
+        else:
+            _args['timeout'] = None
+        return cls(**_args)
+
+
 class SentCodePaymentRequired(TLObject):
     """TL type: auth.sentCodePaymentRequired"""
     CONSTRUCTOR_ID = 0xe0955a3c
@@ -337,6 +571,35 @@ class SentCodePaymentRequired(TLObject):
         _args['currency'] = _val_currency
         _val_amount = reader.read_long()
         _args['amount'] = _val_amount
+        return cls(**_args)
+
+
+class SentCodeSuccess(TLObject):
+    """TL type: auth.sentCodeSuccess"""
+    CONSTRUCTOR_ID = 0x2390fe44
+    SUBCLASS_OF_ID = 0x6ce87081
+
+    def __init__(self, authorization: 'TypeAuthorization'):
+        self.authorization = authorization
+
+    def to_dict(self):
+        return {
+            '_': 'SentCodeSuccess',
+            'authorization': self.authorization,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(bytes(self.authorization))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_authorization = reader.tgread_object()
+        _args['authorization'] = _val_authorization
         return cls(**_args)
 
 
@@ -393,6 +656,162 @@ class SentCodeTypeCall(TLObject):
     @classmethod
     def from_reader(cls, reader):
         _args = {}
+        _val_length = reader.read_int()
+        _args['length'] = _val_length
+        return cls(**_args)
+
+
+class SentCodeTypeEmailCode(TLObject):
+    """TL type: auth.sentCodeTypeEmailCode"""
+    CONSTRUCTOR_ID = 0xf450f59b
+    SUBCLASS_OF_ID = 0xff5b158e
+
+    def __init__(self, email_pattern: str, length: int, apple_signin_allowed: Optional[bool] = None, google_signin_allowed: Optional[bool] = None, reset_available_period: Optional[int] = None, reset_pending_date: Optional[datetime] = None):
+        self.email_pattern = email_pattern
+        self.length = length
+        self.apple_signin_allowed = apple_signin_allowed
+        self.google_signin_allowed = google_signin_allowed
+        self.reset_available_period = reset_available_period
+        self.reset_pending_date = reset_pending_date
+
+    def to_dict(self):
+        return {
+            '_': 'SentCodeTypeEmailCode',
+            'email_pattern': self.email_pattern,
+            'length': self.length,
+            'apple_signin_allowed': self.apple_signin_allowed,
+            'google_signin_allowed': self.google_signin_allowed,
+            'reset_available_period': self.reset_available_period,
+            'reset_pending_date': self.reset_pending_date,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.apple_signin_allowed:
+            flags |= (1 << 0)
+        if self.google_signin_allowed:
+            flags |= (1 << 1)
+        if self.reset_available_period is not None:
+            flags |= (1 << 3)
+        if self.reset_pending_date is not None:
+            flags |= (1 << 4)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.email_pattern))
+        buf.write(struct.pack('<i', self.length))
+        if self.reset_available_period is not None:
+            buf.write(struct.pack('<i', self.reset_available_period))
+        if self.reset_pending_date is not None:
+            buf.write(TLObject.serialize_datetime(self.reset_pending_date))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['apple_signin_allowed'] = bool(flags & (1 << 0))
+        _args['google_signin_allowed'] = bool(flags & (1 << 1))
+        _val_email_pattern = reader.tgread_string()
+        _args['email_pattern'] = _val_email_pattern
+        _val_length = reader.read_int()
+        _args['length'] = _val_length
+        if flags & (1 << 3):
+            _val_reset_available_period = reader.read_int()
+            _args['reset_available_period'] = _val_reset_available_period
+        else:
+            _args['reset_available_period'] = None
+        if flags & (1 << 4):
+            _val_reset_pending_date = reader.tgread_date()
+            _args['reset_pending_date'] = _val_reset_pending_date
+        else:
+            _args['reset_pending_date'] = None
+        return cls(**_args)
+
+
+class SentCodeTypeFirebaseSms(TLObject):
+    """TL type: auth.sentCodeTypeFirebaseSms"""
+    CONSTRUCTOR_ID = 0x009fd736
+    SUBCLASS_OF_ID = 0xff5b158e
+
+    def __init__(self, length: int, nonce: Optional[bytes] = None, play_integrity_project_id: Optional[int] = None, play_integrity_nonce: Optional[bytes] = None, receipt: Optional[str] = None, push_timeout: Optional[int] = None):
+        self.length = length
+        self.nonce = nonce
+        self.play_integrity_project_id = play_integrity_project_id
+        self.play_integrity_nonce = play_integrity_nonce
+        self.receipt = receipt
+        self.push_timeout = push_timeout
+
+    def to_dict(self):
+        return {
+            '_': 'SentCodeTypeFirebaseSms',
+            'length': self.length,
+            'nonce': self.nonce,
+            'play_integrity_project_id': self.play_integrity_project_id,
+            'play_integrity_nonce': self.play_integrity_nonce,
+            'receipt': self.receipt,
+            'push_timeout': self.push_timeout,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.nonce is not None:
+            flags |= (1 << 0)
+        if self.play_integrity_project_id is not None:
+            flags |= (1 << 2)
+        if self.play_integrity_nonce is not None:
+            flags |= (1 << 2)
+        if self.receipt is not None:
+            flags |= (1 << 1)
+        if self.push_timeout is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        if self.nonce is not None:
+            buf.write(TLObject.serialize_bytes(self.nonce))
+        if self.play_integrity_project_id is not None:
+            buf.write(struct.pack('<q', self.play_integrity_project_id))
+        if self.play_integrity_nonce is not None:
+            buf.write(TLObject.serialize_bytes(self.play_integrity_nonce))
+        if self.receipt is not None:
+            buf.write(TLObject.serialize_bytes(self.receipt))
+        if self.push_timeout is not None:
+            buf.write(struct.pack('<i', self.push_timeout))
+        buf.write(struct.pack('<i', self.length))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_nonce = reader.tgread_bytes()
+            _args['nonce'] = _val_nonce
+        else:
+            _args['nonce'] = None
+        if flags & (1 << 2):
+            _val_play_integrity_project_id = reader.read_long()
+            _args['play_integrity_project_id'] = _val_play_integrity_project_id
+        else:
+            _args['play_integrity_project_id'] = None
+        if flags & (1 << 2):
+            _val_play_integrity_nonce = reader.tgread_bytes()
+            _args['play_integrity_nonce'] = _val_play_integrity_nonce
+        else:
+            _args['play_integrity_nonce'] = None
+        if flags & (1 << 1):
+            _val_receipt = reader.tgread_string()
+            _args['receipt'] = _val_receipt
+        else:
+            _args['receipt'] = None
+        if flags & (1 << 1):
+            _val_push_timeout = reader.read_int()
+            _args['push_timeout'] = _val_push_timeout
+        else:
+            _args['push_timeout'] = None
         _val_length = reader.read_int()
         _args['length'] = _val_length
         return cls(**_args)
@@ -495,6 +914,43 @@ class SentCodeTypeMissedCall(TLObject):
         return cls(**_args)
 
 
+class SentCodeTypeSetUpEmailRequired(TLObject):
+    """TL type: auth.sentCodeTypeSetUpEmailRequired"""
+    CONSTRUCTOR_ID = 0xa5491dea
+    SUBCLASS_OF_ID = 0xff5b158e
+
+    def __init__(self, apple_signin_allowed: Optional[bool] = None, google_signin_allowed: Optional[bool] = None):
+        self.apple_signin_allowed = apple_signin_allowed
+        self.google_signin_allowed = google_signin_allowed
+
+    def to_dict(self):
+        return {
+            '_': 'SentCodeTypeSetUpEmailRequired',
+            'apple_signin_allowed': self.apple_signin_allowed,
+            'google_signin_allowed': self.google_signin_allowed,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.apple_signin_allowed:
+            flags |= (1 << 0)
+        if self.google_signin_allowed:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['apple_signin_allowed'] = bool(flags & (1 << 0))
+        _args['google_signin_allowed'] = bool(flags & (1 << 1))
+        return cls(**_args)
+
+
 class SentCodeTypeSms(TLObject):
     """TL type: auth.sentCodeTypeSms"""
     CONSTRUCTOR_ID = 0xc000bba2
@@ -521,5 +977,81 @@ class SentCodeTypeSms(TLObject):
         _args = {}
         _val_length = reader.read_int()
         _args['length'] = _val_length
+        return cls(**_args)
+
+
+class SentCodeTypeSmsPhrase(TLObject):
+    """TL type: auth.sentCodeTypeSmsPhrase"""
+    CONSTRUCTOR_ID = 0xb37794af
+    SUBCLASS_OF_ID = 0xff5b158e
+
+    def __init__(self, beginning: Optional[str] = None):
+        self.beginning = beginning
+
+    def to_dict(self):
+        return {
+            '_': 'SentCodeTypeSmsPhrase',
+            'beginning': self.beginning,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.beginning is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.beginning is not None:
+            buf.write(TLObject.serialize_bytes(self.beginning))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_beginning = reader.tgread_string()
+            _args['beginning'] = _val_beginning
+        else:
+            _args['beginning'] = None
+        return cls(**_args)
+
+
+class SentCodeTypeSmsWord(TLObject):
+    """TL type: auth.sentCodeTypeSmsWord"""
+    CONSTRUCTOR_ID = 0xa416ac81
+    SUBCLASS_OF_ID = 0xff5b158e
+
+    def __init__(self, beginning: Optional[str] = None):
+        self.beginning = beginning
+
+    def to_dict(self):
+        return {
+            '_': 'SentCodeTypeSmsWord',
+            'beginning': self.beginning,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.beginning is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.beginning is not None:
+            buf.write(TLObject.serialize_bytes(self.beginning))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_beginning = reader.tgread_string()
+            _args['beginning'] = _val_beginning
+        else:
+            _args['beginning'] = None
         return cls(**_args)
 

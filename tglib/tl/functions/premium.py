@@ -7,6 +7,106 @@ import struct
 from datetime import datetime
 
 
+class ApplyBoostRequest(TLRequest):
+    """TL type: premium.applyBoost"""
+    CONSTRUCTOR_ID = 0x6b7da746
+    SUBCLASS_OF_ID = 0xad3512db
+
+    def __init__(self, peer: 'TypeInputPeer', slots: Optional[List[int]] = None):
+        self.peer = peer
+        self.slots = slots
+
+    def to_dict(self):
+        return {
+            '_': 'ApplyBoostRequest',
+            'peer': self.peer,
+            'slots': self.slots,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.slots is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.slots is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.slots)))
+            for item in self.slots:
+                buf.write(struct.pack('<i', item))
+        buf.write(bytes(self.peer))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_slots = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_slots = []
+            for _ in range(_count_slots):
+                _item_slots = reader.read_int()
+                _list_slots.append(_item_slots)
+            _args['slots'] = _list_slots
+        else:
+            _args['slots'] = None
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        return cls(**_args)
+
+
+class GetBoostsListRequest(TLRequest):
+    """TL type: premium.getBoostsList"""
+    CONSTRUCTOR_ID = 0x60f67660
+    SUBCLASS_OF_ID = 0x2235a8bd
+
+    def __init__(self, peer: 'TypeInputPeer', offset: str, limit: int, gifts: Optional[bool] = None):
+        self.peer = peer
+        self.offset = offset
+        self.limit = limit
+        self.gifts = gifts
+
+    def to_dict(self):
+        return {
+            '_': 'GetBoostsListRequest',
+            'peer': self.peer,
+            'offset': self.offset,
+            'limit': self.limit,
+            'gifts': self.gifts,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.gifts:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.peer))
+        buf.write(TLObject.serialize_bytes(self.offset))
+        buf.write(struct.pack('<i', self.limit))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['gifts'] = bool(flags & (1 << 0))
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        _val_offset = reader.tgread_string()
+        _args['offset'] = _val_offset
+        _val_limit = reader.read_int()
+        _args['limit'] = _val_limit
+        return cls(**_args)
+
+
 class GetBoostsStatusRequest(TLRequest):
     """TL type: premium.getBoostsStatus"""
     CONSTRUCTOR_ID = 0x042f1f61

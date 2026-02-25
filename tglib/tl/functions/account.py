@@ -90,6 +90,65 @@ class CancelPasswordEmailRequest(TLRequest):
         return cls()
 
 
+class ChangeAuthorizationSettingsRequest(TLRequest):
+    """TL type: account.changeAuthorizationSettings"""
+    CONSTRUCTOR_ID = 0x40f48462
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, hash: int, confirmed: Optional[bool] = None, encrypted_requests_disabled: Optional[bool] = None, call_requests_disabled: Optional[bool] = None):
+        self.hash = hash
+        self.confirmed = confirmed
+        self.encrypted_requests_disabled = encrypted_requests_disabled
+        self.call_requests_disabled = call_requests_disabled
+
+    def to_dict(self):
+        return {
+            '_': 'ChangeAuthorizationSettingsRequest',
+            'hash': self.hash,
+            'confirmed': self.confirmed,
+            'encrypted_requests_disabled': self.encrypted_requests_disabled,
+            'call_requests_disabled': self.call_requests_disabled,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.confirmed:
+            flags |= (1 << 3)
+        if self.encrypted_requests_disabled is not None:
+            flags |= (1 << 0)
+        if self.call_requests_disabled is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<q', self.hash))
+        if self.encrypted_requests_disabled is not None:
+            buf.write(struct.pack('<I', 0x997275b5 if self.encrypted_requests_disabled else 0xbc799737))
+        if self.call_requests_disabled is not None:
+            buf.write(struct.pack('<I', 0x997275b5 if self.call_requests_disabled else 0xbc799737))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['confirmed'] = bool(flags & (1 << 3))
+        _val_hash = reader.read_long()
+        _args['hash'] = _val_hash
+        if flags & (1 << 0):
+            _val_encrypted_requests_disabled = reader.tgread_bool()
+            _args['encrypted_requests_disabled'] = _val_encrypted_requests_disabled
+        else:
+            _args['encrypted_requests_disabled'] = None
+        if flags & (1 << 1):
+            _val_call_requests_disabled = reader.tgread_bool()
+            _args['call_requests_disabled'] = _val_call_requests_disabled
+        else:
+            _args['call_requests_disabled'] = None
+        return cls(**_args)
+
+
 class ChangePhoneRequest(TLRequest):
     """TL type: account.changePhone"""
     CONSTRUCTOR_ID = 0x70c32edb
@@ -274,6 +333,75 @@ class CreateBusinessChatLinkRequest(TLRequest):
         return cls(**_args)
 
 
+class CreateThemeRequest(TLRequest):
+    """TL type: account.createTheme"""
+    CONSTRUCTOR_ID = 0x652e4400
+    SUBCLASS_OF_ID = 0x56b4c80c
+
+    def __init__(self, slug: str, title: str, document: Optional['TypeInputDocument'] = None, settings: Optional[List['TypeInputThemeSettings']] = None):
+        self.slug = slug
+        self.title = title
+        self.document = document
+        self.settings = settings
+
+    def to_dict(self):
+        return {
+            '_': 'CreateThemeRequest',
+            'slug': self.slug,
+            'title': self.title,
+            'document': self.document,
+            'settings': self.settings,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.document is not None:
+            flags |= (1 << 2)
+        if self.settings is not None:
+            flags |= (1 << 3)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.slug))
+        buf.write(TLObject.serialize_bytes(self.title))
+        if self.document is not None:
+            buf.write(bytes(self.document))
+        if self.settings is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.settings)))
+            for item in self.settings:
+                buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_slug = reader.tgread_string()
+        _args['slug'] = _val_slug
+        _val_title = reader.tgread_string()
+        _args['title'] = _val_title
+        if flags & (1 << 2):
+            _val_document = reader.tgread_object()
+            _args['document'] = _val_document
+        else:
+            _args['document'] = None
+        if flags & (1 << 3):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_settings = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_settings = []
+            for _ in range(_count_settings):
+                _item_settings = reader.tgread_object()
+                _list_settings.append(_item_settings)
+            _args['settings'] = _list_settings
+        else:
+            _args['settings'] = None
+        return cls(**_args)
+
+
 class DeclinePasswordResetRequest(TLRequest):
     """TL type: account.declinePasswordReset"""
     CONSTRUCTOR_ID = 0x4c9409f6
@@ -296,6 +424,49 @@ class DeclinePasswordResetRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         return cls()
+
+
+class DeleteAccountRequest(TLRequest):
+    """TL type: account.deleteAccount"""
+    CONSTRUCTOR_ID = 0xa2c0cf74
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, reason: str, password: Optional['TypeInputCheckPasswordSRP'] = None):
+        self.reason = reason
+        self.password = password
+
+    def to_dict(self):
+        return {
+            '_': 'DeleteAccountRequest',
+            'reason': self.reason,
+            'password': self.password,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.password is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.reason))
+        if self.password is not None:
+            buf.write(bytes(self.password))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_reason = reader.tgread_string()
+        _args['reason'] = _val_reason
+        if flags & (1 << 0):
+            _val_password = reader.tgread_object()
+            _args['password'] = _val_password
+        else:
+            _args['password'] = None
+        return cls(**_args)
 
 
 class DeleteAutoSaveExceptionsRequest(TLRequest):
@@ -479,6 +650,38 @@ class EditBusinessChatLinkRequest(TLRequest):
         _args['slug'] = _val_slug
         _val_link = reader.tgread_object()
         _args['link'] = _val_link
+        return cls(**_args)
+
+
+class FinishTakeoutSessionRequest(TLRequest):
+    """TL type: account.finishTakeoutSession"""
+    CONSTRUCTOR_ID = 0x1d2652ee
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, success: Optional[bool] = None):
+        self.success = success
+
+    def to_dict(self):
+        return {
+            '_': 'FinishTakeoutSessionRequest',
+            'success': self.success,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.success:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['success'] = bool(flags & (1 << 0))
         return cls(**_args)
 
 
@@ -1061,6 +1264,54 @@ class GetMultiWallPapersRequest(TLRequest):
         return cls(**_args)
 
 
+class GetNotifyExceptionsRequest(TLRequest):
+    """TL type: account.getNotifyExceptions"""
+    CONSTRUCTOR_ID = 0x53577479
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, compare_sound: Optional[bool] = None, compare_stories: Optional[bool] = None, peer: Optional['TypeInputNotifyPeer'] = None):
+        self.compare_sound = compare_sound
+        self.compare_stories = compare_stories
+        self.peer = peer
+
+    def to_dict(self):
+        return {
+            '_': 'GetNotifyExceptionsRequest',
+            'compare_sound': self.compare_sound,
+            'compare_stories': self.compare_stories,
+            'peer': self.peer,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.compare_sound:
+            flags |= (1 << 1)
+        if self.compare_stories:
+            flags |= (1 << 2)
+        if self.peer is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.peer is not None:
+            buf.write(bytes(self.peer))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['compare_sound'] = bool(flags & (1 << 1))
+        _args['compare_stories'] = bool(flags & (1 << 2))
+        if flags & (1 << 0):
+            _val_peer = reader.tgread_object()
+            _args['peer'] = _val_peer
+        else:
+            _args['peer'] = None
+        return cls(**_args)
+
+
 class GetNotifySettingsRequest(TLRequest):
     """TL type: account.getNotifySettings"""
     CONSTRUCTOR_ID = 0x12b3ad31
@@ -1087,6 +1338,49 @@ class GetNotifySettingsRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
+        return cls(**_args)
+
+
+class GetPaidMessagesRevenueRequest(TLRequest):
+    """TL type: account.getPaidMessagesRevenue"""
+    CONSTRUCTOR_ID = 0x19ba4a67
+    SUBCLASS_OF_ID = 0x152f0c57
+
+    def __init__(self, user_id: 'TypeInputUser', parent_peer: Optional['TypeInputPeer'] = None):
+        self.user_id = user_id
+        self.parent_peer = parent_peer
+
+    def to_dict(self):
+        return {
+            '_': 'GetPaidMessagesRevenueRequest',
+            'user_id': self.user_id,
+            'parent_peer': self.parent_peer,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.parent_peer is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.parent_peer is not None:
+            buf.write(bytes(self.parent_peer))
+        buf.write(bytes(self.user_id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_parent_peer = reader.tgread_object()
+            _args['parent_peer'] = _val_parent_peer
+        else:
+            _args['parent_peer'] = None
+        _val_user_id = reader.tgread_object()
+        _args['user_id'] = _val_user_id
         return cls(**_args)
 
 
@@ -1593,6 +1887,139 @@ class InitPasskeyRegistrationRequest(TLRequest):
         return cls()
 
 
+class InitTakeoutSessionRequest(TLRequest):
+    """TL type: account.initTakeoutSession"""
+    CONSTRUCTOR_ID = 0x8ef3eab0
+    SUBCLASS_OF_ID = 0x843ebe85
+
+    def __init__(self, contacts: Optional[bool] = None, message_users: Optional[bool] = None, message_chats: Optional[bool] = None, message_megagroups: Optional[bool] = None, message_channels: Optional[bool] = None, files: Optional[bool] = None, file_max_size: Optional[int] = None):
+        self.contacts = contacts
+        self.message_users = message_users
+        self.message_chats = message_chats
+        self.message_megagroups = message_megagroups
+        self.message_channels = message_channels
+        self.files = files
+        self.file_max_size = file_max_size
+
+    def to_dict(self):
+        return {
+            '_': 'InitTakeoutSessionRequest',
+            'contacts': self.contacts,
+            'message_users': self.message_users,
+            'message_chats': self.message_chats,
+            'message_megagroups': self.message_megagroups,
+            'message_channels': self.message_channels,
+            'files': self.files,
+            'file_max_size': self.file_max_size,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.contacts:
+            flags |= (1 << 0)
+        if self.message_users:
+            flags |= (1 << 1)
+        if self.message_chats:
+            flags |= (1 << 2)
+        if self.message_megagroups:
+            flags |= (1 << 3)
+        if self.message_channels:
+            flags |= (1 << 4)
+        if self.files:
+            flags |= (1 << 5)
+        if self.file_max_size is not None:
+            flags |= (1 << 5)
+        buf.write(struct.pack('<I', flags))
+        if self.file_max_size is not None:
+            buf.write(struct.pack('<q', self.file_max_size))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['contacts'] = bool(flags & (1 << 0))
+        _args['message_users'] = bool(flags & (1 << 1))
+        _args['message_chats'] = bool(flags & (1 << 2))
+        _args['message_megagroups'] = bool(flags & (1 << 3))
+        _args['message_channels'] = bool(flags & (1 << 4))
+        _args['files'] = bool(flags & (1 << 5))
+        if flags & (1 << 5):
+            _val_file_max_size = reader.read_long()
+            _args['file_max_size'] = _val_file_max_size
+        else:
+            _args['file_max_size'] = None
+        return cls(**_args)
+
+
+class InstallThemeRequest(TLRequest):
+    """TL type: account.installTheme"""
+    CONSTRUCTOR_ID = 0xc727bb3b
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, dark: Optional[bool] = None, theme: Optional['TypeInputTheme'] = None, format: Optional[str] = None, base_theme: Optional['TypeBaseTheme'] = None):
+        self.dark = dark
+        self.theme = theme
+        self.format = format
+        self.base_theme = base_theme
+
+    def to_dict(self):
+        return {
+            '_': 'InstallThemeRequest',
+            'dark': self.dark,
+            'theme': self.theme,
+            'format': self.format,
+            'base_theme': self.base_theme,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.dark:
+            flags |= (1 << 0)
+        if self.theme is not None:
+            flags |= (1 << 1)
+        if self.format is not None:
+            flags |= (1 << 2)
+        if self.base_theme is not None:
+            flags |= (1 << 3)
+        buf.write(struct.pack('<I', flags))
+        if self.theme is not None:
+            buf.write(bytes(self.theme))
+        if self.format is not None:
+            buf.write(TLObject.serialize_bytes(self.format))
+        if self.base_theme is not None:
+            buf.write(bytes(self.base_theme))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['dark'] = bool(flags & (1 << 0))
+        if flags & (1 << 1):
+            _val_theme = reader.tgread_object()
+            _args['theme'] = _val_theme
+        else:
+            _args['theme'] = None
+        if flags & (1 << 2):
+            _val_format = reader.tgread_string()
+            _args['format'] = _val_format
+        else:
+            _args['format'] = None
+        if flags & (1 << 3):
+            _val_base_theme = reader.tgread_object()
+            _args['base_theme'] = _val_base_theme
+        else:
+            _args['base_theme'] = None
+        return cls(**_args)
+
+
 class InstallWallPaperRequest(TLRequest):
     """TL type: account.installWallPaper"""
     CONSTRUCTOR_ID = 0xfeed5769
@@ -1663,6 +2090,73 @@ class InvalidateSignInCodesRequest(TLRequest):
             _item_codes = reader.tgread_string()
             _list_codes.append(_item_codes)
         _args['codes'] = _list_codes
+        return cls(**_args)
+
+
+class RegisterDeviceRequest(TLRequest):
+    """TL type: account.registerDevice"""
+    CONSTRUCTOR_ID = 0xec86017a
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, token_type: int, token: str, app_sandbox: bool, secret: bytes, other_uids: List[int], no_muted: Optional[bool] = None):
+        self.token_type = token_type
+        self.token = token
+        self.app_sandbox = app_sandbox
+        self.secret = secret
+        self.other_uids = other_uids
+        self.no_muted = no_muted
+
+    def to_dict(self):
+        return {
+            '_': 'RegisterDeviceRequest',
+            'token_type': self.token_type,
+            'token': self.token,
+            'app_sandbox': self.app_sandbox,
+            'secret': self.secret,
+            'other_uids': self.other_uids,
+            'no_muted': self.no_muted,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.no_muted:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(struct.pack('<i', self.token_type))
+        buf.write(TLObject.serialize_bytes(self.token))
+        buf.write(struct.pack('<I', 0x997275b5 if self.app_sandbox else 0xbc799737))
+        buf.write(TLObject.serialize_bytes(self.secret))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.other_uids)))
+        for item in self.other_uids:
+            buf.write(struct.pack('<q', item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['no_muted'] = bool(flags & (1 << 0))
+        _val_token_type = reader.read_int()
+        _args['token_type'] = _val_token_type
+        _val_token = reader.tgread_string()
+        _args['token'] = _val_token
+        _val_app_sandbox = reader.tgread_bool()
+        _args['app_sandbox'] = _val_app_sandbox
+        _val_secret = reader.tgread_bytes()
+        _args['secret'] = _val_secret
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_other_uids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_other_uids = []
+        for _ in range(_count_other_uids):
+            _item_other_uids = reader.read_long()
+            _list_other_uids.append(_item_other_uids)
+        _args['other_uids'] = _list_other_uids
         return cls(**_args)
 
 
@@ -2021,6 +2515,154 @@ class ResolveBusinessChatLinkRequest(TLRequest):
         _args = {}
         _val_slug = reader.tgread_string()
         _args['slug'] = _val_slug
+        return cls(**_args)
+
+
+class SaveAutoDownloadSettingsRequest(TLRequest):
+    """TL type: account.saveAutoDownloadSettings"""
+    CONSTRUCTOR_ID = 0x76f36233
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, settings: 'TypeAutoDownloadSettings', low: Optional[bool] = None, high: Optional[bool] = None):
+        self.settings = settings
+        self.low = low
+        self.high = high
+
+    def to_dict(self):
+        return {
+            '_': 'SaveAutoDownloadSettingsRequest',
+            'settings': self.settings,
+            'low': self.low,
+            'high': self.high,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.low:
+            flags |= (1 << 0)
+        if self.high:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.settings))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['low'] = bool(flags & (1 << 0))
+        _args['high'] = bool(flags & (1 << 1))
+        _val_settings = reader.tgread_object()
+        _args['settings'] = _val_settings
+        return cls(**_args)
+
+
+class SaveAutoSaveSettingsRequest(TLRequest):
+    """TL type: account.saveAutoSaveSettings"""
+    CONSTRUCTOR_ID = 0xd69b8361
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, settings: 'TypeAutoSaveSettings', users: Optional[bool] = None, chats: Optional[bool] = None, broadcasts: Optional[bool] = None, peer: Optional['TypeInputPeer'] = None):
+        self.settings = settings
+        self.users = users
+        self.chats = chats
+        self.broadcasts = broadcasts
+        self.peer = peer
+
+    def to_dict(self):
+        return {
+            '_': 'SaveAutoSaveSettingsRequest',
+            'settings': self.settings,
+            'users': self.users,
+            'chats': self.chats,
+            'broadcasts': self.broadcasts,
+            'peer': self.peer,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.users:
+            flags |= (1 << 0)
+        if self.chats:
+            flags |= (1 << 1)
+        if self.broadcasts:
+            flags |= (1 << 2)
+        if self.peer is not None:
+            flags |= (1 << 3)
+        buf.write(struct.pack('<I', flags))
+        if self.peer is not None:
+            buf.write(bytes(self.peer))
+        buf.write(bytes(self.settings))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['users'] = bool(flags & (1 << 0))
+        _args['chats'] = bool(flags & (1 << 1))
+        _args['broadcasts'] = bool(flags & (1 << 2))
+        if flags & (1 << 3):
+            _val_peer = reader.tgread_object()
+            _args['peer'] = _val_peer
+        else:
+            _args['peer'] = None
+        _val_settings = reader.tgread_object()
+        _args['settings'] = _val_settings
+        return cls(**_args)
+
+
+class SaveMusicRequest(TLRequest):
+    """TL type: account.saveMusic"""
+    CONSTRUCTOR_ID = 0xb26732a9
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, id: 'TypeInputDocument', unsave: Optional[bool] = None, after_id: Optional['TypeInputDocument'] = None):
+        self.id = id
+        self.unsave = unsave
+        self.after_id = after_id
+
+    def to_dict(self):
+        return {
+            '_': 'SaveMusicRequest',
+            'id': self.id,
+            'unsave': self.unsave,
+            'after_id': self.after_id,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.unsave:
+            flags |= (1 << 0)
+        if self.after_id is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.id))
+        if self.after_id is not None:
+            buf.write(bytes(self.after_id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['unsave'] = bool(flags & (1 << 0))
+        _val_id = reader.tgread_object()
+        _args['id'] = _val_id
+        if flags & (1 << 1):
+            _val_after_id = reader.tgread_object()
+            _args['after_id'] = _val_after_id
+        else:
+            _args['after_id'] = None
         return cls(**_args)
 
 
@@ -2388,6 +3030,38 @@ class SetContactSignUpNotificationRequest(TLRequest):
         return cls(**_args)
 
 
+class SetContentSettingsRequest(TLRequest):
+    """TL type: account.setContentSettings"""
+    CONSTRUCTOR_ID = 0xb574b16b
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, sensitive_enabled: Optional[bool] = None):
+        self.sensitive_enabled = sensitive_enabled
+
+    def to_dict(self):
+        return {
+            '_': 'SetContentSettingsRequest',
+            'sensitive_enabled': self.sensitive_enabled,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.sensitive_enabled:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['sensitive_enabled'] = bool(flags & (1 << 0))
+        return cls(**_args)
+
+
 class SetGlobalPrivacySettingsRequest(TLRequest):
     """TL type: account.setGlobalPrivacySettings"""
     CONSTRUCTOR_ID = 0x1edaaac2
@@ -2553,6 +3227,59 @@ class ToggleConnectedBotPausedRequest(TLRequest):
         return cls(**_args)
 
 
+class ToggleNoPaidMessagesExceptionRequest(TLRequest):
+    """TL type: account.toggleNoPaidMessagesException"""
+    CONSTRUCTOR_ID = 0xfe2eda76
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, user_id: 'TypeInputUser', refund_charged: Optional[bool] = None, require_payment: Optional[bool] = None, parent_peer: Optional['TypeInputPeer'] = None):
+        self.user_id = user_id
+        self.refund_charged = refund_charged
+        self.require_payment = require_payment
+        self.parent_peer = parent_peer
+
+    def to_dict(self):
+        return {
+            '_': 'ToggleNoPaidMessagesExceptionRequest',
+            'user_id': self.user_id,
+            'refund_charged': self.refund_charged,
+            'require_payment': self.require_payment,
+            'parent_peer': self.parent_peer,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.refund_charged:
+            flags |= (1 << 0)
+        if self.require_payment:
+            flags |= (1 << 2)
+        if self.parent_peer is not None:
+            flags |= (1 << 1)
+        buf.write(struct.pack('<I', flags))
+        if self.parent_peer is not None:
+            buf.write(bytes(self.parent_peer))
+        buf.write(bytes(self.user_id))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['refund_charged'] = bool(flags & (1 << 0))
+        _args['require_payment'] = bool(flags & (1 << 2))
+        if flags & (1 << 1):
+            _val_parent_peer = reader.tgread_object()
+            _args['parent_peer'] = _val_parent_peer
+        else:
+            _args['parent_peer'] = None
+        _val_user_id = reader.tgread_object()
+        _args['user_id'] = _val_user_id
+        return cls(**_args)
+
+
 class ToggleSponsoredMessagesRequest(TLRequest):
     """TL type: account.toggleSponsoredMessages"""
     CONSTRUCTOR_ID = 0xb9d9a38d
@@ -2665,6 +3392,341 @@ class UnregisterDeviceRequest(TLRequest):
         return cls(**_args)
 
 
+class UpdateBirthdayRequest(TLRequest):
+    """TL type: account.updateBirthday"""
+    CONSTRUCTOR_ID = 0xcc6e0c11
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, birthday: Optional['TypeBirthday'] = None):
+        self.birthday = birthday
+
+    def to_dict(self):
+        return {
+            '_': 'UpdateBirthdayRequest',
+            'birthday': self.birthday,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.birthday is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.birthday is not None:
+            buf.write(bytes(self.birthday))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_birthday = reader.tgread_object()
+            _args['birthday'] = _val_birthday
+        else:
+            _args['birthday'] = None
+        return cls(**_args)
+
+
+class UpdateBusinessAwayMessageRequest(TLRequest):
+    """TL type: account.updateBusinessAwayMessage"""
+    CONSTRUCTOR_ID = 0xa26a7fa5
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, message: Optional['TypeInputBusinessAwayMessage'] = None):
+        self.message = message
+
+    def to_dict(self):
+        return {
+            '_': 'UpdateBusinessAwayMessageRequest',
+            'message': self.message,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.message is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.message is not None:
+            buf.write(bytes(self.message))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_message = reader.tgread_object()
+            _args['message'] = _val_message
+        else:
+            _args['message'] = None
+        return cls(**_args)
+
+
+class UpdateBusinessGreetingMessageRequest(TLRequest):
+    """TL type: account.updateBusinessGreetingMessage"""
+    CONSTRUCTOR_ID = 0x66cdafc4
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, message: Optional['TypeInputBusinessGreetingMessage'] = None):
+        self.message = message
+
+    def to_dict(self):
+        return {
+            '_': 'UpdateBusinessGreetingMessageRequest',
+            'message': self.message,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.message is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.message is not None:
+            buf.write(bytes(self.message))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_message = reader.tgread_object()
+            _args['message'] = _val_message
+        else:
+            _args['message'] = None
+        return cls(**_args)
+
+
+class UpdateBusinessIntroRequest(TLRequest):
+    """TL type: account.updateBusinessIntro"""
+    CONSTRUCTOR_ID = 0xa614d034
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, intro: Optional['TypeInputBusinessIntro'] = None):
+        self.intro = intro
+
+    def to_dict(self):
+        return {
+            '_': 'UpdateBusinessIntroRequest',
+            'intro': self.intro,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.intro is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.intro is not None:
+            buf.write(bytes(self.intro))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_intro = reader.tgread_object()
+            _args['intro'] = _val_intro
+        else:
+            _args['intro'] = None
+        return cls(**_args)
+
+
+class UpdateBusinessLocationRequest(TLRequest):
+    """TL type: account.updateBusinessLocation"""
+    CONSTRUCTOR_ID = 0x9e6b131a
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, geo_point: Optional['TypeInputGeoPoint'] = None, address: Optional[str] = None):
+        self.geo_point = geo_point
+        self.address = address
+
+    def to_dict(self):
+        return {
+            '_': 'UpdateBusinessLocationRequest',
+            'geo_point': self.geo_point,
+            'address': self.address,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.geo_point is not None:
+            flags |= (1 << 1)
+        if self.address is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.geo_point is not None:
+            buf.write(bytes(self.geo_point))
+        if self.address is not None:
+            buf.write(TLObject.serialize_bytes(self.address))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 1):
+            _val_geo_point = reader.tgread_object()
+            _args['geo_point'] = _val_geo_point
+        else:
+            _args['geo_point'] = None
+        if flags & (1 << 0):
+            _val_address = reader.tgread_string()
+            _args['address'] = _val_address
+        else:
+            _args['address'] = None
+        return cls(**_args)
+
+
+class UpdateBusinessWorkHoursRequest(TLRequest):
+    """TL type: account.updateBusinessWorkHours"""
+    CONSTRUCTOR_ID = 0x4b00e066
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, business_work_hours: Optional['TypeBusinessWorkHours'] = None):
+        self.business_work_hours = business_work_hours
+
+    def to_dict(self):
+        return {
+            '_': 'UpdateBusinessWorkHoursRequest',
+            'business_work_hours': self.business_work_hours,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.business_work_hours is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.business_work_hours is not None:
+            buf.write(bytes(self.business_work_hours))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_business_work_hours = reader.tgread_object()
+            _args['business_work_hours'] = _val_business_work_hours
+        else:
+            _args['business_work_hours'] = None
+        return cls(**_args)
+
+
+class UpdateColorRequest(TLRequest):
+    """TL type: account.updateColor"""
+    CONSTRUCTOR_ID = 0x684d214e
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, for_profile: Optional[bool] = None, color: Optional['TypePeerColor'] = None):
+        self.for_profile = for_profile
+        self.color = color
+
+    def to_dict(self):
+        return {
+            '_': 'UpdateColorRequest',
+            'for_profile': self.for_profile,
+            'color': self.color,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.for_profile:
+            flags |= (1 << 1)
+        if self.color is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        if self.color is not None:
+            buf.write(bytes(self.color))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['for_profile'] = bool(flags & (1 << 1))
+        if flags & (1 << 2):
+            _val_color = reader.tgread_object()
+            _args['color'] = _val_color
+        else:
+            _args['color'] = None
+        return cls(**_args)
+
+
+class UpdateConnectedBotRequest(TLRequest):
+    """TL type: account.updateConnectedBot"""
+    CONSTRUCTOR_ID = 0x66a08c7e
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, bot: 'TypeInputUser', recipients: 'TypeInputBusinessBotRecipients', deleted: Optional[bool] = None, rights: Optional['TypeBusinessBotRights'] = None):
+        self.bot = bot
+        self.recipients = recipients
+        self.deleted = deleted
+        self.rights = rights
+
+    def to_dict(self):
+        return {
+            '_': 'UpdateConnectedBotRequest',
+            'bot': self.bot,
+            'recipients': self.recipients,
+            'deleted': self.deleted,
+            'rights': self.rights,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.deleted:
+            flags |= (1 << 1)
+        if self.rights is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        if self.rights is not None:
+            buf.write(bytes(self.rights))
+        buf.write(bytes(self.bot))
+        buf.write(bytes(self.recipients))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['deleted'] = bool(flags & (1 << 1))
+        if flags & (1 << 0):
+            _val_rights = reader.tgread_object()
+            _args['rights'] = _val_rights
+        else:
+            _args['rights'] = None
+        _val_bot = reader.tgread_object()
+        _args['bot'] = _val_bot
+        _val_recipients = reader.tgread_object()
+        _args['recipients'] = _val_recipients
+        return cls(**_args)
+
+
 class UpdateDeviceLockedRequest(TLRequest):
     """TL type: account.updateDeviceLocked"""
     CONSTRUCTOR_ID = 0x38df3532
@@ -2757,6 +3819,40 @@ class UpdateNotifySettingsRequest(TLRequest):
         return cls(**_args)
 
 
+class UpdatePasswordSettingsRequest(TLRequest):
+    """TL type: account.updatePasswordSettings"""
+    CONSTRUCTOR_ID = 0xa59b102f
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, password: 'TypeInputCheckPasswordSRP', new_settings: 'TypePasswordInputSettings'):
+        self.password = password
+        self.new_settings = new_settings
+
+    def to_dict(self):
+        return {
+            '_': 'UpdatePasswordSettingsRequest',
+            'password': self.password,
+            'new_settings': self.new_settings,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(bytes(self.password))
+        buf.write(bytes(self.new_settings))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_password = reader.tgread_object()
+        _args['password'] = _val_password
+        _val_new_settings = reader.tgread_object()
+        _args['new_settings'] = _val_new_settings
+        return cls(**_args)
+
+
 class UpdatePersonalChannelRequest(TLRequest):
     """TL type: account.updatePersonalChannel"""
     CONSTRUCTOR_ID = 0xd94305e0
@@ -2786,6 +3882,66 @@ class UpdatePersonalChannelRequest(TLRequest):
         return cls(**_args)
 
 
+class UpdateProfileRequest(TLRequest):
+    """TL type: account.updateProfile"""
+    CONSTRUCTOR_ID = 0x78515775
+    SUBCLASS_OF_ID = 0x2da17977
+
+    def __init__(self, first_name: Optional[str] = None, last_name: Optional[str] = None, about: Optional[str] = None):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.about = about
+
+    def to_dict(self):
+        return {
+            '_': 'UpdateProfileRequest',
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'about': self.about,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.first_name is not None:
+            flags |= (1 << 0)
+        if self.last_name is not None:
+            flags |= (1 << 1)
+        if self.about is not None:
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
+        if self.first_name is not None:
+            buf.write(TLObject.serialize_bytes(self.first_name))
+        if self.last_name is not None:
+            buf.write(TLObject.serialize_bytes(self.last_name))
+        if self.about is not None:
+            buf.write(TLObject.serialize_bytes(self.about))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        if flags & (1 << 0):
+            _val_first_name = reader.tgread_string()
+            _args['first_name'] = _val_first_name
+        else:
+            _args['first_name'] = None
+        if flags & (1 << 1):
+            _val_last_name = reader.tgread_string()
+            _args['last_name'] = _val_last_name
+        else:
+            _args['last_name'] = None
+        if flags & (1 << 2):
+            _val_about = reader.tgread_string()
+            _args['about'] = _val_about
+        else:
+            _args['about'] = None
+        return cls(**_args)
+
+
 class UpdateStatusRequest(TLRequest):
     """TL type: account.updateStatus"""
     CONSTRUCTOR_ID = 0x6628562c
@@ -2812,6 +3968,97 @@ class UpdateStatusRequest(TLRequest):
         _args = {}
         _val_offline = reader.tgread_bool()
         _args['offline'] = _val_offline
+        return cls(**_args)
+
+
+class UpdateThemeRequest(TLRequest):
+    """TL type: account.updateTheme"""
+    CONSTRUCTOR_ID = 0x2bf40ccc
+    SUBCLASS_OF_ID = 0x56b4c80c
+
+    def __init__(self, format: str, theme: 'TypeInputTheme', slug: Optional[str] = None, title: Optional[str] = None, document: Optional['TypeInputDocument'] = None, settings: Optional[List['TypeInputThemeSettings']] = None):
+        self.format = format
+        self.theme = theme
+        self.slug = slug
+        self.title = title
+        self.document = document
+        self.settings = settings
+
+    def to_dict(self):
+        return {
+            '_': 'UpdateThemeRequest',
+            'format': self.format,
+            'theme': self.theme,
+            'slug': self.slug,
+            'title': self.title,
+            'document': self.document,
+            'settings': self.settings,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.slug is not None:
+            flags |= (1 << 0)
+        if self.title is not None:
+            flags |= (1 << 1)
+        if self.document is not None:
+            flags |= (1 << 2)
+        if self.settings is not None:
+            flags |= (1 << 3)
+        buf.write(struct.pack('<I', flags))
+        buf.write(TLObject.serialize_bytes(self.format))
+        buf.write(bytes(self.theme))
+        if self.slug is not None:
+            buf.write(TLObject.serialize_bytes(self.slug))
+        if self.title is not None:
+            buf.write(TLObject.serialize_bytes(self.title))
+        if self.document is not None:
+            buf.write(bytes(self.document))
+        if self.settings is not None:
+            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+            buf.write(struct.pack('<i', len(self.settings)))
+            for item in self.settings:
+                buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_format = reader.tgread_string()
+        _args['format'] = _val_format
+        _val_theme = reader.tgread_object()
+        _args['theme'] = _val_theme
+        if flags & (1 << 0):
+            _val_slug = reader.tgread_string()
+            _args['slug'] = _val_slug
+        else:
+            _args['slug'] = None
+        if flags & (1 << 1):
+            _val_title = reader.tgread_string()
+            _args['title'] = _val_title
+        else:
+            _args['title'] = None
+        if flags & (1 << 2):
+            _val_document = reader.tgread_object()
+            _args['document'] = _val_document
+        else:
+            _args['document'] = None
+        if flags & (1 << 3):
+            _vec_id = reader.read_int(signed=False)
+            if _vec_id != 0x1cb5c415:
+                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+            _count_settings = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+            _list_settings = []
+            for _ in range(_count_settings):
+                _item_settings = reader.tgread_object()
+                _list_settings.append(_item_settings)
+            _args['settings'] = _list_settings
+        else:
+            _args['settings'] = None
         return cls(**_args)
 
 
@@ -2880,6 +4127,106 @@ class UploadRingtoneRequest(TLRequest):
         _args['file_name'] = _val_file_name
         _val_mime_type = reader.tgread_string()
         _args['mime_type'] = _val_mime_type
+        return cls(**_args)
+
+
+class UploadThemeRequest(TLRequest):
+    """TL type: account.uploadTheme"""
+    CONSTRUCTOR_ID = 0x1c3db333
+    SUBCLASS_OF_ID = 0x211fe820
+
+    def __init__(self, file: 'TypeInputFile', file_name: str, mime_type: str, thumb: Optional['TypeInputFile'] = None):
+        self.file = file
+        self.file_name = file_name
+        self.mime_type = mime_type
+        self.thumb = thumb
+
+    def to_dict(self):
+        return {
+            '_': 'UploadThemeRequest',
+            'file': self.file,
+            'file_name': self.file_name,
+            'mime_type': self.mime_type,
+            'thumb': self.thumb,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.thumb is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.file))
+        if self.thumb is not None:
+            buf.write(bytes(self.thumb))
+        buf.write(TLObject.serialize_bytes(self.file_name))
+        buf.write(TLObject.serialize_bytes(self.mime_type))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _val_file = reader.tgread_object()
+        _args['file'] = _val_file
+        if flags & (1 << 0):
+            _val_thumb = reader.tgread_object()
+            _args['thumb'] = _val_thumb
+        else:
+            _args['thumb'] = None
+        _val_file_name = reader.tgread_string()
+        _args['file_name'] = _val_file_name
+        _val_mime_type = reader.tgread_string()
+        _args['mime_type'] = _val_mime_type
+        return cls(**_args)
+
+
+class UploadWallPaperRequest(TLRequest):
+    """TL type: account.uploadWallPaper"""
+    CONSTRUCTOR_ID = 0xe39a8f03
+    SUBCLASS_OF_ID = 0x96a2c98b
+
+    def __init__(self, file: 'TypeInputFile', mime_type: str, settings: 'TypeWallPaperSettings', for_chat: Optional[bool] = None):
+        self.file = file
+        self.mime_type = mime_type
+        self.settings = settings
+        self.for_chat = for_chat
+
+    def to_dict(self):
+        return {
+            '_': 'UploadWallPaperRequest',
+            'file': self.file,
+            'mime_type': self.mime_type,
+            'settings': self.settings,
+            'for_chat': self.for_chat,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.for_chat:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
+        buf.write(bytes(self.file))
+        buf.write(TLObject.serialize_bytes(self.mime_type))
+        buf.write(bytes(self.settings))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        flags = reader.read_int(signed=False)
+        _args['for_chat'] = bool(flags & (1 << 0))
+        _val_file = reader.tgread_object()
+        _args['file'] = _val_file
+        _val_mime_type = reader.tgread_string()
+        _args['mime_type'] = _val_mime_type
+        _val_settings = reader.tgread_object()
+        _args['settings'] = _val_settings
         return cls(**_args)
 
 
