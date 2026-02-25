@@ -468,10 +468,10 @@ This project is licensed under the **MIT License** see the [LICENSE](./LICENSE) 
 
 ## 👤 Author
 
-**Ankit Chaubey**
-📧 [Email](mailto:ankitchaubey.dev@gmail.com)
-🐙 [github.com/ankit-chaubey](https://github.com/ankit-chaubey)
-💌 [Telegram](https://t.me/ankify)
+[**Ankit Chaubey**](https://github.com/ankit-chaubey)
+ - 📧 [Email](mailto:ankitchaubey.dev@gmail.com)
+ - 🐙 [github.com/ankit-chaubey](https://github.com/ankit-chaubey)
+ - 💌 [Telegram](https://t.me/ankify)
 ---
 
 <div align="center">
