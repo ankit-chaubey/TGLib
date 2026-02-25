@@ -88,7 +88,7 @@ from .crypto.backend import (
 )
 from . import events, tl, helpers, utils
 
-__version__ = '2.0.0'
+__version__ = '0.1.4'
 __author__  = 'Ankit Chaubey'
 __license__ = 'MIT'
 
