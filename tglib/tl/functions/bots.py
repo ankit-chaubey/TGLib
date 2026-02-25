@@ -328,49 +328,6 @@ class GetBotCommandsRequest(TLRequest):
         return cls(**_args)
 
 
-class GetBotInfoRequest(TLRequest):
-    """TL type: bots.getBotInfo"""
-    CONSTRUCTOR_ID = 0xdcd914fd
-    SUBCLASS_OF_ID = 0xca7b2235
-
-    def __init__(self, lang_code: str, bot: Optional['TypeInputUser'] = None):
-        self.lang_code = lang_code
-        self.bot = bot
-
-    def to_dict(self):
-        return {
-            '_': 'GetBotInfoRequest',
-            'lang_code': self.lang_code,
-            'bot': self.bot,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.bot is not None:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        if self.bot is not None:
-            buf.write(bytes(self.bot))
-        buf.write(TLObject.serialize_bytes(self.lang_code))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        if flags & (1 << 0):
-            _val_bot = reader.tgread_object()
-            _args['bot'] = _val_bot
-        else:
-            _args['bot'] = None
-        _val_lang_code = reader.tgread_string()
-        _args['lang_code'] = _val_lang_code
-        return cls(**_args)
-
-
 class GetBotMenuButtonRequest(TLRequest):
     """TL type: bots.getBotMenuButton"""
     CONSTRUCTOR_ID = 0x9c60eb28
@@ -833,82 +790,6 @@ class SetBotGroupDefaultAdminRightsRequest(TLRequest):
         return cls(**_args)
 
 
-class SetBotInfoRequest(TLRequest):
-    """TL type: bots.setBotInfo"""
-    CONSTRUCTOR_ID = 0x10cf3123
-    SUBCLASS_OF_ID = 0xf5b399ac
-
-    def __init__(self, lang_code: str, bot: Optional['TypeInputUser'] = None, name: Optional[str] = None, about: Optional[str] = None, description: Optional[str] = None):
-        self.lang_code = lang_code
-        self.bot = bot
-        self.name = name
-        self.about = about
-        self.description = description
-
-    def to_dict(self):
-        return {
-            '_': 'SetBotInfoRequest',
-            'lang_code': self.lang_code,
-            'bot': self.bot,
-            'name': self.name,
-            'about': self.about,
-            'description': self.description,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.bot is not None:
-            flags |= (1 << 2)
-        if self.name is not None:
-            flags |= (1 << 3)
-        if self.about is not None:
-            flags |= (1 << 0)
-        if self.description is not None:
-            flags |= (1 << 1)
-        buf.write(struct.pack('<I', flags))
-        if self.bot is not None:
-            buf.write(bytes(self.bot))
-        buf.write(TLObject.serialize_bytes(self.lang_code))
-        if self.name is not None:
-            buf.write(TLObject.serialize_bytes(self.name))
-        if self.about is not None:
-            buf.write(TLObject.serialize_bytes(self.about))
-        if self.description is not None:
-            buf.write(TLObject.serialize_bytes(self.description))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        if flags & (1 << 2):
-            _val_bot = reader.tgread_object()
-            _args['bot'] = _val_bot
-        else:
-            _args['bot'] = None
-        _val_lang_code = reader.tgread_string()
-        _args['lang_code'] = _val_lang_code
-        if flags & (1 << 3):
-            _val_name = reader.tgread_string()
-            _args['name'] = _val_name
-        else:
-            _args['name'] = None
-        if flags & (1 << 0):
-            _val_about = reader.tgread_string()
-            _args['about'] = _val_about
-        else:
-            _args['about'] = None
-        if flags & (1 << 1):
-            _val_description = reader.tgread_string()
-            _args['description'] = _val_description
-        else:
-            _args['description'] = None
-        return cls(**_args)
-
-
 class SetBotMenuButtonRequest(TLRequest):
     """TL type: bots.setBotMenuButton"""
     CONSTRUCTOR_ID = 0x4504d54f
@@ -940,65 +821,6 @@ class SetBotMenuButtonRequest(TLRequest):
         _args['user_id'] = _val_user_id
         _val_button = reader.tgread_object()
         _args['button'] = _val_button
-        return cls(**_args)
-
-
-class SetCustomVerificationRequest(TLRequest):
-    """TL type: bots.setCustomVerification"""
-    CONSTRUCTOR_ID = 0x8b89dfbd
-    SUBCLASS_OF_ID = 0xf5b399ac
-
-    def __init__(self, peer: 'TypeInputPeer', enabled: Optional[bool] = None, bot: Optional['TypeInputUser'] = None, custom_description: Optional[str] = None):
-        self.peer = peer
-        self.enabled = enabled
-        self.bot = bot
-        self.custom_description = custom_description
-
-    def to_dict(self):
-        return {
-            '_': 'SetCustomVerificationRequest',
-            'peer': self.peer,
-            'enabled': self.enabled,
-            'bot': self.bot,
-            'custom_description': self.custom_description,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.enabled:
-            flags |= (1 << 1)
-        if self.bot is not None:
-            flags |= (1 << 0)
-        if self.custom_description is not None:
-            flags |= (1 << 2)
-        buf.write(struct.pack('<I', flags))
-        if self.bot is not None:
-            buf.write(bytes(self.bot))
-        buf.write(bytes(self.peer))
-        if self.custom_description is not None:
-            buf.write(TLObject.serialize_bytes(self.custom_description))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['enabled'] = bool(flags & (1 << 1))
-        if flags & (1 << 0):
-            _val_bot = reader.tgread_object()
-            _args['bot'] = _val_bot
-        else:
-            _args['bot'] = None
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        if flags & (1 << 2):
-            _val_custom_description = reader.tgread_string()
-            _args['custom_description'] = _val_custom_description
-        else:
-            _args['custom_description'] = None
         return cls(**_args)
 
 
@@ -1072,54 +894,6 @@ class ToggleUsernameRequest(TLRequest):
         _args['username'] = _val_username
         _val_active = reader.tgread_bool()
         _args['active'] = _val_active
-        return cls(**_args)
-
-
-class UpdateStarRefProgramRequest(TLRequest):
-    """TL type: bots.updateStarRefProgram"""
-    CONSTRUCTOR_ID = 0x778b5ab3
-    SUBCLASS_OF_ID = 0x9888e002
-
-    def __init__(self, bot: 'TypeInputUser', commission_permille: int, duration_months: Optional[int] = None):
-        self.bot = bot
-        self.commission_permille = commission_permille
-        self.duration_months = duration_months
-
-    def to_dict(self):
-        return {
-            '_': 'UpdateStarRefProgramRequest',
-            'bot': self.bot,
-            'commission_permille': self.commission_permille,
-            'duration_months': self.duration_months,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.duration_months is not None:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.bot))
-        buf.write(struct.pack('<i', self.commission_permille))
-        if self.duration_months is not None:
-            buf.write(struct.pack('<i', self.duration_months))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _val_bot = reader.tgread_object()
-        _args['bot'] = _val_bot
-        _val_commission_permille = reader.read_int()
-        _args['commission_permille'] = _val_commission_permille
-        if flags & (1 << 0):
-            _val_duration_months = reader.read_int()
-            _args['duration_months'] = _val_duration_months
-        else:
-            _args['duration_months'] = None
         return cls(**_args)
 
 

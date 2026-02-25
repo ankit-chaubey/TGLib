@@ -36,18 +36,58 @@ AUTH_KEY_TYPE_IDS = {
 }
 
 
+def _sanitize_identifier(name: str) -> str:
+    """
+    Turn any string into a valid Python identifier.
+
+    Rules applied in order:
+      1. Replace dots, dashes, slashes → underscore  (core fix for Layer.223)
+      2. Strip all remaining non-[a-zA-Z0-9_] characters
+      3. Collapse multiple underscores
+      4. If result starts with a digit, prefix 'Tl'
+      5. If result is empty, use '_Unknown'
+    """
+    # Step 1: treat dots and other separators as word boundaries
+    name = re.sub(r'[.\-/\\]', '_', name)
+    # Step 2: strip anything that isn't alphanumeric or underscore
+    name = re.sub(r'[^\w]', '', name)
+    # Step 3: collapse runs of underscores
+    name = re.sub(r'_+', '_', name).strip('_')
+    # Step 4: can't start with a digit
+    if name and name[0].isdigit():
+        name = 'Tl' + name
+    # Step 5: must not be empty
+    return name or '_Unknown'
+
+
 def snake_to_camel(name: str, suffix: str = '') -> str:
-    """Convert snake_case or camelCase TL names to PascalCase."""
-    import re
-    # First split on underscores
+    """
+    Convert snake_case or camelCase TL names to PascalCase Python identifier.
+
+    FIX: dots (and other non-identifier chars) are now stripped BEFORE splitting
+    so that names like 'Layer.223' → 'Layer223' instead of crashing.
+    """
+    # Sanitize first — removes dots and other invalid chars
+    name = _sanitize_identifier(name)
+
+    # Split on underscores
     parts = name.split('_')
-    # Then split each part on camelCase boundaries (e.g. sendMessage -> send + Message)
+
+    # Also split on embedded camelCase boundaries
     final_parts = []
     for part in parts:
-        # Split camelCase: insert split before each uppercase letter that follows a lowercase
         sub = re.sub(r'([a-z])([A-Z])', r'\1_\2', part).split('_')
         final_parts.extend(sub)
+
     result = ''.join(word.capitalize() for word in final_parts if word)
+
+    # Digit-leading guard (second layer, after capitalize may strip prefix)
+    if result and result[0].isdigit():
+        result = 'Tl' + result
+
+    if not result:
+        result = '_Unknown'
+
     return result + suffix
 
 
@@ -88,7 +128,7 @@ class TLArg:
         t = self.arg_type.lstrip('!')
 
         # Check for flag type: flags.0?RealType
-        flag_match = re.match(r'(\w+)\.(\d+)\?([\w<>.]+)', t)
+        flag_match = re.match(r'(\w+)\.(\d+)?([\w<>.]+)', t)
         if flag_match:
             self.flag = flag_match.group(1)
             self.flag_index = int(flag_match.group(2))
@@ -166,10 +206,20 @@ class TLObject:
     layer: int
 
     def __post_init__(self):
+        # FIX: use rsplit('.', 1) so that multi-dot fullnames like
+        # 'keyboardButton.Layer.223' give namespace='keyboardButton', name='Layer.223'
+        # rather than namespace='keyboardButton', name='Layer.223' from split(maxsplit=1).
+        # ACTUALLY the real fix: split on the FIRST dot only for namespace, then
+        # sanitize the rest of the name — see snake_to_camel() which strips dots.
         if '.' in self.fullname:
-            self.namespace, self.name = self.fullname.split('.', maxsplit=1)
+            # Take the first segment as namespace, everything else as name.
+            # snake_to_camel will safely strip any remaining dots from the name.
+            first_dot = self.fullname.index('.')
+            self.namespace = self.fullname[:first_dot]
+            self.name      = self.fullname[first_dot + 1:]
         else:
-            self.namespace, self.name = None, self.fullname
+            self.namespace = None
+            self.name      = self.fullname
 
         if self.object_id is None:
             self.id = self._infer_id()
@@ -178,6 +228,15 @@ class TLObject:
 
         suffix = 'Request' if self.is_function else ''
         self.class_name = snake_to_camel(self.name, suffix=suffix)
+
+        # ── Safety net: guarantee class_name is a valid Python identifier ──
+        # snake_to_camel() already handles this, but we double-check here so
+        # a future change to that function can never silently ship broken output.
+        if not self.class_name.isidentifier():
+            safe = re.sub(r'[^\w]', '', self.class_name)
+            if safe and safe[0].isdigit():
+                safe = 'Tl' + safe
+            self.class_name = safe or '_Unknown'
 
         self.real_args = [
             a for a in self._sorted_args()
@@ -231,7 +290,7 @@ def _parse_args(line: str) -> List[TLArg]:
 
 def _from_line(line: str, is_function: bool, layer: int) -> Optional[TLObject]:
     match = re.match(
-        r'^([\w.]+)'            # name
+        r'^([\w.]+)'            # name (may contain dots for namespacing)
         r'(?:#([0-9a-fA-F]+))?' # optional #id
         r'(?:\s{?\w+:[\w\d<>#.?!]+}?)*'  # args
         r'\s=\s'                # ' = '
@@ -323,7 +382,7 @@ def parse_tl(file_path: str, layer: int = 0) -> List[TLObject]:
             except Exception:
                 continue
 
-    # Resolve cls references (used by code generator for examples)
+    # Resolve cls references
     for obj in objects:
         for arg in obj.args:
             if not hasattr(arg, 'type') or not arg.type:

@@ -64,45 +64,6 @@ class CdnFileReuploadNeeded(TLObject):
         return cls(**_args)
 
 
-class File(TLObject):
-    """TL type: upload.file"""
-    CONSTRUCTOR_ID = 0x096a18d5
-    SUBCLASS_OF_ID = 0x6c9bd728
-
-    def __init__(self, type: 'TypeFileType', mtime: int, bytes: bytes):
-        self.type = type
-        self.mtime = mtime
-        self.bytes = bytes
-
-    def to_dict(self):
-        return {
-            '_': 'File',
-            'type': self.type,
-            'mtime': self.mtime,
-            'bytes': self.bytes,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(bytes(self.type))
-        buf.write(struct.pack('<i', self.mtime))
-        buf.write(TLObject.serialize_bytes(self.bytes))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_type = reader.tgread_object()
-        _args['type'] = _val_type
-        _val_mtime = reader.read_int()
-        _args['mtime'] = _val_mtime
-        _val_bytes = reader.tgread_bytes()
-        _args['bytes'] = _val_bytes
-        return cls(**_args)
-
-
 class FileCdnRedirect(TLObject):
     """TL type: upload.fileCdnRedirect"""
     CONSTRUCTOR_ID = 0xf18cda44
@@ -159,54 +120,5 @@ class FileCdnRedirect(TLObject):
             _item_file_hashes = reader.tgread_object()
             _list_file_hashes.append(_item_file_hashes)
         _args['file_hashes'] = _list_file_hashes
-        return cls(**_args)
-
-
-class WebFile(TLObject):
-    """TL type: upload.webFile"""
-    CONSTRUCTOR_ID = 0x21e753bc
-    SUBCLASS_OF_ID = 0x68f17f51
-
-    def __init__(self, size: int, mime_type: str, file_type: 'TypeFileType', mtime: int, bytes: bytes):
-        self.size = size
-        self.mime_type = mime_type
-        self.file_type = file_type
-        self.mtime = mtime
-        self.bytes = bytes
-
-    def to_dict(self):
-        return {
-            '_': 'WebFile',
-            'size': self.size,
-            'mime_type': self.mime_type,
-            'file_type': self.file_type,
-            'mtime': self.mtime,
-            'bytes': self.bytes,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(struct.pack('<i', self.size))
-        buf.write(TLObject.serialize_bytes(self.mime_type))
-        buf.write(bytes(self.file_type))
-        buf.write(struct.pack('<i', self.mtime))
-        buf.write(TLObject.serialize_bytes(self.bytes))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_size = reader.read_int()
-        _args['size'] = _val_size
-        _val_mime_type = reader.tgread_string()
-        _args['mime_type'] = _val_mime_type
-        _val_file_type = reader.tgread_object()
-        _args['file_type'] = _val_file_type
-        _val_mtime = reader.read_int()
-        _args['mtime'] = _val_mtime
-        _val_bytes = reader.tgread_bytes()
-        _args['bytes'] = _val_bytes
         return cls(**_args)
 

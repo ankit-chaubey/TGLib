@@ -45,59 +45,6 @@ class BotInfo(TLObject):
         return cls(**_args)
 
 
-class PopularAppBots(TLObject):
-    """TL type: bots.popularAppBots"""
-    CONSTRUCTOR_ID = 0x1991b13b
-    SUBCLASS_OF_ID = 0x7b64be7d
-
-    def __init__(self, users: List['TypeUser'], next_offset: Optional[str] = None):
-        self.users = users
-        self.next_offset = next_offset
-
-    def to_dict(self):
-        return {
-            '_': 'PopularAppBots',
-            'users': self.users,
-            'next_offset': self.next_offset,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.next_offset is not None:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        if self.next_offset is not None:
-            buf.write(TLObject.serialize_bytes(self.next_offset))
-        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-        buf.write(struct.pack('<i', len(self.users)))
-        for item in self.users:
-            buf.write(bytes(item))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        if flags & (1 << 0):
-            _val_next_offset = reader.tgread_string()
-            _args['next_offset'] = _val_next_offset
-        else:
-            _args['next_offset'] = None
-        _vec_id = reader.read_int(signed=False)
-        if _vec_id != 0x1cb5c415:
-            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
-        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
-        _list_users = []
-        for _ in range(_count_users):
-            _item_users = reader.tgread_object()
-            _list_users.append(_item_users)
-        _args['users'] = _list_users
-        return cls(**_args)
-
-
 class PreviewInfo(TLObject):
     """TL type: bots.previewInfo"""
     CONSTRUCTOR_ID = 0x0ca71d64

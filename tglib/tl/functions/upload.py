@@ -80,58 +80,6 @@ class GetCdnFileHashesRequest(TLRequest):
         return cls(**_args)
 
 
-class GetFileRequest(TLRequest):
-    """TL type: upload.getFile"""
-    CONSTRUCTOR_ID = 0xbe5335be
-    SUBCLASS_OF_ID = 0x6c9bd728
-
-    def __init__(self, location: 'TypeInputFileLocation', offset: int, limit: int, precise: Optional[bool] = None, cdn_supported: Optional[bool] = None):
-        self.location = location
-        self.offset = offset
-        self.limit = limit
-        self.precise = precise
-        self.cdn_supported = cdn_supported
-
-    def to_dict(self):
-        return {
-            '_': 'GetFileRequest',
-            'location': self.location,
-            'offset': self.offset,
-            'limit': self.limit,
-            'precise': self.precise,
-            'cdn_supported': self.cdn_supported,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.precise:
-            flags |= (1 << 0)
-        if self.cdn_supported:
-            flags |= (1 << 1)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.location))
-        buf.write(struct.pack('<q', self.offset))
-        buf.write(struct.pack('<i', self.limit))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['precise'] = bool(flags & (1 << 0))
-        _args['cdn_supported'] = bool(flags & (1 << 1))
-        _val_location = reader.tgread_object()
-        _args['location'] = _val_location
-        _val_offset = reader.read_long()
-        _args['offset'] = _val_offset
-        _val_limit = reader.read_int()
-        _args['limit'] = _val_limit
-        return cls(**_args)
-
-
 class GetFileHashesRequest(TLRequest):
     """TL type: upload.getFileHashes"""
     CONSTRUCTOR_ID = 0x9156982a

@@ -104,48 +104,6 @@ class AssignPlayMarketTransactionRequest(TLRequest):
         return cls(**_args)
 
 
-class BotCancelStarsSubscriptionRequest(TLRequest):
-    """TL type: payments.botCancelStarsSubscription"""
-    CONSTRUCTOR_ID = 0x6dfa0622
-    SUBCLASS_OF_ID = 0xf5b399ac
-
-    def __init__(self, user_id: 'TypeInputUser', charge_id: str, restore: Optional[bool] = None):
-        self.user_id = user_id
-        self.charge_id = charge_id
-        self.restore = restore
-
-    def to_dict(self):
-        return {
-            '_': 'BotCancelStarsSubscriptionRequest',
-            'user_id': self.user_id,
-            'charge_id': self.charge_id,
-            'restore': self.restore,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.restore:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.user_id))
-        buf.write(TLObject.serialize_bytes(self.charge_id))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['restore'] = bool(flags & (1 << 0))
-        _val_user_id = reader.tgread_object()
-        _args['user_id'] = _val_user_id
-        _val_charge_id = reader.tgread_string()
-        _args['charge_id'] = _val_charge_id
-        return cls(**_args)
-
-
 class CanPurchaseStoreRequest(TLRequest):
     """TL type: payments.canPurchaseStore"""
     CONSTRUCTOR_ID = 0x4fdc5ea7
@@ -172,54 +130,6 @@ class CanPurchaseStoreRequest(TLRequest):
         _args = {}
         _val_purpose = reader.tgread_object()
         _args['purpose'] = _val_purpose
-        return cls(**_args)
-
-
-class ChangeStarsSubscriptionRequest(TLRequest):
-    """TL type: payments.changeStarsSubscription"""
-    CONSTRUCTOR_ID = 0xc7770878
-    SUBCLASS_OF_ID = 0xf5b399ac
-
-    def __init__(self, peer: 'TypeInputPeer', subscription_id: str, canceled: Optional[bool] = None):
-        self.peer = peer
-        self.subscription_id = subscription_id
-        self.canceled = canceled
-
-    def to_dict(self):
-        return {
-            '_': 'ChangeStarsSubscriptionRequest',
-            'peer': self.peer,
-            'subscription_id': self.subscription_id,
-            'canceled': self.canceled,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.canceled is not None:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        buf.write(TLObject.serialize_bytes(self.subscription_id))
-        if self.canceled is not None:
-            buf.write(struct.pack('<I', 0x997275b5 if self.canceled else 0xbc799737))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        _val_subscription_id = reader.tgread_string()
-        _args['subscription_id'] = _val_subscription_id
-        if flags & (1 << 0):
-            _val_canceled = reader.tgread_bool()
-            _args['canceled'] = _val_canceled
-        else:
-            _args['canceled'] = None
         return cls(**_args)
 
 
@@ -278,43 +188,6 @@ class CheckGiftCodeRequest(TLRequest):
         _args = {}
         _val_slug = reader.tgread_string()
         _args['slug'] = _val_slug
-        return cls(**_args)
-
-
-class ClearSavedInfoRequest(TLRequest):
-    """TL type: payments.clearSavedInfo"""
-    CONSTRUCTOR_ID = 0xd83d70c1
-    SUBCLASS_OF_ID = 0xf5b399ac
-
-    def __init__(self, credentials: Optional[bool] = None, info: Optional[bool] = None):
-        self.credentials = credentials
-        self.info = info
-
-    def to_dict(self):
-        return {
-            '_': 'ClearSavedInfoRequest',
-            'credentials': self.credentials,
-            'info': self.info,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.credentials:
-            flags |= (1 << 0)
-        if self.info:
-            flags |= (1 << 1)
-        buf.write(struct.pack('<I', flags))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['credentials'] = bool(flags & (1 << 0))
-        _args['info'] = bool(flags & (1 << 1))
         return cls(**_args)
 
 
@@ -378,6 +251,45 @@ class ConvertStarGiftRequest(TLRequest):
         _args = {}
         _val_stargift = reader.tgread_object()
         _args['stargift'] = _val_stargift
+        return cls(**_args)
+
+
+class CraftStarGiftRequest(TLRequest):
+    """TL type: payments.craftStarGift"""
+    CONSTRUCTOR_ID = 0xb0f9684f
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, stargift: List['TypeInputSavedStarGift']):
+        self.stargift = stargift
+
+    def to_dict(self):
+        return {
+            '_': 'CraftStarGiftRequest',
+            'stargift': self.stargift,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.stargift)))
+        for item in self.stargift:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_stargift = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_stargift = []
+        for _ in range(_count_stargift):
+            _item_stargift = reader.tgread_object()
+            _list_stargift.append(_item_stargift)
+        _args['stargift'] = _list_stargift
         return cls(**_args)
 
 
@@ -461,48 +373,6 @@ class DeleteStarGiftCollectionRequest(TLRequest):
         _args['peer'] = _val_peer
         _val_collection_id = reader.read_int()
         _args['collection_id'] = _val_collection_id
-        return cls(**_args)
-
-
-class EditConnectedStarRefBotRequest(TLRequest):
-    """TL type: payments.editConnectedStarRefBot"""
-    CONSTRUCTOR_ID = 0xe4fca4a3
-    SUBCLASS_OF_ID = 0x235e1a67
-
-    def __init__(self, peer: 'TypeInputPeer', link: str, revoked: Optional[bool] = None):
-        self.peer = peer
-        self.link = link
-        self.revoked = revoked
-
-    def to_dict(self):
-        return {
-            '_': 'EditConnectedStarRefBotRequest',
-            'peer': self.peer,
-            'link': self.link,
-            'revoked': self.revoked,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.revoked:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        buf.write(TLObject.serialize_bytes(self.link))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['revoked'] = bool(flags & (1 << 0))
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        _val_link = reader.tgread_string()
-        _args['link'] = _val_link
         return cls(**_args)
 
 
@@ -632,60 +502,40 @@ class GetConnectedStarRefBotRequest(TLRequest):
         return cls(**_args)
 
 
-class GetConnectedStarRefBotsRequest(TLRequest):
-    """TL type: payments.getConnectedStarRefBots"""
-    CONSTRUCTOR_ID = 0x5869a553
-    SUBCLASS_OF_ID = 0x235e1a67
+class GetCraftStarGiftsRequest(TLRequest):
+    """TL type: payments.getCraftStarGifts"""
+    CONSTRUCTOR_ID = 0xfd05dd00
+    SUBCLASS_OF_ID = 0xd5112897
 
-    def __init__(self, peer: 'TypeInputPeer', limit: int, offset_date: Optional[datetime] = None, offset_link: Optional[str] = None):
-        self.peer = peer
+    def __init__(self, gift_id: int, offset: str, limit: int):
+        self.gift_id = gift_id
+        self.offset = offset
         self.limit = limit
-        self.offset_date = offset_date
-        self.offset_link = offset_link
 
     def to_dict(self):
         return {
-            '_': 'GetConnectedStarRefBotsRequest',
-            'peer': self.peer,
+            '_': 'GetCraftStarGiftsRequest',
+            'gift_id': self.gift_id,
+            'offset': self.offset,
             'limit': self.limit,
-            'offset_date': self.offset_date,
-            'offset_link': self.offset_link,
         }
 
     def _bytes(self) -> bytes:
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.offset_date is not None:
-            flags |= (1 << 2)
-        if self.offset_link is not None:
-            flags |= (1 << 2)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        if self.offset_date is not None:
-            buf.write(TLObject.serialize_datetime(self.offset_date))
-        if self.offset_link is not None:
-            buf.write(TLObject.serialize_bytes(self.offset_link))
+        buf.write(struct.pack('<q', self.gift_id))
+        buf.write(TLObject.serialize_bytes(self.offset))
         buf.write(struct.pack('<i', self.limit))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
-        flags = reader.read_int(signed=False)
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        if flags & (1 << 2):
-            _val_offset_date = reader.tgread_date()
-            _args['offset_date'] = _val_offset_date
-        else:
-            _args['offset_date'] = None
-        if flags & (1 << 2):
-            _val_offset_link = reader.tgread_string()
-            _args['offset_link'] = _val_offset_link
-        else:
-            _args['offset_link'] = None
+        _val_gift_id = reader.read_long()
+        _args['gift_id'] = _val_gift_id
+        _val_offset = reader.tgread_string()
+        _args['offset'] = _val_offset
         _val_limit = reader.read_int()
         _args['limit'] = _val_limit
         return cls(**_args)
@@ -725,49 +575,6 @@ class GetGiveawayInfoRequest(TLRequest):
         return cls(**_args)
 
 
-class GetPaymentFormRequest(TLRequest):
-    """TL type: payments.getPaymentForm"""
-    CONSTRUCTOR_ID = 0x37148dbb
-    SUBCLASS_OF_ID = 0xa0483f19
-
-    def __init__(self, invoice: 'TypeInputInvoice', theme_params: Optional['TypeDataJSON'] = None):
-        self.invoice = invoice
-        self.theme_params = theme_params
-
-    def to_dict(self):
-        return {
-            '_': 'GetPaymentFormRequest',
-            'invoice': self.invoice,
-            'theme_params': self.theme_params,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.theme_params is not None:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.invoice))
-        if self.theme_params is not None:
-            buf.write(bytes(self.theme_params))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _val_invoice = reader.tgread_object()
-        _args['invoice'] = _val_invoice
-        if flags & (1 << 0):
-            _val_theme_params = reader.tgread_object()
-            _args['theme_params'] = _val_theme_params
-        else:
-            _args['theme_params'] = None
-        return cls(**_args)
-
-
 class GetPaymentReceiptRequest(TLRequest):
     """TL type: payments.getPaymentReceipt"""
     CONSTRUCTOR_ID = 0x2478d1cc
@@ -799,133 +606,6 @@ class GetPaymentReceiptRequest(TLRequest):
         _args['peer'] = _val_peer
         _val_msg_id = reader.read_int()
         _args['msg_id'] = _val_msg_id
-        return cls(**_args)
-
-
-class GetPremiumGiftCodeOptionsRequest(TLRequest):
-    """TL type: payments.getPremiumGiftCodeOptions"""
-    CONSTRUCTOR_ID = 0x2757ba54
-    SUBCLASS_OF_ID = 0x0aa92583
-
-    def __init__(self, boost_peer: Optional['TypeInputPeer'] = None):
-        self.boost_peer = boost_peer
-
-    def to_dict(self):
-        return {
-            '_': 'GetPremiumGiftCodeOptionsRequest',
-            'boost_peer': self.boost_peer,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.boost_peer is not None:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        if self.boost_peer is not None:
-            buf.write(bytes(self.boost_peer))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        if flags & (1 << 0):
-            _val_boost_peer = reader.tgread_object()
-            _args['boost_peer'] = _val_boost_peer
-        else:
-            _args['boost_peer'] = None
-        return cls(**_args)
-
-
-class GetResaleStarGiftsRequest(TLRequest):
-    """TL type: payments.getResaleStarGifts"""
-    CONSTRUCTOR_ID = 0x7a5fa236
-    SUBCLASS_OF_ID = 0xb2dbb7e3
-
-    def __init__(self, gift_id: int, offset: str, limit: int, sort_by_price: Optional[bool] = None, sort_by_num: Optional[bool] = None, for_craft: Optional[bool] = None, attributes_hash: Optional[int] = None, attributes: Optional[List['TypeStarGiftAttributeId']] = None):
-        self.gift_id = gift_id
-        self.offset = offset
-        self.limit = limit
-        self.sort_by_price = sort_by_price
-        self.sort_by_num = sort_by_num
-        self.for_craft = for_craft
-        self.attributes_hash = attributes_hash
-        self.attributes = attributes
-
-    def to_dict(self):
-        return {
-            '_': 'GetResaleStarGiftsRequest',
-            'gift_id': self.gift_id,
-            'offset': self.offset,
-            'limit': self.limit,
-            'sort_by_price': self.sort_by_price,
-            'sort_by_num': self.sort_by_num,
-            'for_craft': self.for_craft,
-            'attributes_hash': self.attributes_hash,
-            'attributes': self.attributes,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.sort_by_price:
-            flags |= (1 << 1)
-        if self.sort_by_num:
-            flags |= (1 << 2)
-        if self.for_craft:
-            flags |= (1 << 4)
-        if self.attributes_hash is not None:
-            flags |= (1 << 0)
-        if self.attributes is not None:
-            flags |= (1 << 3)
-        buf.write(struct.pack('<I', flags))
-        if self.attributes_hash is not None:
-            buf.write(struct.pack('<q', self.attributes_hash))
-        buf.write(struct.pack('<q', self.gift_id))
-        if self.attributes is not None:
-            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-            buf.write(struct.pack('<i', len(self.attributes)))
-            for item in self.attributes:
-                buf.write(bytes(item))
-        buf.write(TLObject.serialize_bytes(self.offset))
-        buf.write(struct.pack('<i', self.limit))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['sort_by_price'] = bool(flags & (1 << 1))
-        _args['sort_by_num'] = bool(flags & (1 << 2))
-        _args['for_craft'] = bool(flags & (1 << 4))
-        if flags & (1 << 0):
-            _val_attributes_hash = reader.read_long()
-            _args['attributes_hash'] = _val_attributes_hash
-        else:
-            _args['attributes_hash'] = None
-        _val_gift_id = reader.read_long()
-        _args['gift_id'] = _val_gift_id
-        if flags & (1 << 3):
-            _vec_id = reader.read_int(signed=False)
-            if _vec_id != 0x1cb5c415:
-                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
-            _count_attributes = reader.read_int(signed=False)  # BUG6 fix: unsigned count
-            _list_attributes = []
-            for _ in range(_count_attributes):
-                _item_attributes = reader.tgread_object()
-                _list_attributes.append(_item_attributes)
-            _args['attributes'] = _list_attributes
-        else:
-            _args['attributes'] = None
-        _val_offset = reader.tgread_string()
-        _args['offset'] = _val_offset
-        _val_limit = reader.read_int()
-        _args['limit'] = _val_limit
         return cls(**_args)
 
 
@@ -989,104 +669,6 @@ class GetSavedStarGiftRequest(TLRequest):
             _item_stargift = reader.tgread_object()
             _list_stargift.append(_item_stargift)
         _args['stargift'] = _list_stargift
-        return cls(**_args)
-
-
-class GetSavedStarGiftsRequest(TLRequest):
-    """TL type: payments.getSavedStarGifts"""
-    CONSTRUCTOR_ID = 0xa319e569
-    SUBCLASS_OF_ID = 0xd5112897
-
-    def __init__(self, peer: 'TypeInputPeer', offset: str, limit: int, exclude_unsaved: Optional[bool] = None, exclude_saved: Optional[bool] = None, exclude_unlimited: Optional[bool] = None, exclude_unique: Optional[bool] = None, sort_by_value: Optional[bool] = None, exclude_upgradable: Optional[bool] = None, exclude_unupgradable: Optional[bool] = None, peer_color_available: Optional[bool] = None, exclude_hosted: Optional[bool] = None, collection_id: Optional[int] = None):
-        self.peer = peer
-        self.offset = offset
-        self.limit = limit
-        self.exclude_unsaved = exclude_unsaved
-        self.exclude_saved = exclude_saved
-        self.exclude_unlimited = exclude_unlimited
-        self.exclude_unique = exclude_unique
-        self.sort_by_value = sort_by_value
-        self.exclude_upgradable = exclude_upgradable
-        self.exclude_unupgradable = exclude_unupgradable
-        self.peer_color_available = peer_color_available
-        self.exclude_hosted = exclude_hosted
-        self.collection_id = collection_id
-
-    def to_dict(self):
-        return {
-            '_': 'GetSavedStarGiftsRequest',
-            'peer': self.peer,
-            'offset': self.offset,
-            'limit': self.limit,
-            'exclude_unsaved': self.exclude_unsaved,
-            'exclude_saved': self.exclude_saved,
-            'exclude_unlimited': self.exclude_unlimited,
-            'exclude_unique': self.exclude_unique,
-            'sort_by_value': self.sort_by_value,
-            'exclude_upgradable': self.exclude_upgradable,
-            'exclude_unupgradable': self.exclude_unupgradable,
-            'peer_color_available': self.peer_color_available,
-            'exclude_hosted': self.exclude_hosted,
-            'collection_id': self.collection_id,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.exclude_unsaved:
-            flags |= (1 << 0)
-        if self.exclude_saved:
-            flags |= (1 << 1)
-        if self.exclude_unlimited:
-            flags |= (1 << 2)
-        if self.exclude_unique:
-            flags |= (1 << 4)
-        if self.sort_by_value:
-            flags |= (1 << 5)
-        if self.exclude_upgradable:
-            flags |= (1 << 7)
-        if self.exclude_unupgradable:
-            flags |= (1 << 8)
-        if self.peer_color_available:
-            flags |= (1 << 9)
-        if self.exclude_hosted:
-            flags |= (1 << 10)
-        if self.collection_id is not None:
-            flags |= (1 << 6)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        if self.collection_id is not None:
-            buf.write(struct.pack('<i', self.collection_id))
-        buf.write(TLObject.serialize_bytes(self.offset))
-        buf.write(struct.pack('<i', self.limit))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['exclude_unsaved'] = bool(flags & (1 << 0))
-        _args['exclude_saved'] = bool(flags & (1 << 1))
-        _args['exclude_unlimited'] = bool(flags & (1 << 2))
-        _args['exclude_unique'] = bool(flags & (1 << 4))
-        _args['sort_by_value'] = bool(flags & (1 << 5))
-        _args['exclude_upgradable'] = bool(flags & (1 << 7))
-        _args['exclude_unupgradable'] = bool(flags & (1 << 8))
-        _args['peer_color_available'] = bool(flags & (1 << 9))
-        _args['exclude_hosted'] = bool(flags & (1 << 10))
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        if flags & (1 << 6):
-            _val_collection_id = reader.read_int()
-            _args['collection_id'] = _val_collection_id
-        else:
-            _args['collection_id'] = None
-        _val_offset = reader.tgread_string()
-        _args['offset'] = _val_offset
-        _val_limit = reader.read_int()
-        _args['limit'] = _val_limit
         return cls(**_args)
 
 
@@ -1337,44 +919,6 @@ class GetStarGiftsRequest(TLRequest):
         return cls(**_args)
 
 
-class GetStarsGiftOptionsRequest(TLRequest):
-    """TL type: payments.getStarsGiftOptions"""
-    CONSTRUCTOR_ID = 0xd3c96bc8
-    SUBCLASS_OF_ID = 0xe9a3b7d5
-
-    def __init__(self, user_id: Optional['TypeInputUser'] = None):
-        self.user_id = user_id
-
-    def to_dict(self):
-        return {
-            '_': 'GetStarsGiftOptionsRequest',
-            'user_id': self.user_id,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.user_id is not None:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        if self.user_id is not None:
-            buf.write(bytes(self.user_id))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        if flags & (1 << 0):
-            _val_user_id = reader.tgread_object()
-            _args['user_id'] = _val_user_id
-        else:
-            _args['user_id'] = None
-        return cls(**_args)
-
-
 class GetStarsGiveawayOptionsRequest(TLRequest):
     """TL type: payments.getStarsGiveawayOptions"""
     CONSTRUCTOR_ID = 0xbd1efd3e
@@ -1428,180 +972,6 @@ class GetStarsRevenueAdsAccountUrlRequest(TLRequest):
         return cls(**_args)
 
 
-class GetStarsRevenueStatsRequest(TLRequest):
-    """TL type: payments.getStarsRevenueStats"""
-    CONSTRUCTOR_ID = 0xd91ffad6
-    SUBCLASS_OF_ID = 0xa54755f3
-
-    def __init__(self, peer: 'TypeInputPeer', dark: Optional[bool] = None, ton: Optional[bool] = None):
-        self.peer = peer
-        self.dark = dark
-        self.ton = ton
-
-    def to_dict(self):
-        return {
-            '_': 'GetStarsRevenueStatsRequest',
-            'peer': self.peer,
-            'dark': self.dark,
-            'ton': self.ton,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.dark:
-            flags |= (1 << 0)
-        if self.ton:
-            flags |= (1 << 1)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['dark'] = bool(flags & (1 << 0))
-        _args['ton'] = bool(flags & (1 << 1))
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        return cls(**_args)
-
-
-class GetStarsRevenueWithdrawalUrlRequest(TLRequest):
-    """TL type: payments.getStarsRevenueWithdrawalUrl"""
-    CONSTRUCTOR_ID = 0x2433dc92
-    SUBCLASS_OF_ID = 0x8466a0ee
-
-    def __init__(self, peer: 'TypeInputPeer', password: 'TypeInputCheckPasswordSRP', ton: Optional[bool] = None, amount: Optional[int] = None):
-        self.peer = peer
-        self.password = password
-        self.ton = ton
-        self.amount = amount
-
-    def to_dict(self):
-        return {
-            '_': 'GetStarsRevenueWithdrawalUrlRequest',
-            'peer': self.peer,
-            'password': self.password,
-            'ton': self.ton,
-            'amount': self.amount,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.ton:
-            flags |= (1 << 0)
-        if self.amount is not None:
-            flags |= (1 << 1)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        if self.amount is not None:
-            buf.write(struct.pack('<q', self.amount))
-        buf.write(bytes(self.password))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['ton'] = bool(flags & (1 << 0))
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        if flags & (1 << 1):
-            _val_amount = reader.read_long()
-            _args['amount'] = _val_amount
-        else:
-            _args['amount'] = None
-        _val_password = reader.tgread_object()
-        _args['password'] = _val_password
-        return cls(**_args)
-
-
-class GetStarsStatusRequest(TLRequest):
-    """TL type: payments.getStarsStatus"""
-    CONSTRUCTOR_ID = 0x4ea9b3bf
-    SUBCLASS_OF_ID = 0x6e9c1d6f
-
-    def __init__(self, peer: 'TypeInputPeer', ton: Optional[bool] = None):
-        self.peer = peer
-        self.ton = ton
-
-    def to_dict(self):
-        return {
-            '_': 'GetStarsStatusRequest',
-            'peer': self.peer,
-            'ton': self.ton,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.ton:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['ton'] = bool(flags & (1 << 0))
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        return cls(**_args)
-
-
-class GetStarsSubscriptionsRequest(TLRequest):
-    """TL type: payments.getStarsSubscriptions"""
-    CONSTRUCTOR_ID = 0x032512c5
-    SUBCLASS_OF_ID = 0x6e9c1d6f
-
-    def __init__(self, peer: 'TypeInputPeer', offset: str, missing_balance: Optional[bool] = None):
-        self.peer = peer
-        self.offset = offset
-        self.missing_balance = missing_balance
-
-    def to_dict(self):
-        return {
-            '_': 'GetStarsSubscriptionsRequest',
-            'peer': self.peer,
-            'offset': self.offset,
-            'missing_balance': self.missing_balance,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.missing_balance:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        buf.write(TLObject.serialize_bytes(self.offset))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['missing_balance'] = bool(flags & (1 << 0))
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        _val_offset = reader.tgread_string()
-        _args['offset'] = _val_offset
-        return cls(**_args)
-
-
 class GetStarsTopupOptionsRequest(TLRequest):
     """TL type: payments.getStarsTopupOptions"""
     CONSTRUCTOR_ID = 0xc00ec7d3
@@ -1624,183 +994,6 @@ class GetStarsTopupOptionsRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         return cls()
-
-
-class GetStarsTransactionsRequest(TLRequest):
-    """TL type: payments.getStarsTransactions"""
-    CONSTRUCTOR_ID = 0x69da4557
-    SUBCLASS_OF_ID = 0x6e9c1d6f
-
-    def __init__(self, peer: 'TypeInputPeer', offset: str, limit: int, inbound: Optional[bool] = None, outbound: Optional[bool] = None, ascending: Optional[bool] = None, ton: Optional[bool] = None, subscription_id: Optional[str] = None):
-        self.peer = peer
-        self.offset = offset
-        self.limit = limit
-        self.inbound = inbound
-        self.outbound = outbound
-        self.ascending = ascending
-        self.ton = ton
-        self.subscription_id = subscription_id
-
-    def to_dict(self):
-        return {
-            '_': 'GetStarsTransactionsRequest',
-            'peer': self.peer,
-            'offset': self.offset,
-            'limit': self.limit,
-            'inbound': self.inbound,
-            'outbound': self.outbound,
-            'ascending': self.ascending,
-            'ton': self.ton,
-            'subscription_id': self.subscription_id,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.inbound:
-            flags |= (1 << 0)
-        if self.outbound:
-            flags |= (1 << 1)
-        if self.ascending:
-            flags |= (1 << 2)
-        if self.ton:
-            flags |= (1 << 4)
-        if self.subscription_id is not None:
-            flags |= (1 << 3)
-        buf.write(struct.pack('<I', flags))
-        if self.subscription_id is not None:
-            buf.write(TLObject.serialize_bytes(self.subscription_id))
-        buf.write(bytes(self.peer))
-        buf.write(TLObject.serialize_bytes(self.offset))
-        buf.write(struct.pack('<i', self.limit))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['inbound'] = bool(flags & (1 << 0))
-        _args['outbound'] = bool(flags & (1 << 1))
-        _args['ascending'] = bool(flags & (1 << 2))
-        _args['ton'] = bool(flags & (1 << 4))
-        if flags & (1 << 3):
-            _val_subscription_id = reader.tgread_string()
-            _args['subscription_id'] = _val_subscription_id
-        else:
-            _args['subscription_id'] = None
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        _val_offset = reader.tgread_string()
-        _args['offset'] = _val_offset
-        _val_limit = reader.read_int()
-        _args['limit'] = _val_limit
-        return cls(**_args)
-
-
-class GetStarsTransactionsByIdRequest(TLRequest):
-    """TL type: payments.getStarsTransactionsByID"""
-    CONSTRUCTOR_ID = 0x2dca16b8
-    SUBCLASS_OF_ID = 0x6e9c1d6f
-
-    def __init__(self, peer: 'TypeInputPeer', id: List['TypeInputStarsTransaction'], ton: Optional[bool] = None):
-        self.peer = peer
-        self.id = id
-        self.ton = ton
-
-    def to_dict(self):
-        return {
-            '_': 'GetStarsTransactionsByIdRequest',
-            'peer': self.peer,
-            'id': self.id,
-            'ton': self.ton,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.ton:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-        buf.write(struct.pack('<i', len(self.id)))
-        for item in self.id:
-            buf.write(bytes(item))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['ton'] = bool(flags & (1 << 0))
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        _vec_id = reader.read_int(signed=False)
-        if _vec_id != 0x1cb5c415:
-            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
-        _count_id = reader.read_int(signed=False)  # BUG6 fix: unsigned count
-        _list_id = []
-        for _ in range(_count_id):
-            _item_id = reader.tgread_object()
-            _list_id.append(_item_id)
-        _args['id'] = _list_id
-        return cls(**_args)
-
-
-class GetSuggestedStarRefBotsRequest(TLRequest):
-    """TL type: payments.getSuggestedStarRefBots"""
-    CONSTRUCTOR_ID = 0x0d6b48f7
-    SUBCLASS_OF_ID = 0x70189243
-
-    def __init__(self, peer: 'TypeInputPeer', offset: str, limit: int, order_by_revenue: Optional[bool] = None, order_by_date: Optional[bool] = None):
-        self.peer = peer
-        self.offset = offset
-        self.limit = limit
-        self.order_by_revenue = order_by_revenue
-        self.order_by_date = order_by_date
-
-    def to_dict(self):
-        return {
-            '_': 'GetSuggestedStarRefBotsRequest',
-            'peer': self.peer,
-            'offset': self.offset,
-            'limit': self.limit,
-            'order_by_revenue': self.order_by_revenue,
-            'order_by_date': self.order_by_date,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.order_by_revenue:
-            flags |= (1 << 0)
-        if self.order_by_date:
-            flags |= (1 << 1)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        buf.write(TLObject.serialize_bytes(self.offset))
-        buf.write(struct.pack('<i', self.limit))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['order_by_revenue'] = bool(flags & (1 << 0))
-        _args['order_by_date'] = bool(flags & (1 << 1))
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        _val_offset = reader.tgread_string()
-        _args['offset'] = _val_offset
-        _val_limit = reader.read_int()
-        _args['limit'] = _val_limit
-        return cls(**_args)
 
 
 class GetUniqueStarGiftRequest(TLRequest):
@@ -2017,218 +1210,6 @@ class RequestRecurringPaymentRequest(TLRequest):
         return cls(**_args)
 
 
-class ResolveStarGiftOfferRequest(TLRequest):
-    """TL type: payments.resolveStarGiftOffer"""
-    CONSTRUCTOR_ID = 0xe9ce781c
-    SUBCLASS_OF_ID = 0x8af52aac
-
-    def __init__(self, offer_msg_id: int, decline: Optional[bool] = None):
-        self.offer_msg_id = offer_msg_id
-        self.decline = decline
-
-    def to_dict(self):
-        return {
-            '_': 'ResolveStarGiftOfferRequest',
-            'offer_msg_id': self.offer_msg_id,
-            'decline': self.decline,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.decline:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(struct.pack('<i', self.offer_msg_id))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['decline'] = bool(flags & (1 << 0))
-        _val_offer_msg_id = reader.read_int()
-        _args['offer_msg_id'] = _val_offer_msg_id
-        return cls(**_args)
-
-
-class SaveStarGiftRequest(TLRequest):
-    """TL type: payments.saveStarGift"""
-    CONSTRUCTOR_ID = 0x2a2a697c
-    SUBCLASS_OF_ID = 0xf5b399ac
-
-    def __init__(self, stargift: 'TypeInputSavedStarGift', unsave: Optional[bool] = None):
-        self.stargift = stargift
-        self.unsave = unsave
-
-    def to_dict(self):
-        return {
-            '_': 'SaveStarGiftRequest',
-            'stargift': self.stargift,
-            'unsave': self.unsave,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.unsave:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.stargift))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['unsave'] = bool(flags & (1 << 0))
-        _val_stargift = reader.tgread_object()
-        _args['stargift'] = _val_stargift
-        return cls(**_args)
-
-
-class SendPaymentFormRequest(TLRequest):
-    """TL type: payments.sendPaymentForm"""
-    CONSTRUCTOR_ID = 0x2d03522f
-    SUBCLASS_OF_ID = 0x8ae16a9d
-
-    def __init__(self, form_id: int, invoice: 'TypeInputInvoice', credentials: 'TypeInputPaymentCredentials', requested_info_id: Optional[str] = None, shipping_option_id: Optional[str] = None, tip_amount: Optional[int] = None):
-        self.form_id = form_id
-        self.invoice = invoice
-        self.credentials = credentials
-        self.requested_info_id = requested_info_id
-        self.shipping_option_id = shipping_option_id
-        self.tip_amount = tip_amount
-
-    def to_dict(self):
-        return {
-            '_': 'SendPaymentFormRequest',
-            'form_id': self.form_id,
-            'invoice': self.invoice,
-            'credentials': self.credentials,
-            'requested_info_id': self.requested_info_id,
-            'shipping_option_id': self.shipping_option_id,
-            'tip_amount': self.tip_amount,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.requested_info_id is not None:
-            flags |= (1 << 0)
-        if self.shipping_option_id is not None:
-            flags |= (1 << 1)
-        if self.tip_amount is not None:
-            flags |= (1 << 2)
-        buf.write(struct.pack('<I', flags))
-        buf.write(struct.pack('<q', self.form_id))
-        buf.write(bytes(self.invoice))
-        if self.requested_info_id is not None:
-            buf.write(TLObject.serialize_bytes(self.requested_info_id))
-        if self.shipping_option_id is not None:
-            buf.write(TLObject.serialize_bytes(self.shipping_option_id))
-        buf.write(bytes(self.credentials))
-        if self.tip_amount is not None:
-            buf.write(struct.pack('<q', self.tip_amount))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _val_form_id = reader.read_long()
-        _args['form_id'] = _val_form_id
-        _val_invoice = reader.tgread_object()
-        _args['invoice'] = _val_invoice
-        if flags & (1 << 0):
-            _val_requested_info_id = reader.tgread_string()
-            _args['requested_info_id'] = _val_requested_info_id
-        else:
-            _args['requested_info_id'] = None
-        if flags & (1 << 1):
-            _val_shipping_option_id = reader.tgread_string()
-            _args['shipping_option_id'] = _val_shipping_option_id
-        else:
-            _args['shipping_option_id'] = None
-        _val_credentials = reader.tgread_object()
-        _args['credentials'] = _val_credentials
-        if flags & (1 << 2):
-            _val_tip_amount = reader.read_long()
-            _args['tip_amount'] = _val_tip_amount
-        else:
-            _args['tip_amount'] = None
-        return cls(**_args)
-
-
-class SendStarGiftOfferRequest(TLRequest):
-    """TL type: payments.sendStarGiftOffer"""
-    CONSTRUCTOR_ID = 0x8fb86b41
-    SUBCLASS_OF_ID = 0x8af52aac
-
-    def __init__(self, peer: 'TypeInputPeer', slug: str, price: 'TypeStarsAmount', duration: int, random_id: int = None, allow_paid_stars: Optional[int] = None):
-        self.peer = peer
-        self.slug = slug
-        self.price = price
-        self.duration = duration
-        self.random_id = random_id
-        self.allow_paid_stars = allow_paid_stars
-
-    def to_dict(self):
-        return {
-            '_': 'SendStarGiftOfferRequest',
-            'peer': self.peer,
-            'slug': self.slug,
-            'price': self.price,
-            'duration': self.duration,
-            'random_id': self.random_id,
-            'allow_paid_stars': self.allow_paid_stars,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.allow_paid_stars is not None:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        buf.write(TLObject.serialize_bytes(self.slug))
-        buf.write(bytes(self.price))
-        buf.write(struct.pack('<i', self.duration))
-        buf.write(struct.pack('<q', self.random_id))
-        if self.allow_paid_stars is not None:
-            buf.write(struct.pack('<q', self.allow_paid_stars))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        _val_slug = reader.tgread_string()
-        _args['slug'] = _val_slug
-        _val_price = reader.tgread_object()
-        _args['price'] = _val_price
-        _val_duration = reader.read_int()
-        _args['duration'] = _val_duration
-        _val_random_id = reader.read_long()
-        _args['random_id'] = _val_random_id
-        if flags & (1 << 0):
-            _val_allow_paid_stars = reader.read_long()
-            _args['allow_paid_stars'] = _val_allow_paid_stars
-        else:
-            _args['allow_paid_stars'] = None
-        return cls(**_args)
-
-
 class SendStarsFormRequest(TLRequest):
     """TL type: payments.sendStarsForm"""
     CONSTRUCTOR_ID = 0x7998c914
@@ -2260,43 +1241,6 @@ class SendStarsFormRequest(TLRequest):
         _args['form_id'] = _val_form_id
         _val_invoice = reader.tgread_object()
         _args['invoice'] = _val_invoice
-        return cls(**_args)
-
-
-class ToggleChatStarGiftNotificationsRequest(TLRequest):
-    """TL type: payments.toggleChatStarGiftNotifications"""
-    CONSTRUCTOR_ID = 0x60eaefa1
-    SUBCLASS_OF_ID = 0xf5b399ac
-
-    def __init__(self, peer: 'TypeInputPeer', enabled: Optional[bool] = None):
-        self.peer = peer
-        self.enabled = enabled
-
-    def to_dict(self):
-        return {
-            '_': 'ToggleChatStarGiftNotificationsRequest',
-            'peer': self.peer,
-            'enabled': self.enabled,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.enabled:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['enabled'] = bool(flags & (1 << 0))
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
         return cls(**_args)
 
 
@@ -2378,117 +1322,6 @@ class TransferStarGiftRequest(TLRequest):
         return cls(**_args)
 
 
-class UpdateStarGiftCollectionRequest(TLRequest):
-    """TL type: payments.updateStarGiftCollection"""
-    CONSTRUCTOR_ID = 0x4fddbee7
-    SUBCLASS_OF_ID = 0x43e0cb4a
-
-    def __init__(self, peer: 'TypeInputPeer', collection_id: int, title: Optional[str] = None, delete_stargift: Optional[List['TypeInputSavedStarGift']] = None, add_stargift: Optional[List['TypeInputSavedStarGift']] = None, order: Optional[List['TypeInputSavedStarGift']] = None):
-        self.peer = peer
-        self.collection_id = collection_id
-        self.title = title
-        self.delete_stargift = delete_stargift
-        self.add_stargift = add_stargift
-        self.order = order
-
-    def to_dict(self):
-        return {
-            '_': 'UpdateStarGiftCollectionRequest',
-            'peer': self.peer,
-            'collection_id': self.collection_id,
-            'title': self.title,
-            'delete_stargift': self.delete_stargift,
-            'add_stargift': self.add_stargift,
-            'order': self.order,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.title is not None:
-            flags |= (1 << 0)
-        if self.delete_stargift is not None:
-            flags |= (1 << 1)
-        if self.add_stargift is not None:
-            flags |= (1 << 2)
-        if self.order is not None:
-            flags |= (1 << 3)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        buf.write(struct.pack('<i', self.collection_id))
-        if self.title is not None:
-            buf.write(TLObject.serialize_bytes(self.title))
-        if self.delete_stargift is not None:
-            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-            buf.write(struct.pack('<i', len(self.delete_stargift)))
-            for item in self.delete_stargift:
-                buf.write(bytes(item))
-        if self.add_stargift is not None:
-            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-            buf.write(struct.pack('<i', len(self.add_stargift)))
-            for item in self.add_stargift:
-                buf.write(bytes(item))
-        if self.order is not None:
-            buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-            buf.write(struct.pack('<i', len(self.order)))
-            for item in self.order:
-                buf.write(bytes(item))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        _val_collection_id = reader.read_int()
-        _args['collection_id'] = _val_collection_id
-        if flags & (1 << 0):
-            _val_title = reader.tgread_string()
-            _args['title'] = _val_title
-        else:
-            _args['title'] = None
-        if flags & (1 << 1):
-            _vec_id = reader.read_int(signed=False)
-            if _vec_id != 0x1cb5c415:
-                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
-            _count_delete_stargift = reader.read_int(signed=False)  # BUG6 fix: unsigned count
-            _list_delete_stargift = []
-            for _ in range(_count_delete_stargift):
-                _item_delete_stargift = reader.tgread_object()
-                _list_delete_stargift.append(_item_delete_stargift)
-            _args['delete_stargift'] = _list_delete_stargift
-        else:
-            _args['delete_stargift'] = None
-        if flags & (1 << 2):
-            _vec_id = reader.read_int(signed=False)
-            if _vec_id != 0x1cb5c415:
-                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
-            _count_add_stargift = reader.read_int(signed=False)  # BUG6 fix: unsigned count
-            _list_add_stargift = []
-            for _ in range(_count_add_stargift):
-                _item_add_stargift = reader.tgread_object()
-                _list_add_stargift.append(_item_add_stargift)
-            _args['add_stargift'] = _list_add_stargift
-        else:
-            _args['add_stargift'] = None
-        if flags & (1 << 3):
-            _vec_id = reader.read_int(signed=False)
-            if _vec_id != 0x1cb5c415:
-                raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
-            _count_order = reader.read_int(signed=False)  # BUG6 fix: unsigned count
-            _list_order = []
-            for _ in range(_count_order):
-                _item_order = reader.tgread_object()
-                _list_order.append(_item_order)
-            _args['order'] = _list_order
-        else:
-            _args['order'] = None
-        return cls(**_args)
-
-
 class UpdateStarGiftPriceRequest(TLRequest):
     """TL type: payments.updateStarGiftPrice"""
     CONSTRUCTOR_ID = 0xedbe6ccb
@@ -2520,84 +1353,5 @@ class UpdateStarGiftPriceRequest(TLRequest):
         _args['stargift'] = _val_stargift
         _val_resell_amount = reader.tgread_object()
         _args['resell_amount'] = _val_resell_amount
-        return cls(**_args)
-
-
-class UpgradeStarGiftRequest(TLRequest):
-    """TL type: payments.upgradeStarGift"""
-    CONSTRUCTOR_ID = 0xaed6e4f5
-    SUBCLASS_OF_ID = 0x8af52aac
-
-    def __init__(self, stargift: 'TypeInputSavedStarGift', keep_original_details: Optional[bool] = None):
-        self.stargift = stargift
-        self.keep_original_details = keep_original_details
-
-    def to_dict(self):
-        return {
-            '_': 'UpgradeStarGiftRequest',
-            'stargift': self.stargift,
-            'keep_original_details': self.keep_original_details,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.keep_original_details:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.stargift))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['keep_original_details'] = bool(flags & (1 << 0))
-        _val_stargift = reader.tgread_object()
-        _args['stargift'] = _val_stargift
-        return cls(**_args)
-
-
-class ValidateRequestedInfoRequest(TLRequest):
-    """TL type: payments.validateRequestedInfo"""
-    CONSTRUCTOR_ID = 0xb6c8f12b
-    SUBCLASS_OF_ID = 0x8f8044b7
-
-    def __init__(self, invoice: 'TypeInputInvoice', info: 'TypePaymentRequestedInfo', save: Optional[bool] = None):
-        self.invoice = invoice
-        self.info = info
-        self.save = save
-
-    def to_dict(self):
-        return {
-            '_': 'ValidateRequestedInfoRequest',
-            'invoice': self.invoice,
-            'info': self.info,
-            'save': self.save,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.save:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.invoice))
-        buf.write(bytes(self.info))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['save'] = bool(flags & (1 << 0))
-        _val_invoice = reader.tgread_object()
-        _args['invoice'] = _val_invoice
-        _val_info = reader.tgread_object()
-        _args['info'] = _val_info
         return cls(**_args)
 

@@ -7,49 +7,6 @@ import struct
 from datetime import datetime
 
 
-class FinishJobRequest(TLRequest):
-    """TL type: smsjobs.finishJob"""
-    CONSTRUCTOR_ID = 0x4f1ebf24
-    SUBCLASS_OF_ID = 0xf5b399ac
-
-    def __init__(self, job_id: str, error: Optional[str] = None):
-        self.job_id = job_id
-        self.error = error
-
-    def to_dict(self):
-        return {
-            '_': 'FinishJobRequest',
-            'job_id': self.job_id,
-            'error': self.error,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.error is not None:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(TLObject.serialize_bytes(self.job_id))
-        if self.error is not None:
-            buf.write(TLObject.serialize_bytes(self.error))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _val_job_id = reader.tgread_string()
-        _args['job_id'] = _val_job_id
-        if flags & (1 << 0):
-            _val_error = reader.tgread_string()
-            _args['error'] = _val_error
-        else:
-            _args['error'] = None
-        return cls(**_args)
-
-
 class GetSmsJobRequest(TLRequest):
     """TL type: smsjobs.getSmsJob"""
     CONSTRUCTOR_ID = 0x778d902f
@@ -173,36 +130,4 @@ class LeaveRequest(TLRequest):
     @classmethod
     def from_reader(cls, reader):
         return cls()
-
-
-class UpdateSettingsRequest(TLRequest):
-    """TL type: smsjobs.updateSettings"""
-    CONSTRUCTOR_ID = 0x093fa0bf
-    SUBCLASS_OF_ID = 0xf5b399ac
-
-    def __init__(self, allow_international: Optional[bool] = None):
-        self.allow_international = allow_international
-
-    def to_dict(self):
-        return {
-            '_': 'UpdateSettingsRequest',
-            'allow_international': self.allow_international,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.allow_international:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['allow_international'] = bool(flags & (1 << 0))
-        return cls(**_args)
 
