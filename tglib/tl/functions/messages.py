@@ -48,16 +48,17 @@ class AcceptEncryptionRequest(TLRequest):
 
 class AcceptUrlAuthRequest(TLRequest):
     """TL type: messages.acceptUrlAuth"""
-    CONSTRUCTOR_ID = 0xb12c7125
+    CONSTRUCTOR_ID = 0x67a3f0de
     SUBCLASS_OF_ID = 0x7765cb1e
 
-    def __init__(self, write_allowed: Optional[bool] = None, share_phone_number: Optional[bool] = None, peer: Optional['TypeInputPeer'] = None, msg_id: Optional[int] = None, button_id: Optional[int] = None, url: Optional[str] = None):
+    def __init__(self, write_allowed: Optional[bool] = None, share_phone_number: Optional[bool] = None, peer: Optional['TypeInputPeer'] = None, msg_id: Optional[int] = None, button_id: Optional[int] = None, url: Optional[str] = None, match_code: Optional[str] = None):
         self.write_allowed = write_allowed
         self.share_phone_number = share_phone_number
         self.peer = peer
         self.msg_id = msg_id
         self.button_id = button_id
         self.url = url
+        self.match_code = match_code
 
     def to_dict(self):
         return {
@@ -68,6 +69,7 @@ class AcceptUrlAuthRequest(TLRequest):
             'msg_id': self.msg_id,
             'button_id': self.button_id,
             'url': self.url,
+            'match_code': self.match_code,
         }
 
     def _bytes(self) -> bytes:
@@ -87,6 +89,8 @@ class AcceptUrlAuthRequest(TLRequest):
             flags |= (1 << 1)
         if self.url is not None:
             flags |= (1 << 2)
+        if self.match_code is not None:
+            flags |= (1 << 4)
         buf.write(struct.pack('<I', flags))
         if self.peer is not None:
             buf.write(bytes(self.peer))
@@ -96,6 +100,8 @@ class AcceptUrlAuthRequest(TLRequest):
             buf.write(struct.pack('<i', self.button_id))
         if self.url is not None:
             buf.write(TLObject.serialize_bytes(self.url))
+        if self.match_code is not None:
+            buf.write(TLObject.serialize_bytes(self.match_code))
         return buf.getvalue()
 
     @classmethod
@@ -124,6 +130,11 @@ class AcceptUrlAuthRequest(TLRequest):
             _args['url'] = _val_url
         else:
             _args['url'] = None
+        if flags & (1 << 4):
+            _val_match_code = reader.tgread_string()
+            _args['match_code'] = _val_match_code
+        else:
+            _args['match_code'] = None
         return cls(**_args)
 
 
@@ -331,6 +342,40 @@ class CheckQuickReplyShortcutRequest(TLRequest):
         return cls(**_args)
 
 
+class CheckUrlAuthMatchCodeRequest(TLRequest):
+    """TL type: messages.checkUrlAuthMatchCode"""
+    CONSTRUCTOR_ID = 0xc9a47b0b
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, url: str, match_code: str):
+        self.url = url
+        self.match_code = match_code
+
+    def to_dict(self):
+        return {
+            '_': 'CheckUrlAuthMatchCodeRequest',
+            'url': self.url,
+            'match_code': self.match_code,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(TLObject.serialize_bytes(self.url))
+        buf.write(TLObject.serialize_bytes(self.match_code))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_url = reader.tgread_string()
+        _args['url'] = _val_url
+        _val_match_code = reader.tgread_string()
+        _args['match_code'] = _val_match_code
+        return cls(**_args)
+
+
 class ClearAllDraftsRequest(TLRequest):
     """TL type: messages.clearAllDrafts"""
     CONSTRUCTOR_ID = 0x7e58ee9c
@@ -450,45 +495,6 @@ class ClickSponsoredMessageRequest(TLRequest):
         _args['fullscreen'] = bool(flags & (1 << 1))
         _val_random_id = reader.tgread_bytes()
         _args['random_id'] = _val_random_id
-        return cls(**_args)
-
-
-class CraftStarGiftRequest(TLRequest):
-    """TL type: messages.craftStarGift"""
-    CONSTRUCTOR_ID = 0xb0f9684f
-    SUBCLASS_OF_ID = 0x8af52aac
-
-    def __init__(self, stargift: List['TypeInputSavedStarGift']):
-        self.stargift = stargift
-
-    def to_dict(self):
-        return {
-            '_': 'CraftStarGiftRequest',
-            'stargift': self.stargift,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-        buf.write(struct.pack('<i', len(self.stargift)))
-        for item in self.stargift:
-            buf.write(bytes(item))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _vec_id = reader.read_int(signed=False)
-        if _vec_id != 0x1cb5c415:
-            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
-        _count_stargift = reader.read_int(signed=False)  # BUG6 fix: unsigned count
-        _list_stargift = []
-        for _ in range(_count_stargift):
-            _item_stargift = reader.tgread_object()
-            _list_stargift.append(_item_stargift)
-        _args['stargift'] = _list_stargift
         return cls(**_args)
 
 
@@ -627,6 +633,35 @@ class CreateForumTopicRequest(TLRequest):
             _args['send_as'] = _val_send_as
         else:
             _args['send_as'] = None
+        return cls(**_args)
+
+
+class DeclineUrlAuthRequest(TLRequest):
+    """TL type: messages.declineUrlAuth"""
+    CONSTRUCTOR_ID = 0x35436bbc
+    SUBCLASS_OF_ID = 0xf5b399ac
+
+    def __init__(self, url: str):
+        self.url = url
+
+    def to_dict(self):
+        return {
+            '_': 'DeclineUrlAuthRequest',
+            'url': self.url,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(TLObject.serialize_bytes(self.url))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_url = reader.tgread_string()
+        _args['url'] = _val_url
         return cls(**_args)
 
 
@@ -1282,6 +1317,45 @@ class EditChatAdminRequest(TLRequest):
         return cls(**_args)
 
 
+class EditChatCreatorRequest(TLRequest):
+    """TL type: messages.editChatCreator"""
+    CONSTRUCTOR_ID = 0xf743b857
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, peer: 'TypeInputPeer', user_id: 'TypeInputUser', password: 'TypeInputCheckPasswordSRP'):
+        self.peer = peer
+        self.user_id = user_id
+        self.password = password
+
+    def to_dict(self):
+        return {
+            '_': 'EditChatCreatorRequest',
+            'peer': self.peer,
+            'user_id': self.user_id,
+            'password': self.password,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(bytes(self.peer))
+        buf.write(bytes(self.user_id))
+        buf.write(bytes(self.password))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        _val_user_id = reader.tgread_object()
+        _args['user_id'] = _val_user_id
+        _val_password = reader.tgread_object()
+        _args['password'] = _val_password
+        return cls(**_args)
+
+
 class EditChatDefaultBannedRightsRequest(TLRequest):
     """TL type: messages.editChatDefaultBannedRights"""
     CONSTRUCTOR_ID = 0xa5866b41
@@ -1313,6 +1387,45 @@ class EditChatDefaultBannedRightsRequest(TLRequest):
         _args['peer'] = _val_peer
         _val_banned_rights = reader.tgread_object()
         _args['banned_rights'] = _val_banned_rights
+        return cls(**_args)
+
+
+class EditChatParticipantRankRequest(TLRequest):
+    """TL type: messages.editChatParticipantRank"""
+    CONSTRUCTOR_ID = 0xa00f32b0
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, peer: 'TypeInputPeer', participant: 'TypeInputPeer', rank: str):
+        self.peer = peer
+        self.participant = participant
+        self.rank = rank
+
+    def to_dict(self):
+        return {
+            '_': 'EditChatParticipantRankRequest',
+            'peer': self.peer,
+            'participant': self.participant,
+            'rank': self.rank,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(bytes(self.peer))
+        buf.write(bytes(self.participant))
+        buf.write(TLObject.serialize_bytes(self.rank))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        _val_participant = reader.tgread_object()
+        _args['participant'] = _val_participant
+        _val_rank = reader.tgread_string()
+        _args['rank'] = _val_rank
         return cls(**_args)
 
 
@@ -2793,45 +2906,6 @@ class GetCommonChatsRequest(TLRequest):
         return cls(**_args)
 
 
-class GetCraftStarGiftsRequest(TLRequest):
-    """TL type: messages.getCraftStarGifts"""
-    CONSTRUCTOR_ID = 0xfd05dd00
-    SUBCLASS_OF_ID = 0xd5112897
-
-    def __init__(self, gift_id: int, offset: str, limit: int):
-        self.gift_id = gift_id
-        self.offset = offset
-        self.limit = limit
-
-    def to_dict(self):
-        return {
-            '_': 'GetCraftStarGiftsRequest',
-            'gift_id': self.gift_id,
-            'offset': self.offset,
-            'limit': self.limit,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(struct.pack('<q', self.gift_id))
-        buf.write(TLObject.serialize_bytes(self.offset))
-        buf.write(struct.pack('<i', self.limit))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_gift_id = reader.read_long()
-        _args['gift_id'] = _val_gift_id
-        _val_offset = reader.tgread_string()
-        _args['offset'] = _val_offset
-        _val_limit = reader.read_int()
-        _args['limit'] = _val_limit
-        return cls(**_args)
-
-
 class GetCustomEmojiDocumentsRequest(TLRequest):
     """TL type: messages.getCustomEmojiDocuments"""
     CONSTRUCTOR_ID = 0xd9ab0f54
@@ -3872,6 +3946,35 @@ class GetFullChatRequest(TLRequest):
         _args = {}
         _val_chat_id = reader.read_long()
         _args['chat_id'] = _val_chat_id
+        return cls(**_args)
+
+
+class GetFutureChatCreatorAfterLeaveRequest(TLRequest):
+    """TL type: messages.getFutureChatCreatorAfterLeave"""
+    CONSTRUCTOR_ID = 0x3b7d0ea6
+    SUBCLASS_OF_ID = 0x2da17977
+
+    def __init__(self, peer: 'TypeInputPeer'):
+        self.peer = peer
+
+    def to_dict(self):
+        return {
+            '_': 'GetFutureChatCreatorAfterLeaveRequest',
+            'peer': self.peer,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(bytes(self.peer))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
         return cls(**_args)
 
 
@@ -7637,14 +7740,15 @@ class RequestSimpleWebViewRequest(TLRequest):
 
 class RequestUrlAuthRequest(TLRequest):
     """TL type: messages.requestUrlAuth"""
-    CONSTRUCTOR_ID = 0x198fb446
+    CONSTRUCTOR_ID = 0x894cc99c
     SUBCLASS_OF_ID = 0x7765cb1e
 
-    def __init__(self, peer: Optional['TypeInputPeer'] = None, msg_id: Optional[int] = None, button_id: Optional[int] = None, url: Optional[str] = None):
+    def __init__(self, peer: Optional['TypeInputPeer'] = None, msg_id: Optional[int] = None, button_id: Optional[int] = None, url: Optional[str] = None, in_app_origin: Optional[str] = None):
         self.peer = peer
         self.msg_id = msg_id
         self.button_id = button_id
         self.url = url
+        self.in_app_origin = in_app_origin
 
     def to_dict(self):
         return {
@@ -7653,6 +7757,7 @@ class RequestUrlAuthRequest(TLRequest):
             'msg_id': self.msg_id,
             'button_id': self.button_id,
             'url': self.url,
+            'in_app_origin': self.in_app_origin,
         }
 
     def _bytes(self) -> bytes:
@@ -7668,6 +7773,8 @@ class RequestUrlAuthRequest(TLRequest):
             flags |= (1 << 1)
         if self.url is not None:
             flags |= (1 << 2)
+        if self.in_app_origin is not None:
+            flags |= (1 << 3)
         buf.write(struct.pack('<I', flags))
         if self.peer is not None:
             buf.write(bytes(self.peer))
@@ -7677,6 +7784,8 @@ class RequestUrlAuthRequest(TLRequest):
             buf.write(struct.pack('<i', self.button_id))
         if self.url is not None:
             buf.write(TLObject.serialize_bytes(self.url))
+        if self.in_app_origin is not None:
+            buf.write(TLObject.serialize_bytes(self.in_app_origin))
         return buf.getvalue()
 
     @classmethod
@@ -7703,6 +7812,11 @@ class RequestUrlAuthRequest(TLRequest):
             _args['url'] = _val_url
         else:
             _args['url'] = None
+        if flags & (1 << 3):
+            _val_in_app_origin = reader.tgread_string()
+            _args['in_app_origin'] = _val_in_app_origin
+        else:
+            _args['in_app_origin'] = None
         return cls(**_args)
 
 
@@ -10814,35 +10928,49 @@ class ToggleDialogPinRequest(TLRequest):
 
 class ToggleNoForwardsRequest(TLRequest):
     """TL type: messages.toggleNoForwards"""
-    CONSTRUCTOR_ID = 0xb11eafa2
+    CONSTRUCTOR_ID = 0xb2081a35
     SUBCLASS_OF_ID = 0x8af52aac
 
-    def __init__(self, peer: 'TypeInputPeer', enabled: bool):
+    def __init__(self, peer: 'TypeInputPeer', enabled: bool, request_msg_id: Optional[int] = None):
         self.peer = peer
         self.enabled = enabled
+        self.request_msg_id = request_msg_id
 
     def to_dict(self):
         return {
             '_': 'ToggleNoForwardsRequest',
             'peer': self.peer,
             'enabled': self.enabled,
+            'request_msg_id': self.request_msg_id,
         }
 
     def _bytes(self) -> bytes:
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
+        if self.request_msg_id is not None:
+            flags |= (1 << 0)
+        buf.write(struct.pack('<I', flags))
         buf.write(bytes(self.peer))
         buf.write(struct.pack('<I', 0x997275b5 if self.enabled else 0xbc799737))
+        if self.request_msg_id is not None:
+            buf.write(struct.pack('<i', self.request_msg_id))
         return buf.getvalue()
 
     @classmethod
     def from_reader(cls, reader):
         _args = {}
+        flags = reader.read_int(signed=False)
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
         _val_enabled = reader.tgread_bool()
         _args['enabled'] = _val_enabled
+        if flags & (1 << 0):
+            _val_request_msg_id = reader.read_int()
+            _args['request_msg_id'] = _val_request_msg_id
+        else:
+            _args['request_msg_id'] = None
         return cls(**_args)
 
 

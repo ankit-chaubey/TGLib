@@ -75,10 +75,9 @@ class EditExportedInviteRequest(TLRequest):
     CONSTRUCTOR_ID = 0x653db63d
     SUBCLASS_OF_ID = 0x7711f8ff
 
-    def __init__(self, chatlist: 'TypeInputChatlist', slug: str, revoked: Optional[bool] = None, title: Optional[str] = None, peers: Optional[List['TypeInputPeer']] = None):
+    def __init__(self, chatlist: 'TypeInputChatlist', slug: str, title: Optional[str] = None, peers: Optional[List['TypeInputPeer']] = None):
         self.chatlist = chatlist
         self.slug = slug
-        self.revoked = revoked
         self.title = title
         self.peers = peers
 
@@ -87,7 +86,6 @@ class EditExportedInviteRequest(TLRequest):
             '_': 'EditExportedInviteRequest',
             'chatlist': self.chatlist,
             'slug': self.slug,
-            'revoked': self.revoked,
             'title': self.title,
             'peers': self.peers,
         }
@@ -97,8 +95,6 @@ class EditExportedInviteRequest(TLRequest):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
-        if self.revoked:
-            flags |= (1 << 0)
         if self.title is not None:
             flags |= (1 << 1)
         if self.peers is not None:
@@ -119,7 +115,6 @@ class EditExportedInviteRequest(TLRequest):
     def from_reader(cls, reader):
         _args = {}
         flags = reader.read_int(signed=False)
-        _args['revoked'] = bool(flags & (1 << 0))
         _val_chatlist = reader.tgread_object()
         _args['chatlist'] = _val_chatlist
         _val_slug = reader.tgread_string()

@@ -269,7 +269,7 @@ def _read_single_item(var, t, indent) -> List[str]:
     elif t == 'Bool':
         w(f'{var} = reader.tgread_bool()')
     elif t == 'true':
-        w(f'{var} = True')
+        pass #w(f'{var} = True')
     else:
         w(f'{var} = reader.tgread_object()')
 
@@ -373,6 +373,34 @@ def generate_tl_modules(
                 for obj in objs:
                     _write_class(obj, kind, f)
                     all_classes.append((obj, ns))
+
+            # ── Post-write AST validation ─────────────────────────────────
+            # Parse the just-written file to catch any syntax errors before
+            # they explode at import time (e.g. 'class Layer.223(TLObject):').
+            import ast as _ast
+            with open(filepath, 'r', encoding='utf-8') as _vf:
+                _src = _vf.read()
+            try:
+                _ast.parse(_src)
+            except SyntaxError as _e:
+                # Find the bad class name by scanning for 'class ' lines
+                _bad_lines = [
+                    ln.strip() for ln in _src.splitlines()
+                    if ln.strip().startswith('class ')
+                ]
+                _bad = next(
+                    (ln for ln in _bad_lines
+                     if not _ast.parse(ln + ':\n    pass', mode='exec')
+                     if True),
+                    '(unknown)'
+                )
+                raise RuntimeError(
+                    f'\n\n❌  Generated file has invalid syntax!\n'
+                    f'   File   : {filepath}\n'
+                    f'   Error  : {_e}\n'
+                    f'   Hint   : A TL constructor name produced an invalid Python class name.\n'
+                    f'            Check snake_to_camel() in parser.py.\n'
+                ) from _e
 
             if ns:
                 # Ensure namespace __init__.py exists

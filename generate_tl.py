@@ -144,6 +144,33 @@ def main():
 
     generate_tl_modules(all_objects, out_dir=args.out, depth=2)
 
+    # ── Final validation: ast.parse() every generated .py ─────────────────
+    import ast as _ast
+    import glob as _glob
+    errors_found = []
+    check_dirs = [
+        os.path.join(args.out, 'tl', 'types'),
+        os.path.join(args.out, 'tl', 'functions'),
+    ]
+    for check_dir in check_dirs:
+        for pyfile in _glob.glob(os.path.join(check_dir, '*.py')):
+            with open(pyfile, 'r', encoding='utf-8') as _f:
+                src = _f.read()
+            try:
+                _ast.parse(src)
+            except SyntaxError as e:
+                errors_found.append((pyfile, e))
+
+    if errors_found:
+        print(f'\n❌  {len(errors_found)} generated file(s) have syntax errors:')
+        for path, err in errors_found:
+            print(f'   {path}: {err}')
+        print('\n   Fix: update snake_to_camel() in tglib_generator/parser.py')
+        print('        to sanitize invalid identifier characters (dots, digits, etc.)')
+        sys.exit(1)
+    else:
+        print(f'✅  All generated files pass AST validation.')
+
     print('\nDone! You can now use tglib with the generated types.')
     print('   Example:')
     print('       from tglib.tl.functions import SomeFunctionRequest')

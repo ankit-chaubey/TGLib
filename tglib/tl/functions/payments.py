@@ -381,6 +381,45 @@ class ConvertStarGiftRequest(TLRequest):
         return cls(**_args)
 
 
+class CraftStarGiftRequest(TLRequest):
+    """TL type: payments.craftStarGift"""
+    CONSTRUCTOR_ID = 0xb0f9684f
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, stargift: List['TypeInputSavedStarGift']):
+        self.stargift = stargift
+
+    def to_dict(self):
+        return {
+            '_': 'CraftStarGiftRequest',
+            'stargift': self.stargift,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
+        buf.write(struct.pack('<i', len(self.stargift)))
+        for item in self.stargift:
+            buf.write(bytes(item))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _vec_id = reader.read_int(signed=False)
+        if _vec_id != 0x1cb5c415:
+            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
+        _count_stargift = reader.read_int(signed=False)  # BUG6 fix: unsigned count
+        _list_stargift = []
+        for _ in range(_count_stargift):
+            _item_stargift = reader.tgread_object()
+            _list_stargift.append(_item_stargift)
+        _args['stargift'] = _list_stargift
+        return cls(**_args)
+
+
 class CreateStarGiftCollectionRequest(TLRequest):
     """TL type: payments.createStarGiftCollection"""
     CONSTRUCTOR_ID = 0x1f4a0e87
@@ -686,6 +725,45 @@ class GetConnectedStarRefBotsRequest(TLRequest):
             _args['offset_link'] = _val_offset_link
         else:
             _args['offset_link'] = None
+        _val_limit = reader.read_int()
+        _args['limit'] = _val_limit
+        return cls(**_args)
+
+
+class GetCraftStarGiftsRequest(TLRequest):
+    """TL type: payments.getCraftStarGifts"""
+    CONSTRUCTOR_ID = 0xfd05dd00
+    SUBCLASS_OF_ID = 0xd5112897
+
+    def __init__(self, gift_id: int, offset: str, limit: int):
+        self.gift_id = gift_id
+        self.offset = offset
+        self.limit = limit
+
+    def to_dict(self):
+        return {
+            '_': 'GetCraftStarGiftsRequest',
+            'gift_id': self.gift_id,
+            'offset': self.offset,
+            'limit': self.limit,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(struct.pack('<q', self.gift_id))
+        buf.write(TLObject.serialize_bytes(self.offset))
+        buf.write(struct.pack('<i', self.limit))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_gift_id = reader.read_long()
+        _args['gift_id'] = _val_gift_id
+        _val_offset = reader.tgread_string()
+        _args['offset'] = _val_offset
         _val_limit = reader.read_int()
         _args['limit'] = _val_limit
         return cls(**_args)
