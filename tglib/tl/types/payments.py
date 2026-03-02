@@ -679,15 +679,13 @@ class PaymentFormStars(TLObject):
     CONSTRUCTOR_ID = 0x7bf6b15c
     SUBCLASS_OF_ID = 0xa0483f19
 
-    def __init__(self, form_id: int, bot_id: int, title: str, description: str, invoice: 'TypeInvoice', users: List['TypeUser'], can_save_credentials: Optional[bool] = None, password_missing: Optional[bool] = None, photo: Optional['TypeWebDocument'] = None):
+    def __init__(self, form_id: int, bot_id: int, title: str, description: str, invoice: 'TypeInvoice', users: List['TypeUser'], photo: Optional['TypeWebDocument'] = None):
         self.form_id = form_id
         self.bot_id = bot_id
         self.title = title
         self.description = description
         self.invoice = invoice
         self.users = users
-        self.can_save_credentials = can_save_credentials
-        self.password_missing = password_missing
         self.photo = photo
 
     def to_dict(self):
@@ -699,8 +697,6 @@ class PaymentFormStars(TLObject):
             'description': self.description,
             'invoice': self.invoice,
             'users': self.users,
-            'can_save_credentials': self.can_save_credentials,
-            'password_missing': self.password_missing,
             'photo': self.photo,
         }
 
@@ -709,10 +705,6 @@ class PaymentFormStars(TLObject):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
-        if self.can_save_credentials:
-            flags |= (1 << 2)
-        if self.password_missing:
-            flags |= (1 << 3)
         if self.photo is not None:
             flags |= (1 << 5)
         buf.write(struct.pack('<I', flags))
@@ -733,8 +725,6 @@ class PaymentFormStars(TLObject):
     def from_reader(cls, reader):
         _args = {}
         flags = reader.read_int(signed=False)
-        _args['can_save_credentials'] = bool(flags & (1 << 2))
-        _args['password_missing'] = bool(flags & (1 << 3))
         _val_form_id = reader.read_long()
         _args['form_id'] = _val_form_id
         _val_bot_id = reader.read_long()

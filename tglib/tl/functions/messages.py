@@ -1317,6 +1317,45 @@ class EditChatAdminRequest(TLRequest):
         return cls(**_args)
 
 
+class EditChatCreatorRequest(TLRequest):
+    """TL type: messages.editChatCreator"""
+    CONSTRUCTOR_ID = 0xf743b857
+    SUBCLASS_OF_ID = 0x8af52aac
+
+    def __init__(self, peer: 'TypeInputPeer', user_id: 'TypeInputUser', password: 'TypeInputCheckPasswordSRP'):
+        self.peer = peer
+        self.user_id = user_id
+        self.password = password
+
+    def to_dict(self):
+        return {
+            '_': 'EditChatCreatorRequest',
+            'peer': self.peer,
+            'user_id': self.user_id,
+            'password': self.password,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(bytes(self.peer))
+        buf.write(bytes(self.user_id))
+        buf.write(bytes(self.password))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
+        _val_user_id = reader.tgread_object()
+        _args['user_id'] = _val_user_id
+        _val_password = reader.tgread_object()
+        _args['password'] = _val_password
+        return cls(**_args)
+
+
 class EditChatDefaultBannedRightsRequest(TLRequest):
     """TL type: messages.editChatDefaultBannedRights"""
     CONSTRUCTOR_ID = 0xa5866b41
@@ -3907,6 +3946,35 @@ class GetFullChatRequest(TLRequest):
         _args = {}
         _val_chat_id = reader.read_long()
         _args['chat_id'] = _val_chat_id
+        return cls(**_args)
+
+
+class GetFutureChatCreatorAfterLeaveRequest(TLRequest):
+    """TL type: messages.getFutureChatCreatorAfterLeave"""
+    CONSTRUCTOR_ID = 0x3b7d0ea6
+    SUBCLASS_OF_ID = 0x2da17977
+
+    def __init__(self, peer: 'TypeInputPeer'):
+        self.peer = peer
+
+    def to_dict(self):
+        return {
+            '_': 'GetFutureChatCreatorAfterLeaveRequest',
+            'peer': self.peer,
+        }
+
+    def _bytes(self) -> bytes:
+        import io
+        buf = io.BytesIO()
+        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        buf.write(bytes(self.peer))
+        return buf.getvalue()
+
+    @classmethod
+    def from_reader(cls, reader):
+        _args = {}
+        _val_peer = reader.tgread_object()
+        _args['peer'] = _val_peer
         return cls(**_args)
 
 

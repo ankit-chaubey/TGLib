@@ -7214,7 +7214,7 @@ class Chat(TLObject):
     CONSTRUCTOR_ID = 0x41cbf256
     SUBCLASS_OF_ID = 0xc5af5d94
 
-    def __init__(self, id: int, title: str, photo: 'TypeChatPhoto', participants_count: int, date: Optional[datetime], version: int, creator: Optional[bool] = None, kicked: Optional[bool] = None, left: Optional[bool] = None, deactivated: Optional[bool] = None, call_active: Optional[bool] = None, call_not_empty: Optional[bool] = None, noforwards: Optional[bool] = None, migrated_to: Optional['TypeInputChannel'] = None, admin_rights: Optional['TypeChatAdminRights'] = None, default_banned_rights: Optional['TypeChatBannedRights'] = None):
+    def __init__(self, id: int, title: str, photo: 'TypeChatPhoto', participants_count: int, date: Optional[datetime], version: int, creator: Optional[bool] = None, left: Optional[bool] = None, deactivated: Optional[bool] = None, call_active: Optional[bool] = None, call_not_empty: Optional[bool] = None, noforwards: Optional[bool] = None, migrated_to: Optional['TypeInputChannel'] = None, admin_rights: Optional['TypeChatAdminRights'] = None, default_banned_rights: Optional['TypeChatBannedRights'] = None):
         self.id = id
         self.title = title
         self.photo = photo
@@ -7222,7 +7222,6 @@ class Chat(TLObject):
         self.date = date
         self.version = version
         self.creator = creator
-        self.kicked = kicked
         self.left = left
         self.deactivated = deactivated
         self.call_active = call_active
@@ -7242,7 +7241,6 @@ class Chat(TLObject):
             'date': self.date,
             'version': self.version,
             'creator': self.creator,
-            'kicked': self.kicked,
             'left': self.left,
             'deactivated': self.deactivated,
             'call_active': self.call_active,
@@ -7260,8 +7258,6 @@ class Chat(TLObject):
         flags = 0
         if self.creator:
             flags |= (1 << 0)
-        if self.kicked:
-            flags |= (1 << 1)
         if self.left:
             flags |= (1 << 2)
         if self.deactivated:
@@ -7298,7 +7294,6 @@ class Chat(TLObject):
         _args = {}
         flags = reader.read_int(signed=False)
         _args['creator'] = bool(flags & (1 << 0))
-        _args['kicked'] = bool(flags & (1 << 1))
         _args['left'] = bool(flags & (1 << 2))
         _args['deactivated'] = bool(flags & (1 << 5))
         _args['call_active'] = bool(flags & (1 << 23))
@@ -7490,7 +7485,7 @@ class ChatBannedRights(TLObject):
     CONSTRUCTOR_ID = 0x9f120418
     SUBCLASS_OF_ID = 0x4b5445a9
 
-    def __init__(self, until_date: Optional[datetime], view_messages: Optional[bool] = None, send_messages: Optional[bool] = None, send_media: Optional[bool] = None, send_stickers: Optional[bool] = None, send_gifs: Optional[bool] = None, send_games: Optional[bool] = None, send_inline: Optional[bool] = None, embed_links: Optional[bool] = None, send_polls: Optional[bool] = None, change_info: Optional[bool] = None, invite_users: Optional[bool] = None, pin_messages: Optional[bool] = None, manage_topics: Optional[bool] = None, send_photos: Optional[bool] = None, send_videos: Optional[bool] = None, send_roundvideos: Optional[bool] = None, send_audios: Optional[bool] = None, send_voices: Optional[bool] = None, send_docs: Optional[bool] = None, send_plain: Optional[bool] = None):
+    def __init__(self, until_date: Optional[datetime], view_messages: Optional[bool] = None, send_messages: Optional[bool] = None, send_media: Optional[bool] = None, send_stickers: Optional[bool] = None, send_gifs: Optional[bool] = None, send_games: Optional[bool] = None, send_inline: Optional[bool] = None, embed_links: Optional[bool] = None, send_polls: Optional[bool] = None, change_info: Optional[bool] = None, invite_users: Optional[bool] = None, pin_messages: Optional[bool] = None, manage_topics: Optional[bool] = None, send_photos: Optional[bool] = None, send_videos: Optional[bool] = None, send_roundvideos: Optional[bool] = None, send_audios: Optional[bool] = None, send_voices: Optional[bool] = None, send_docs: Optional[bool] = None, send_plain: Optional[bool] = None, edit_rank: Optional[bool] = None):
         self.until_date = until_date
         self.view_messages = view_messages
         self.send_messages = send_messages
@@ -7512,6 +7507,7 @@ class ChatBannedRights(TLObject):
         self.send_voices = send_voices
         self.send_docs = send_docs
         self.send_plain = send_plain
+        self.edit_rank = edit_rank
 
     def to_dict(self):
         return {
@@ -7537,6 +7533,7 @@ class ChatBannedRights(TLObject):
             'send_voices': self.send_voices,
             'send_docs': self.send_docs,
             'send_plain': self.send_plain,
+            'edit_rank': self.edit_rank,
         }
 
     def _bytes(self) -> bytes:
@@ -7584,6 +7581,8 @@ class ChatBannedRights(TLObject):
             flags |= (1 << 24)
         if self.send_plain:
             flags |= (1 << 25)
+        if self.edit_rank:
+            flags |= (1 << 26)
         buf.write(struct.pack('<I', flags))
         buf.write(TLObject.serialize_datetime(self.until_date))
         return buf.getvalue()
@@ -7612,6 +7611,7 @@ class ChatBannedRights(TLObject):
         _args['send_voices'] = bool(flags & (1 << 23))
         _args['send_docs'] = bool(flags & (1 << 24))
         _args['send_plain'] = bool(flags & (1 << 25))
+        _args['edit_rank'] = bool(flags & (1 << 26))
         _val_until_date = reader.tgread_date()
         _args['until_date'] = _val_until_date
         return cls(**_args)
@@ -12083,11 +12083,10 @@ class ExportedChatlistInvite(TLObject):
     CONSTRUCTOR_ID = 0x0c5181ac
     SUBCLASS_OF_ID = 0x7711f8ff
 
-    def __init__(self, title: str, url: str, peers: List['TypePeer'], revoked: Optional[bool] = None):
+    def __init__(self, title: str, url: str, peers: List['TypePeer']):
         self.title = title
         self.url = url
         self.peers = peers
-        self.revoked = revoked
 
     def to_dict(self):
         return {
@@ -12095,16 +12094,12 @@ class ExportedChatlistInvite(TLObject):
             'title': self.title,
             'url': self.url,
             'peers': self.peers,
-            'revoked': self.revoked,
         }
 
     def _bytes(self) -> bytes:
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.revoked:
-            flags |= (1 << 0)
         buf.write(struct.pack('<I', flags))
         buf.write(TLObject.serialize_bytes(self.title))
         buf.write(TLObject.serialize_bytes(self.url))
@@ -12118,7 +12113,6 @@ class ExportedChatlistInvite(TLObject):
     def from_reader(cls, reader):
         _args = {}
         flags = reader.read_int(signed=False)
-        _args['revoked'] = bool(flags & (1 << 0))
         _val_title = reader.tgread_string()
         _args['title'] = _val_title
         _val_url = reader.tgread_string()
@@ -12432,7 +12426,8 @@ class ForumTopic(TLObject):
     CONSTRUCTOR_ID = 0xcdff0eca
     SUBCLASS_OF_ID = 0x8d182203
 
-    def __init__(self, date: Optional[datetime], peer: 'TypePeer', title: str, icon_color: int, top_message: int, read_inbox_max_id: int, read_outbox_max_id: int, unread_count: int, unread_mentions_count: int, unread_reactions_count: int, from_id: 'TypePeer', notify_settings: 'TypePeerNotifySettings', my: Optional[bool] = None, closed: Optional[bool] = None, pinned: Optional[bool] = None, short: Optional[bool] = None, hidden: Optional[bool] = None, title_missing: Optional[bool] = None, id: Optional[int] = None, icon_emoji_id: Optional[int] = None, draft: Optional['TypeDraftMessage'] = None):
+    def __init__(self, id: int, date: Optional[datetime], peer: 'TypePeer', title: str, icon_color: int, top_message: int, read_inbox_max_id: int, read_outbox_max_id: int, unread_count: int, unread_mentions_count: int, unread_reactions_count: int, from_id: 'TypePeer', notify_settings: 'TypePeerNotifySettings', my: Optional[bool] = None, closed: Optional[bool] = None, pinned: Optional[bool] = None, short: Optional[bool] = None, hidden: Optional[bool] = None, title_missing: Optional[bool] = None, icon_emoji_id: Optional[int] = None, draft: Optional['TypeDraftMessage'] = None):
+        self.id = id
         self.date = date
         self.peer = peer
         self.title = title
@@ -12451,13 +12446,13 @@ class ForumTopic(TLObject):
         self.short = short
         self.hidden = hidden
         self.title_missing = title_missing
-        self.id = id
         self.icon_emoji_id = icon_emoji_id
         self.draft = draft
 
     def to_dict(self):
         return {
             '_': 'ForumTopic',
+            'id': self.id,
             'date': self.date,
             'peer': self.peer,
             'title': self.title,
@@ -12476,7 +12471,6 @@ class ForumTopic(TLObject):
             'short': self.short,
             'hidden': self.hidden,
             'title_missing': self.title_missing,
-            'id': self.id,
             'icon_emoji_id': self.icon_emoji_id,
             'draft': self.draft,
         }
@@ -12498,15 +12492,12 @@ class ForumTopic(TLObject):
             flags |= (1 << 6)
         if self.title_missing:
             flags |= (1 << 7)
-        if self.id is not None:
-            flags |= (1 << 7)
         if self.icon_emoji_id is not None:
             flags |= (1 << 0)
         if self.draft is not None:
             flags |= (1 << 4)
         buf.write(struct.pack('<I', flags))
-        if self.id is not None:
-            buf.write(struct.pack('<i', self.id))
+        buf.write(struct.pack('<i', self.id))
         buf.write(TLObject.serialize_datetime(self.date))
         buf.write(bytes(self.peer))
         buf.write(TLObject.serialize_bytes(self.title))
@@ -12535,11 +12526,8 @@ class ForumTopic(TLObject):
         _args['short'] = bool(flags & (1 << 5))
         _args['hidden'] = bool(flags & (1 << 6))
         _args['title_missing'] = bool(flags & (1 << 7))
-        if flags & (1 << 7):
-            _val_id = reader.read_int()
-            _args['id'] = _val_id
-        else:
-            _args['id'] = None
+        _val_id = reader.read_int()
+        _args['id'] = _val_id
         _val_date = reader.tgread_date()
         _args['date'] = _val_date
         _val_peer = reader.tgread_object()
@@ -13178,11 +13166,10 @@ class GroupCallDonor(TLObject):
     CONSTRUCTOR_ID = 0xee430c85
     SUBCLASS_OF_ID = 0x14f28bb0
 
-    def __init__(self, stars: int, top: Optional[bool] = None, my: Optional[bool] = None, anonymous: Optional[bool] = None, peer_id: Optional['TypePeer'] = None):
+    def __init__(self, stars: int, top: Optional[bool] = None, my: Optional[bool] = None, peer_id: Optional['TypePeer'] = None):
         self.stars = stars
         self.top = top
         self.my = my
-        self.anonymous = anonymous
         self.peer_id = peer_id
 
     def to_dict(self):
@@ -13191,7 +13178,6 @@ class GroupCallDonor(TLObject):
             'stars': self.stars,
             'top': self.top,
             'my': self.my,
-            'anonymous': self.anonymous,
             'peer_id': self.peer_id,
         }
 
@@ -13204,8 +13190,6 @@ class GroupCallDonor(TLObject):
             flags |= (1 << 0)
         if self.my:
             flags |= (1 << 1)
-        if self.anonymous:
-            flags |= (1 << 2)
         if self.peer_id is not None:
             flags |= (1 << 3)
         buf.write(struct.pack('<I', flags))
@@ -13220,7 +13204,6 @@ class GroupCallDonor(TLObject):
         flags = reader.read_int(signed=False)
         _args['top'] = bool(flags & (1 << 0))
         _args['my'] = bool(flags & (1 << 1))
-        _args['anonymous'] = bool(flags & (1 << 2))
         if flags & (1 << 3):
             _val_peer_id = reader.tgread_object()
             _args['peer_id'] = _val_peer_id
@@ -28083,15 +28066,14 @@ class MessageActionStarGift(TLObject):
     CONSTRUCTOR_ID = 0xea2c31d3
     SUBCLASS_OF_ID = 0x8680d126
 
-    def __init__(self, gift: 'TypeStarGift', name_hidden: Optional[bool] = None, saved: Optional[bool] = None, converted: Optional[bool] = None, upgraded: Optional[bool] = None, transferred: Optional[bool] = None, can_upgrade: Optional[bool] = None, refunded: Optional[bool] = None, prepaid_upgrade: Optional[bool] = None, upgrade_separate: Optional[bool] = None, auction_acquired: Optional[bool] = None, message: Optional['TypeTextWithEntities'] = None, convert_stars: Optional[int] = None, upgrade_msg_id: Optional[int] = None, upgrade_stars: Optional[int] = None, from_id: Optional['TypePeer'] = None, peer: Optional['TypePeer'] = None, saved_id: Optional[int] = None, prepaid_upgrade_hash: Optional[str] = None, gift_msg_id: Optional[int] = None, to_id: Optional['TypePeer'] = None, gift_num: Optional[int] = None):
+    def __init__(self, gift: 'TypeStarGift', name_hidden: Optional[bool] = None, saved: Optional[bool] = None, converted: Optional[bool] = None, upgraded: Optional[bool] = None, refunded: Optional[bool] = None, can_upgrade: Optional[bool] = None, prepaid_upgrade: Optional[bool] = None, upgrade_separate: Optional[bool] = None, auction_acquired: Optional[bool] = None, message: Optional['TypeTextWithEntities'] = None, convert_stars: Optional[int] = None, upgrade_msg_id: Optional[int] = None, upgrade_stars: Optional[int] = None, from_id: Optional['TypePeer'] = None, peer: Optional['TypePeer'] = None, saved_id: Optional[int] = None, prepaid_upgrade_hash: Optional[str] = None, gift_msg_id: Optional[int] = None, to_id: Optional['TypePeer'] = None, gift_num: Optional[int] = None):
         self.gift = gift
         self.name_hidden = name_hidden
         self.saved = saved
         self.converted = converted
         self.upgraded = upgraded
-        self.transferred = transferred
-        self.can_upgrade = can_upgrade
         self.refunded = refunded
+        self.can_upgrade = can_upgrade
         self.prepaid_upgrade = prepaid_upgrade
         self.upgrade_separate = upgrade_separate
         self.auction_acquired = auction_acquired
@@ -28115,9 +28097,8 @@ class MessageActionStarGift(TLObject):
             'saved': self.saved,
             'converted': self.converted,
             'upgraded': self.upgraded,
-            'transferred': self.transferred,
-            'can_upgrade': self.can_upgrade,
             'refunded': self.refunded,
+            'can_upgrade': self.can_upgrade,
             'prepaid_upgrade': self.prepaid_upgrade,
             'upgrade_separate': self.upgrade_separate,
             'auction_acquired': self.auction_acquired,
@@ -28149,12 +28130,10 @@ class MessageActionStarGift(TLObject):
             flags |= (1 << 5)
         if self.upgrade_msg_id is not None:
             flags |= (1 << 5)
-        if self.transferred:
-            flags |= (1 << 6)
-        if self.can_upgrade:
-            flags |= (1 << 10)
         if self.refunded:
             flags |= (1 << 9)
+        if self.can_upgrade:
+            flags |= (1 << 10)
         if self.prepaid_upgrade:
             flags |= (1 << 13)
         if self.upgrade_separate:
@@ -28215,9 +28194,8 @@ class MessageActionStarGift(TLObject):
         _args['saved'] = bool(flags & (1 << 2))
         _args['converted'] = bool(flags & (1 << 3))
         _args['upgraded'] = bool(flags & (1 << 5))
-        _args['transferred'] = bool(flags & (1 << 6))
-        _args['can_upgrade'] = bool(flags & (1 << 10))
         _args['refunded'] = bool(flags & (1 << 9))
+        _args['can_upgrade'] = bool(flags & (1 << 10))
         _args['prepaid_upgrade'] = bool(flags & (1 << 13))
         _args['upgrade_separate'] = bool(flags & (1 << 16))
         _args['auction_acquired'] = bool(flags & (1 << 17))
@@ -28286,7 +28264,7 @@ class MessageActionStarGiftPurchaseOffer(TLObject):
     CONSTRUCTOR_ID = 0x774278d4
     SUBCLASS_OF_ID = 0x8680d126
 
-    def __init__(self, gift: 'TypeStarGift', price: 'TypeStarsAmount', expires_at: Optional[datetime], accepted: Optional[int] = None, declined: Optional[bool] = None):
+    def __init__(self, gift: 'TypeStarGift', price: 'TypeStarsAmount', expires_at: Optional[datetime], accepted: Optional[bool] = None, declined: Optional[bool] = None):
         self.gift = gift
         self.price = price
         self.expires_at = expires_at
@@ -28308,13 +28286,11 @@ class MessageActionStarGiftPurchaseOffer(TLObject):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
-        if self.accepted is not None:
+        if self.accepted:
             flags |= (1 << 0)
         if self.declined:
             flags |= (1 << 1)
         buf.write(struct.pack('<I', flags))
-        if self.accepted is not None:
-            buf.write(struct.pack('<i', self.accepted))
         buf.write(bytes(self.gift))
         buf.write(bytes(self.price))
         buf.write(TLObject.serialize_datetime(self.expires_at))
@@ -28324,11 +28300,7 @@ class MessageActionStarGiftPurchaseOffer(TLObject):
     def from_reader(cls, reader):
         _args = {}
         flags = reader.read_int(signed=False)
-        if flags & (1 << 0):
-            _val_accepted = reader.read_int()
-            _args['accepted'] = _val_accepted
-        else:
-            _args['accepted'] = None
+        _args['accepted'] = bool(flags & (1 << 0))
         _args['declined'] = bool(flags & (1 << 1))
         _val_gift = reader.tgread_object()
         _args['gift'] = _val_gift
@@ -29445,7 +29417,7 @@ class MessageEntityEmail(TLObject):
 class MessageEntityFormattedDate(TLObject):
     """TL type: messageEntityFormattedDate"""
     CONSTRUCTOR_ID = 0x904ac7c7
-    SUBCLASS_OF_ID = 0x420084c5
+    SUBCLASS_OF_ID = 0xcf6419dc
 
     def __init__(self, offset: int, length: int, date: Optional[datetime], relative: Optional[bool] = None, short_time: Optional[bool] = None, long_time: Optional[bool] = None, short_date: Optional[bool] = None, long_date: Optional[bool] = None, day_of_week: Optional[bool] = None):
         self.offset = offset
@@ -39149,18 +39121,18 @@ class RequestPeerTypeBroadcast(TLObject):
     CONSTRUCTOR_ID = 0x339bef6c
     SUBCLASS_OF_ID = 0xe9a0e814
 
-    def __init__(self, creator: Optional[bool] = None, user_admin_rights: Optional['TypeChatAdminRights'] = None, has_username: Optional[bool] = None, bot_admin_rights: Optional['TypeChatAdminRights'] = None):
+    def __init__(self, creator: Optional[bool] = None, has_username: Optional[bool] = None, user_admin_rights: Optional['TypeChatAdminRights'] = None, bot_admin_rights: Optional['TypeChatAdminRights'] = None):
         self.creator = creator
-        self.user_admin_rights = user_admin_rights
         self.has_username = has_username
+        self.user_admin_rights = user_admin_rights
         self.bot_admin_rights = bot_admin_rights
 
     def to_dict(self):
         return {
             '_': 'RequestPeerTypeBroadcast',
             'creator': self.creator,
-            'user_admin_rights': self.user_admin_rights,
             'has_username': self.has_username,
+            'user_admin_rights': self.user_admin_rights,
             'bot_admin_rights': self.bot_admin_rights,
         }
 
@@ -39171,17 +39143,17 @@ class RequestPeerTypeBroadcast(TLObject):
         flags = 0
         if self.creator:
             flags |= (1 << 0)
-        if self.user_admin_rights is not None:
-            flags |= (1 << 1)
         if self.has_username is not None:
             flags |= (1 << 3)
+        if self.user_admin_rights is not None:
+            flags |= (1 << 1)
         if self.bot_admin_rights is not None:
             flags |= (1 << 2)
         buf.write(struct.pack('<I', flags))
-        if self.user_admin_rights is not None:
-            buf.write(bytes(self.user_admin_rights))
         if self.has_username is not None:
             buf.write(struct.pack('<I', 0x997275b5 if self.has_username else 0xbc799737))
+        if self.user_admin_rights is not None:
+            buf.write(bytes(self.user_admin_rights))
         if self.bot_admin_rights is not None:
             buf.write(bytes(self.bot_admin_rights))
         return buf.getvalue()
@@ -39191,16 +39163,16 @@ class RequestPeerTypeBroadcast(TLObject):
         _args = {}
         flags = reader.read_int(signed=False)
         _args['creator'] = bool(flags & (1 << 0))
-        if flags & (1 << 1):
-            _val_user_admin_rights = reader.tgread_object()
-            _args['user_admin_rights'] = _val_user_admin_rights
-        else:
-            _args['user_admin_rights'] = None
         if flags & (1 << 3):
             _val_has_username = reader.tgread_bool()
             _args['has_username'] = _val_has_username
         else:
             _args['has_username'] = None
+        if flags & (1 << 1):
+            _val_user_admin_rights = reader.tgread_object()
+            _args['user_admin_rights'] = _val_user_admin_rights
+        else:
+            _args['user_admin_rights'] = None
         if flags & (1 << 2):
             _val_bot_admin_rights = reader.tgread_object()
             _args['bot_admin_rights'] = _val_bot_admin_rights
@@ -39214,23 +39186,23 @@ class RequestPeerTypeChat(TLObject):
     CONSTRUCTOR_ID = 0xc9f06e1b
     SUBCLASS_OF_ID = 0xe9a0e814
 
-    def __init__(self, creator: Optional[bool] = None, user_admin_rights: Optional['TypeChatAdminRights'] = None, bot_participant: Optional[bool] = None, bot_admin_rights: Optional['TypeChatAdminRights'] = None, has_username: Optional[bool] = None, forum: Optional[bool] = None):
+    def __init__(self, creator: Optional[bool] = None, bot_participant: Optional[bool] = None, has_username: Optional[bool] = None, forum: Optional[bool] = None, user_admin_rights: Optional['TypeChatAdminRights'] = None, bot_admin_rights: Optional['TypeChatAdminRights'] = None):
         self.creator = creator
-        self.user_admin_rights = user_admin_rights
         self.bot_participant = bot_participant
-        self.bot_admin_rights = bot_admin_rights
         self.has_username = has_username
         self.forum = forum
+        self.user_admin_rights = user_admin_rights
+        self.bot_admin_rights = bot_admin_rights
 
     def to_dict(self):
         return {
             '_': 'RequestPeerTypeChat',
             'creator': self.creator,
-            'user_admin_rights': self.user_admin_rights,
             'bot_participant': self.bot_participant,
-            'bot_admin_rights': self.bot_admin_rights,
             'has_username': self.has_username,
             'forum': self.forum,
+            'user_admin_rights': self.user_admin_rights,
+            'bot_admin_rights': self.bot_admin_rights,
         }
 
     def _bytes(self) -> bytes:
@@ -39240,25 +39212,25 @@ class RequestPeerTypeChat(TLObject):
         flags = 0
         if self.creator:
             flags |= (1 << 0)
-        if self.user_admin_rights is not None:
-            flags |= (1 << 1)
         if self.bot_participant:
             flags |= (1 << 5)
-        if self.bot_admin_rights is not None:
-            flags |= (1 << 2)
         if self.has_username is not None:
             flags |= (1 << 3)
         if self.forum is not None:
             flags |= (1 << 4)
-        buf.write(struct.pack('<I', flags))
         if self.user_admin_rights is not None:
-            buf.write(bytes(self.user_admin_rights))
+            flags |= (1 << 1)
         if self.bot_admin_rights is not None:
-            buf.write(bytes(self.bot_admin_rights))
+            flags |= (1 << 2)
+        buf.write(struct.pack('<I', flags))
         if self.has_username is not None:
             buf.write(struct.pack('<I', 0x997275b5 if self.has_username else 0xbc799737))
         if self.forum is not None:
             buf.write(struct.pack('<I', 0x997275b5 if self.forum else 0xbc799737))
+        if self.user_admin_rights is not None:
+            buf.write(bytes(self.user_admin_rights))
+        if self.bot_admin_rights is not None:
+            buf.write(bytes(self.bot_admin_rights))
         return buf.getvalue()
 
     @classmethod
@@ -39266,17 +39238,7 @@ class RequestPeerTypeChat(TLObject):
         _args = {}
         flags = reader.read_int(signed=False)
         _args['creator'] = bool(flags & (1 << 0))
-        if flags & (1 << 1):
-            _val_user_admin_rights = reader.tgread_object()
-            _args['user_admin_rights'] = _val_user_admin_rights
-        else:
-            _args['user_admin_rights'] = None
         _args['bot_participant'] = bool(flags & (1 << 5))
-        if flags & (1 << 2):
-            _val_bot_admin_rights = reader.tgread_object()
-            _args['bot_admin_rights'] = _val_bot_admin_rights
-        else:
-            _args['bot_admin_rights'] = None
         if flags & (1 << 3):
             _val_has_username = reader.tgread_bool()
             _args['has_username'] = _val_has_username
@@ -39287,6 +39249,16 @@ class RequestPeerTypeChat(TLObject):
             _args['forum'] = _val_forum
         else:
             _args['forum'] = None
+        if flags & (1 << 1):
+            _val_user_admin_rights = reader.tgread_object()
+            _args['user_admin_rights'] = _val_user_admin_rights
+        else:
+            _args['user_admin_rights'] = None
+        if flags & (1 << 2):
+            _val_bot_admin_rights = reader.tgread_object()
+            _args['bot_admin_rights'] = _val_bot_admin_rights
+        else:
+            _args['bot_admin_rights'] = None
         return cls(**_args)
 
 
@@ -42348,7 +42320,7 @@ class StarGift(TLObject):
     CONSTRUCTOR_ID = 0x313a9547
     SUBCLASS_OF_ID = 0xc31c590b
 
-    def __init__(self, id: int, sticker: 'TypeDocument', stars: int, convert_stars: int, limited: Optional[bool] = None, sold_out: Optional[bool] = None, birthday: Optional[bool] = None, can_upgrade: Optional[bool] = None, require_premium: Optional[bool] = None, limited_per_user: Optional[bool] = None, peer_color_available: Optional[bool] = None, auction: Optional[bool] = None, availability_remains: Optional[int] = None, availability_total: Optional[int] = None, availability_resale: Optional[int] = None, first_sale_date: Optional[datetime] = None, last_sale_date: Optional[datetime] = None, upgrade_stars: Optional[int] = None, resell_min_stars: Optional[int] = None, title: Optional[str] = None, released_by: Optional['TypePeer'] = None, per_user_total: Optional[int] = None, per_user_remains: Optional[int] = None, locked_until_date: Optional[datetime] = None, auction_slug: Optional[str] = None, gifts_per_round: Optional[int] = None, auction_start_date: Optional[datetime] = None, upgrade_variants: Optional[int] = None, background: Optional['TypeStarGiftBackground'] = None):
+    def __init__(self, id: int, sticker: 'TypeDocument', stars: int, convert_stars: int, limited: Optional[bool] = None, sold_out: Optional[bool] = None, birthday: Optional[bool] = None, require_premium: Optional[bool] = None, limited_per_user: Optional[bool] = None, peer_color_available: Optional[bool] = None, auction: Optional[bool] = None, availability_remains: Optional[int] = None, availability_total: Optional[int] = None, availability_resale: Optional[int] = None, first_sale_date: Optional[datetime] = None, last_sale_date: Optional[datetime] = None, upgrade_stars: Optional[int] = None, resell_min_stars: Optional[int] = None, title: Optional[str] = None, released_by: Optional['TypePeer'] = None, per_user_total: Optional[int] = None, per_user_remains: Optional[int] = None, locked_until_date: Optional[datetime] = None, auction_slug: Optional[str] = None, gifts_per_round: Optional[int] = None, auction_start_date: Optional[datetime] = None, upgrade_variants: Optional[int] = None, background: Optional['TypeStarGiftBackground'] = None):
         self.id = id
         self.sticker = sticker
         self.stars = stars
@@ -42356,7 +42328,6 @@ class StarGift(TLObject):
         self.limited = limited
         self.sold_out = sold_out
         self.birthday = birthday
-        self.can_upgrade = can_upgrade
         self.require_premium = require_premium
         self.limited_per_user = limited_per_user
         self.peer_color_available = peer_color_available
@@ -42389,7 +42360,6 @@ class StarGift(TLObject):
             'limited': self.limited,
             'sold_out': self.sold_out,
             'birthday': self.birthday,
-            'can_upgrade': self.can_upgrade,
             'require_premium': self.require_premium,
             'limited_per_user': self.limited_per_user,
             'peer_color_available': self.peer_color_available,
@@ -42432,10 +42402,6 @@ class StarGift(TLObject):
             flags |= (1 << 1)
         if self.birthday:
             flags |= (1 << 2)
-        if self.can_upgrade:
-            flags |= (1 << 3)
-        if self.upgrade_stars is not None:
-            flags |= (1 << 3)
         if self.require_premium:
             flags |= (1 << 7)
         if self.limited_per_user:
@@ -42458,6 +42424,8 @@ class StarGift(TLObject):
             flags |= (1 << 4)
         if self.resell_min_stars is not None:
             flags |= (1 << 4)
+        if self.upgrade_stars is not None:
+            flags |= (1 << 3)
         if self.title is not None:
             flags |= (1 << 5)
         if self.released_by is not None:
@@ -42516,7 +42484,6 @@ class StarGift(TLObject):
         _args['limited'] = bool(flags & (1 << 0))
         _args['sold_out'] = bool(flags & (1 << 1))
         _args['birthday'] = bool(flags & (1 << 2))
-        _args['can_upgrade'] = bool(flags & (1 << 3))
         _args['require_premium'] = bool(flags & (1 << 7))
         _args['limited_per_user'] = bool(flags & (1 << 8))
         _args['peer_color_available'] = bool(flags & (1 << 10))
@@ -44589,7 +44556,7 @@ class StarsTransaction(TLObject):
     CONSTRUCTOR_ID = 0x13659eb0
     SUBCLASS_OF_ID = 0x86884772
 
-    def __init__(self, id: str, amount: 'TypeStarsAmount', date: Optional[datetime], peer: 'TypeStarsTransactionPeer', refund: Optional[bool] = None, pending: Optional[bool] = None, failed: Optional[bool] = None, gift: Optional[bool] = None, reaction: Optional[bool] = None, subscription: Optional[bool] = None, floodskip: Optional[bool] = None, stargift_upgrade: Optional[bool] = None, paid_message: Optional[bool] = None, premium_gift: Optional[bool] = None, business_transfer: Optional[bool] = None, stargift_resale: Optional[bool] = None, posts_search: Optional[bool] = None, stargift_prepaid_upgrade: Optional[bool] = None, stargift_drop_original_details: Optional[bool] = None, phonegroup_message: Optional[bool] = None, stargift_auction_bid: Optional[bool] = None, offer: Optional[bool] = None, title: Optional[str] = None, description: Optional[str] = None, photo: Optional['TypeWebDocument'] = None, transaction_date: Optional[datetime] = None, transaction_url: Optional[str] = None, bot_payload: Optional[bytes] = None, msg_id: Optional[int] = None, extended_media: Optional[List['TypeMessageMedia']] = None, subscription_period: Optional[int] = None, giveaway_post_id: Optional[int] = None, stargift: Optional['TypeStarGift'] = None, floodskip_number: Optional[int] = None, starref_commission_permille: Optional[int] = None, starref_peer: Optional['TypePeer'] = None, starref_amount: Optional['TypeStarsAmount'] = None, paid_messages: Optional[int] = None, premium_gift_months: Optional[int] = None, ads_proceeds_from_date: Optional[datetime] = None, ads_proceeds_to_date: Optional[datetime] = None):
+    def __init__(self, id: str, amount: 'TypeStarsAmount', date: Optional[datetime], peer: 'TypeStarsTransactionPeer', refund: Optional[bool] = None, pending: Optional[bool] = None, failed: Optional[bool] = None, gift: Optional[bool] = None, reaction: Optional[bool] = None, stargift_upgrade: Optional[bool] = None, business_transfer: Optional[bool] = None, stargift_resale: Optional[bool] = None, posts_search: Optional[bool] = None, stargift_prepaid_upgrade: Optional[bool] = None, stargift_drop_original_details: Optional[bool] = None, phonegroup_message: Optional[bool] = None, stargift_auction_bid: Optional[bool] = None, offer: Optional[bool] = None, title: Optional[str] = None, description: Optional[str] = None, photo: Optional['TypeWebDocument'] = None, transaction_date: Optional[datetime] = None, transaction_url: Optional[str] = None, bot_payload: Optional[bytes] = None, msg_id: Optional[int] = None, extended_media: Optional[List['TypeMessageMedia']] = None, subscription_period: Optional[int] = None, giveaway_post_id: Optional[int] = None, stargift: Optional['TypeStarGift'] = None, floodskip_number: Optional[int] = None, starref_commission_permille: Optional[int] = None, starref_peer: Optional['TypePeer'] = None, starref_amount: Optional['TypeStarsAmount'] = None, paid_messages: Optional[int] = None, premium_gift_months: Optional[int] = None, ads_proceeds_from_date: Optional[datetime] = None, ads_proceeds_to_date: Optional[datetime] = None):
         self.id = id
         self.amount = amount
         self.date = date
@@ -44599,11 +44566,7 @@ class StarsTransaction(TLObject):
         self.failed = failed
         self.gift = gift
         self.reaction = reaction
-        self.subscription = subscription
-        self.floodskip = floodskip
         self.stargift_upgrade = stargift_upgrade
-        self.paid_message = paid_message
-        self.premium_gift = premium_gift
         self.business_transfer = business_transfer
         self.stargift_resale = stargift_resale
         self.posts_search = posts_search
@@ -44644,11 +44607,7 @@ class StarsTransaction(TLObject):
             'failed': self.failed,
             'gift': self.gift,
             'reaction': self.reaction,
-            'subscription': self.subscription,
-            'floodskip': self.floodskip,
             'stargift_upgrade': self.stargift_upgrade,
-            'paid_message': self.paid_message,
-            'premium_gift': self.premium_gift,
             'business_transfer': self.business_transfer,
             'stargift_resale': self.stargift_resale,
             'posts_search': self.posts_search,
@@ -44693,24 +44652,8 @@ class StarsTransaction(TLObject):
             flags |= (1 << 10)
         if self.reaction:
             flags |= (1 << 11)
-        if self.subscription:
-            flags |= (1 << 12)
-        if self.subscription_period is not None:
-            flags |= (1 << 12)
-        if self.floodskip:
-            flags |= (1 << 15)
-        if self.floodskip_number is not None:
-            flags |= (1 << 15)
         if self.stargift_upgrade:
             flags |= (1 << 18)
-        if self.paid_message:
-            flags |= (1 << 19)
-        if self.paid_messages is not None:
-            flags |= (1 << 19)
-        if self.premium_gift:
-            flags |= (1 << 20)
-        if self.premium_gift_months is not None:
-            flags |= (1 << 20)
         if self.business_transfer:
             flags |= (1 << 21)
         if self.stargift_resale:
@@ -44743,16 +44686,24 @@ class StarsTransaction(TLObject):
             flags |= (1 << 8)
         if self.extended_media is not None:
             flags |= (1 << 9)
+        if self.subscription_period is not None:
+            flags |= (1 << 12)
         if self.giveaway_post_id is not None:
             flags |= (1 << 13)
         if self.stargift is not None:
             flags |= (1 << 14)
+        if self.floodskip_number is not None:
+            flags |= (1 << 15)
         if self.starref_commission_permille is not None:
             flags |= (1 << 16)
         if self.starref_peer is not None:
             flags |= (1 << 17)
         if self.starref_amount is not None:
             flags |= (1 << 17)
+        if self.paid_messages is not None:
+            flags |= (1 << 19)
+        if self.premium_gift_months is not None:
+            flags |= (1 << 20)
         if self.ads_proceeds_from_date is not None:
             flags |= (1 << 23)
         if self.ads_proceeds_to_date is not None:
@@ -44814,11 +44765,7 @@ class StarsTransaction(TLObject):
         _args['failed'] = bool(flags & (1 << 6))
         _args['gift'] = bool(flags & (1 << 10))
         _args['reaction'] = bool(flags & (1 << 11))
-        _args['subscription'] = bool(flags & (1 << 12))
-        _args['floodskip'] = bool(flags & (1 << 15))
         _args['stargift_upgrade'] = bool(flags & (1 << 18))
-        _args['paid_message'] = bool(flags & (1 << 19))
-        _args['premium_gift'] = bool(flags & (1 << 20))
         _args['business_transfer'] = bool(flags & (1 << 21))
         _args['stargift_resale'] = bool(flags & (1 << 22))
         _args['posts_search'] = bool(flags & (1 << 24))
@@ -55777,7 +55724,7 @@ class UserFull(TLObject):
     CONSTRUCTOR_ID = 0xa02bc13e
     SUBCLASS_OF_ID = 0x1f4661b9
 
-    def __init__(self, id: int, settings: 'TypePeerSettings', notify_settings: 'TypePeerNotifySettings', common_chats_count: int, blocked: Optional[bool] = None, phone_calls_available: Optional[bool] = None, phone_calls_private: Optional[bool] = None, can_pin_message: Optional[bool] = None, has_scheduled: Optional[bool] = None, video_calls_available: Optional[bool] = None, voice_messages_forbidden: Optional[bool] = None, translations_disabled: Optional[bool] = None, stories_pinned_available: Optional[bool] = None, blocked_my_stories_from: Optional[bool] = None, wallpaper_overridden: Optional[bool] = None, contact_require_premium: Optional[bool] = None, read_dates_private: Optional[bool] = None, sponsored_enabled: Optional[bool] = None, can_view_revenue: Optional[bool] = None, bot_can_manage_emoji_status: Optional[bool] = None, display_gifts_button: Optional[bool] = None, noforwards_my_enabled: Optional[bool] = None, noforwards_peer_enabled: Optional[bool] = None, about: Optional[str] = None, personal_photo: Optional['TypePhoto'] = None, profile_photo: Optional['TypePhoto'] = None, fallback_photo: Optional['TypePhoto'] = None, bot_info: Optional['TypeBotInfo'] = None, pinned_msg_id: Optional[int] = None, folder_id: Optional[int] = None, ttl_period: Optional[int] = None, theme: Optional['TypeChatTheme'] = None, private_forward_name: Optional[str] = None, bot_group_admin_rights: Optional['TypeChatAdminRights'] = None, bot_broadcast_admin_rights: Optional['TypeChatAdminRights'] = None, wallpaper: Optional['TypeWallPaper'] = None, stories: Optional['TypePeerStories'] = None, business_work_hours: Optional['TypeBusinessWorkHours'] = None, business_location: Optional['TypeBusinessLocation'] = None, business_greeting_message: Optional['TypeBusinessGreetingMessage'] = None, business_away_message: Optional['TypeBusinessAwayMessage'] = None, business_intro: Optional['TypeBusinessIntro'] = None, birthday: Optional['TypeBirthday'] = None, personal_channel_id: Optional[int] = None, personal_channel_message: Optional[int] = None, stargifts_count: Optional[int] = None, starref_program: Optional['TypeStarRefProgram'] = None, disallowed_gifts: Optional['TypeDisallowedGiftsSettings'] = None, bot_verification: Optional['TypeBotVerification'] = None, send_paid_messages_stars: Optional[int] = None, disallowed_stargifts: Optional['TypeDisallowedGiftsSettings'] = None, stars_rating: Optional['TypeStarsRating'] = None, stars_my_pending_rating: Optional['TypeStarsRating'] = None, stars_my_pending_rating_date: Optional[datetime] = None, main_tab: Optional['TypeProfileTab'] = None, saved_music: Optional['TypeDocument'] = None, note: Optional['TypeTextWithEntities'] = None):
+    def __init__(self, id: int, settings: 'TypePeerSettings', notify_settings: 'TypePeerNotifySettings', common_chats_count: int, blocked: Optional[bool] = None, phone_calls_available: Optional[bool] = None, phone_calls_private: Optional[bool] = None, can_pin_message: Optional[bool] = None, has_scheduled: Optional[bool] = None, video_calls_available: Optional[bool] = None, voice_messages_forbidden: Optional[bool] = None, translations_disabled: Optional[bool] = None, stories_pinned_available: Optional[bool] = None, blocked_my_stories_from: Optional[bool] = None, wallpaper_overridden: Optional[bool] = None, contact_require_premium: Optional[bool] = None, read_dates_private: Optional[bool] = None, sponsored_enabled: Optional[bool] = None, can_view_revenue: Optional[bool] = None, bot_can_manage_emoji_status: Optional[bool] = None, display_gifts_button: Optional[bool] = None, noforwards_my_enabled: Optional[bool] = None, noforwards_peer_enabled: Optional[bool] = None, about: Optional[str] = None, personal_photo: Optional['TypePhoto'] = None, profile_photo: Optional['TypePhoto'] = None, fallback_photo: Optional['TypePhoto'] = None, bot_info: Optional['TypeBotInfo'] = None, pinned_msg_id: Optional[int] = None, folder_id: Optional[int] = None, ttl_period: Optional[int] = None, theme: Optional['TypeChatTheme'] = None, private_forward_name: Optional[str] = None, bot_group_admin_rights: Optional['TypeChatAdminRights'] = None, bot_broadcast_admin_rights: Optional['TypeChatAdminRights'] = None, wallpaper: Optional['TypeWallPaper'] = None, stories: Optional['TypePeerStories'] = None, business_work_hours: Optional['TypeBusinessWorkHours'] = None, business_location: Optional['TypeBusinessLocation'] = None, business_greeting_message: Optional['TypeBusinessGreetingMessage'] = None, business_away_message: Optional['TypeBusinessAwayMessage'] = None, business_intro: Optional['TypeBusinessIntro'] = None, birthday: Optional['TypeBirthday'] = None, personal_channel_id: Optional[int] = None, personal_channel_message: Optional[int] = None, stargifts_count: Optional[int] = None, starref_program: Optional['TypeStarRefProgram'] = None, bot_verification: Optional['TypeBotVerification'] = None, send_paid_messages_stars: Optional[int] = None, disallowed_gifts: Optional['TypeDisallowedGiftsSettings'] = None, stars_rating: Optional['TypeStarsRating'] = None, stars_my_pending_rating: Optional['TypeStarsRating'] = None, stars_my_pending_rating_date: Optional[datetime] = None, main_tab: Optional['TypeProfileTab'] = None, saved_music: Optional['TypeDocument'] = None, note: Optional['TypeTextWithEntities'] = None):
         self.id = id
         self.settings = settings
         self.notify_settings = notify_settings
@@ -55825,10 +55772,9 @@ class UserFull(TLObject):
         self.personal_channel_message = personal_channel_message
         self.stargifts_count = stargifts_count
         self.starref_program = starref_program
-        self.disallowed_gifts = disallowed_gifts
         self.bot_verification = bot_verification
         self.send_paid_messages_stars = send_paid_messages_stars
-        self.disallowed_stargifts = disallowed_stargifts
+        self.disallowed_gifts = disallowed_gifts
         self.stars_rating = stars_rating
         self.stars_my_pending_rating = stars_my_pending_rating
         self.stars_my_pending_rating_date = stars_my_pending_rating_date
@@ -55886,10 +55832,9 @@ class UserFull(TLObject):
             'personal_channel_message': self.personal_channel_message,
             'stargifts_count': self.stargifts_count,
             'starref_program': self.starref_program,
-            'disallowed_gifts': self.disallowed_gifts,
             'bot_verification': self.bot_verification,
             'send_paid_messages_stars': self.send_paid_messages_stars,
-            'disallowed_stargifts': self.disallowed_stargifts,
+            'disallowed_gifts': self.disallowed_gifts,
             'stars_rating': self.stars_rating,
             'stars_my_pending_rating': self.stars_my_pending_rating,
             'stars_my_pending_rating_date': self.stars_my_pending_rating_date,
@@ -55990,14 +55935,12 @@ class UserFull(TLObject):
             flags2 |= (1 << 8)
         if self.starref_program is not None:
             flags2 |= (1 << 11)
-        if self.disallowed_gifts is not None:
-            flags2 |= (1 << 15)
-        if self.disallowed_stargifts is not None:
-            flags2 |= (1 << 15)
         if self.bot_verification is not None:
             flags2 |= (1 << 12)
         if self.send_paid_messages_stars is not None:
             flags2 |= (1 << 14)
+        if self.disallowed_gifts is not None:
+            flags2 |= (1 << 15)
         if self.stars_rating is not None:
             flags2 |= (1 << 17)
         if self.stars_my_pending_rating is not None:
@@ -56064,14 +56007,12 @@ class UserFull(TLObject):
             buf.write(struct.pack('<i', self.stargifts_count))
         if self.starref_program is not None:
             buf.write(bytes(self.starref_program))
-        if self.disallowed_gifts is not None:
-            buf.write(bytes(self.disallowed_gifts))
         if self.bot_verification is not None:
             buf.write(bytes(self.bot_verification))
         if self.send_paid_messages_stars is not None:
             buf.write(struct.pack('<q', self.send_paid_messages_stars))
-        if self.disallowed_stargifts is not None:
-            buf.write(bytes(self.disallowed_stargifts))
+        if self.disallowed_gifts is not None:
+            buf.write(bytes(self.disallowed_gifts))
         if self.stars_rating is not None:
             buf.write(bytes(self.stars_rating))
         if self.stars_my_pending_rating is not None:
@@ -56238,11 +56179,6 @@ class UserFull(TLObject):
             _args['starref_program'] = _val_starref_program
         else:
             _args['starref_program'] = None
-        if flags2 & (1 << 15):
-            _val_disallowed_gifts = reader.tgread_object()
-            _args['disallowed_gifts'] = _val_disallowed_gifts
-        else:
-            _args['disallowed_gifts'] = None
         if flags2 & (1 << 12):
             _val_bot_verification = reader.tgread_object()
             _args['bot_verification'] = _val_bot_verification
@@ -56254,10 +56190,10 @@ class UserFull(TLObject):
         else:
             _args['send_paid_messages_stars'] = None
         if flags2 & (1 << 15):
-            _val_disallowed_stargifts = reader.tgread_object()
-            _args['disallowed_stargifts'] = _val_disallowed_stargifts
+            _val_disallowed_gifts = reader.tgread_object()
+            _args['disallowed_gifts'] = _val_disallowed_gifts
         else:
-            _args['disallowed_stargifts'] = None
+            _args['disallowed_gifts'] = None
         if flags2 & (1 << 17):
             _val_stars_rating = reader.tgread_object()
             _args['stars_rating'] = _val_stars_rating
