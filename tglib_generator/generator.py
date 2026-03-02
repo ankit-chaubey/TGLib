@@ -127,6 +127,15 @@ def _write_to_bytes(obj: TLObject, f):
 
     # Handle flag computation
     has_flags = any(a.flag_indicator for a in obj.args)
+    # Collect ALL flag indicator names so each gets initialized to 0,
+    # even if no optional field references that particular flag variable.
+    # Without this, a 'flags2:#' with no optional fields would produce
+    # buf.write(struct.pack('<I', flags2)) where flags2 is never defined → NameError.
+    all_flag_names = [
+        (a.orig_name() if hasattr(a, 'orig_name') else a.name.rstrip('_').replace('is_self', 'self'))
+        for a in obj.args
+        if a.flag_indicator and not a.generic_definition
+    ]
     # FIX BUG 2: use list per bit so multiple fields sharing the same bit are ALL checked
     flag_fields = {}  # flag_name -> {bit_index: [arg, ...]}
     for arg in obj.real_args:
@@ -134,8 +143,11 @@ def _write_to_bytes(obj: TLObject, f):
             flag_fields.setdefault(arg.flag, {}).setdefault(arg.flag_index, []).append(arg)
 
     if has_flags:
-        for flag_name, bits in flag_fields.items():
+        # Initialize ALL flag variables (including those with no optional fields)
+        for flag_name in all_flag_names:
             f.write(f'        {flag_name} = 0\n')
+        # Then compute flag bits for those that do have optional fields
+        for flag_name, bits in flag_fields.items():
             for bit, args_at_bit in bits.items():
                 for arg in args_at_bit:
                     if arg.type == 'true':

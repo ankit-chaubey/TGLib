@@ -126,6 +126,14 @@ class BinaryReader:
 
         constructor_id = self.read_int(signed=False)
 
+        # ── Null / empty-object sentinel ──────────────────────────────────
+        # Telegram sends 0x00000000 for optional fields whose value is absent
+        # (e.g. messageMediaPhoto.photo when the photo was deleted / TTL'd out,
+        # or any other flags-guarded object that the server omits).
+        # Telethon, tdlight and MadelineProto all treat this as None.
+        if constructor_id == 0x00000000:
+            return None
+
         # Handle primitives
         if constructor_id == 0x997275b5:
             return True

@@ -4,172 +4,371 @@ tglib TL Code Generator
 =======================
 Generates Python source files from Telegram TL schema files.
 
+MODES
+─────────────────────────────────────────────────────────────────────────────
+  stable        Use tl_files/api.tl  (Telegram Desktop production schema)
+                Authoritative constructor IDs, Payments/Stars APIs, always
+                in sync with the live Telegram client.
+
+  beta          Use tl_files/main_api.tl  (community-maintained schema)
+                Has ~25 extra legacy types.  Bleeding-edge additions appear
+                here first.  Great for testing upcoming API changes.
+
+  experimental  Smart union of BOTH files  ← the fun one 😁
+                • Same constructor ID  → keep first seen (no duplicate)
+                • Same name, different ID  → richer version wins as base,
+                  PLUS extra fields from the other are merged in
+                • Completely new name/ID  → always added
+                • Output is wiped clean before writing — ZERO trace of any
+                  previous generation pass
+
+─────────────────────────────────────────────────────────────────────────────
+
 Usage:
-    python generate_tl.py [options]
+    python generate_tl.py                          # stable (default)
+    python generate_tl.py --mode stable
+    python generate_tl.py --mode beta
+    python generate_tl.py --mode experimental
 
-Options:
-    --source SOURCE     Which TL file(s) to use:
-                          main  -> tl_files/main_api.tl only  [DEFAULT]
-                          api   -> tl_files/api.tl only
-                          both  -> api.tl first, then main_api.tl merged in
-    --tl FILE           Override: explicit TL schema file path (can repeat)
-    --out DIR           Output directory (tglib package root), default: ./tglib
-    --layer N           TL layer number (auto-detected from file if omitted)
-    --help              Show this help
+    python generate_tl.py --tl path/to/my.tl       # custom file override
+    python generate_tl.py --out /path/to/tglib      # custom output dir
+    python generate_tl.py --layer 224               # force layer number
 
-Source differences:
-    main  - 2317 types. Has all legacy types. Recommended default.
-    api   - 2291 types. Has payments.craftStarGift / payments.getCraftStarGifts
-            (vs messages.* equivalents in main). Missing 25 legacy types.
-    both  - Union of both files. api.tl wins on conflicts (its CRCs are
-            authoritative). Dedup by both ID and name prevents duplicate classes.
-
-Examples:
-    python generate_tl.py                        # uses main_api.tl (default)
-    python generate_tl.py --source api           # uses api.tl only
-    python generate_tl.py --source both          # merges both files
-    python generate_tl.py --tl path/to/custom.tl
-    python generate_tl.py --out /path/to/your/tglib
+Legacy --source flag still works (upgrade_layer.py uses it):
+    --source main   → same as --mode beta
+    --source api    → same as --mode stable
+    --source both   → same as --mode experimental
 """
 import argparse
-import sys
+import ast
+import glob
 import os
+import sys
+from typing import List
 
-# Ensure we can import tglib_generator from this directory
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from tglib_generator.parser import parse_tl, find_layer
-from tglib_generator.generator import generate_tl_modules
+from tglib_generator.parser import parse_tl, find_layer, TLObject
 
-# Predefined source sets.
-# In "both" mode, api.tl is processed FIRST so its CRCs win over main_api.tl
-# for the 5 types where main_api has stale (wrong) constructor IDs.
-SOURCE_MAP = {
-    'main': ['tl_files/main_api.tl'],
-    'api':  ['tl_files/api.tl'],
-    'both': ['tl_files/api.tl', 'tl_files/main_api.tl'],
+# ── TL file locations ──────────────────────────────────────────────────────
+TL_STABLE   = 'tl_files/api.tl'        # Telegram Desktop production
+TL_BETA     = 'tl_files/main_api.tl'   # Community / bleeding-edge
+DEFAULT_OUT  = 'tglib'
+DEFAULT_MODE = 'stable'
+
+MODES = ('stable', 'beta', 'experimental')
+
+# backwards-compat map for --source flag
+LEGACY_SOURCE_MAP = {'main': 'beta', 'api': 'stable', 'both': 'experimental'}
+
+MODE_LABELS = {
+    'stable':       '🟢  Stable       (api.tl — Telegram Desktop production)',
+    'beta':         '🔵  Beta         (main_api.tl — bleeding-edge community)',
+    'experimental': '🟣  Experimental (smart union: api.tl ⊕ main_api.tl)',
+    'custom':       '⚙️   Custom       (user-supplied TL file(s))',
 }
-DEFAULT_SOURCE = 'main'
-DEFAULT_OUT = 'tglib'
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description='Generate tglib TL Python modules from .tl schema files',
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__
-    )
-    parser.add_argument(
-        '--source', default=DEFAULT_SOURCE, choices=list(SOURCE_MAP.keys()),
-        help=(
-            'Which built-in TL file(s) to use: '
-            'main (default, main_api.tl), api (api.tl only), both (merged)'
-        )
-    )
-    parser.add_argument(
-        '--tl', dest='tl_files', action='append', metavar='FILE',
-        help='Override: explicit TL schema file path (can repeat for multiple files)'
-    )
-    parser.add_argument(
-        '--out', default=DEFAULT_OUT, metavar='DIR',
-        help=f'Output directory (default: {DEFAULT_OUT})'
-    )
-    parser.add_argument(
-        '--layer', type=int, default=None,
-        help='TL layer number (auto-detected from file if omitted)'
-    )
+# ══════════════════════════════════════════════════════════════════════════════
+# Loading / merging
+# ══════════════════════════════════════════════════════════════════════════════
 
-    args = parser.parse_args()
-
-    # --tl overrides --source entirely
-    if args.tl_files:
-        tl_files = args.tl_files
-        source_label = 'custom'
-    else:
-        tl_files = SOURCE_MAP[args.source]
-        source_label = args.source
-
-    # Validate TL files exist
-    missing = [f for f in tl_files if not os.path.exists(f)]
-    if missing:
-        print(f'[ERR] TL file(s) not found: {", ".join(missing)}', file=sys.stderr)
-        print('      Use --tl path/to/file.tl or --source [main|api|both].', file=sys.stderr)
+def _load_file(path: str, layer_override: int = None) -> List[TLObject]:
+    if not os.path.exists(path):
+        print(f'❌  TL file not found: {path}', file=sys.stderr)
         sys.exit(1)
+    layer = layer_override or find_layer(path)
+    print(f'   {path}  (layer {layer or "unknown"})')
+    return parse_tl(path, layer=layer or 0)
 
-    # Validate output dir
-    if not os.path.isdir(args.out):
-        print(f'[ERR] Output directory not found: {args.out}', file=sys.stderr)
-        print('      Make sure tglib package directory exists.', file=sys.stderr)
-        sys.exit(1)
 
-    print(f'Source mode : {source_label}')
-    print(f'Parsing TL  : {", ".join(tl_files)}')
-
-    all_objects = []
-
-    # Dedup by BOTH id AND fullname to prevent duplicate class names.
-    #
-    # Bug in original: dedup only checked obj.id.
-    # Problem: inputKeyboardButtonRequestPeer has DIFFERENT IDs in api.tl vs
-    # main_api.tl (genuine version split — api.tl added a 'style' field and
-    # recomputed the CRC). Because both IDs are unique, both objects passed
-    # the original id-only check and BOTH got added to all_objects.
-    # Result: duplicate class "InputKeyboardButtonRequestPeer" in _root.py
-    # and alltlobjects.py pointing to two different constructor IDs.
-    #
-    # Fix: also track fullname. First file processed wins (api.tl in 'both'
-    # mode, since its args+CRC are authoritative for conflicting types).
-    seen_ids   = set()
-    seen_names = set()
-
-    for tl_file in tl_files:
-        layer = args.layer or find_layer(tl_file)
-        print(f'   {tl_file}  (layer {layer or "unknown"})')
-        objects = parse_tl(tl_file, layer=layer)
-
+def _dedup(objects_list: List[List[TLObject]]) -> List[TLObject]:
+    """Simple first-wins dedup on both id and fullname."""
+    seen_ids, seen_names = set(), set()
+    result = []
+    for objects in objects_list:
         added = skipped = 0
         for obj in objects:
             if obj.id not in seen_ids and obj.fullname not in seen_names:
-                all_objects.append(obj)
+                result.append(obj)
                 seen_ids.add(obj.id)
                 seen_names.add(obj.fullname)
                 added += 1
             else:
                 skipped += 1
+        print(f'   → {added} objects added, {skipped} duplicates skipped')
+    return result
 
-        print(f'   -> {added} objects added, {skipped} duplicates skipped')
 
-    print(f'\nTotal: {len(all_objects)} unique TL objects')
-    print(f'Generating Python code into: {args.out}/tl/\n')
+def _merge_args(base: TLObject, extra: TLObject) -> TLObject:
+    """
+    Merge fields from two versions of the same constructor name.
 
-    generate_tl_modules(all_objects, out_dir=args.out, depth=2)
+    - base supplies the authoritative constructor ID and wire order.
+    - Any arg from extra whose name is NOT in base gets appended.
+    - Returns a new TLObject with the merged arg list.
+    """
+    base_names = {a.name for a in base.args}
+    merged_args = list(base.args)
+    extra_added = 0
 
-    # ── Final validation: ast.parse() every generated .py ─────────────────
-    import ast as _ast
-    import glob as _glob
-    errors_found = []
+    for arg in extra.args:
+        if arg.name not in base_names:
+            merged_args.append(arg)
+            base_names.add(arg.name)
+            extra_added += 1
+
+    if extra_added == 0:
+        return base
+
+    merged = TLObject(
+        fullname    = base.fullname,
+        object_id   = f'{base.id:08x}',
+        args        = merged_args,
+        result      = base.result,
+        is_function = base.is_function,
+        layer       = base.layer,
+    )
+    merged._extra_fields_count = extra_added
+    return merged
+
+
+def _merge_experimental(primary: List[TLObject],
+                        secondary: List[TLObject]) -> List[TLObject]:
+    """
+    Experimental smart union.
+
+    Rule 1 — same ID, same name  → pure duplicate → skip
+    Rule 2 — same ID, diff name  → constructor collision → keep primary, warn
+    Rule 3 — same name, diff ID  → version split → richer base + merge extra fields
+    Rule 4 — new name, new ID    → add from secondary
+    """
+    by_id   = {obj.id:       obj for obj in primary}
+    by_name = {obj.fullname: obj for obj in primary}
+
+    result         = list(primary)
+    added          = merged = skipped = conflicts = 0
+
+    for obj in secondary:
+        id_hit   = by_id.get(obj.id)
+        name_hit = by_name.get(obj.fullname)
+
+        # Rule 1 – exact duplicate
+        if id_hit is not None and id_hit.fullname == obj.fullname:
+            skipped += 1
+            continue
+
+        # Rule 2 – constructor ID collision (different names, same ID)
+        if id_hit is not None:
+            print(f'   ⚠  ID collision 0x{obj.id:08x}: '
+                  f'{id_hit.fullname!r} vs {obj.fullname!r} — keeping primary')
+            conflicts += 1
+            continue
+
+        # Rule 3 – version split (same name, different CRC)
+        if name_hit is not None:
+            # Pick richer object (more args) as the base
+            if len(obj.args) > len(name_hit.args):
+                base, other = obj, name_hit
+            else:
+                base, other = name_hit, obj
+
+            new_obj = _merge_args(base, other)
+            extra_n = getattr(new_obj, '_extra_fields_count', 0)
+
+            # Replace in result list
+            idx = next(i for i, o in enumerate(result) if o.fullname == name_hit.fullname)
+            result[idx] = new_obj
+            by_id[new_obj.id]         = new_obj
+            by_name[new_obj.fullname] = new_obj
+
+            if extra_n:
+                print(f'   🔀  {obj.fullname!r}: merged +{extra_n} field(s) '
+                      f'(base CRC=0x{base.id:08x})')
+                merged += 1
+            else:
+                skipped += 1
+            continue
+
+        # Rule 4 – brand new type from secondary
+        result.append(obj)
+        by_id[obj.id]         = obj
+        by_name[obj.fullname] = obj
+        added += 1
+
+    print(f'   → {added} new types added from beta')
+    print(f'   → {merged} types field-merged (version splits resolved)')
+    print(f'   → {skipped} pure duplicates skipped')
+    if conflicts:
+        print(f'   → {conflicts} constructor ID collision(s) (primary kept)')
+
+    return result
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Clean-slate wipe
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _wipe_generated(out_dir: str):
+    """
+    Delete every previously-generated TL module so no ghost constructors
+    from old runs survive into the new one.
+
+    Removes:
+        tglib/tl/types/*.py
+        tglib/tl/functions/*.py
+        tglib/tl/alltlobjects.py
+    """
+    tl_dir = os.path.join(out_dir, 'tl')
+    total  = 0
+
+    for sub in ('types', 'functions'):
+        d = os.path.join(tl_dir, sub)
+        if os.path.isdir(d):
+            for f in glob.glob(os.path.join(d, '*.py')):
+                os.remove(f)
+                total += 1
+
+    alltl = os.path.join(tl_dir, 'alltlobjects.py')
+    if os.path.exists(alltl):
+        os.remove(alltl)
+        total += 1
+
+    if total:
+        print(f'   🧹  Wiped {total} previously-generated file(s) — clean slate')
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Post-gen AST validation
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _ast_validate(out_dir: str):
     check_dirs = [
-        os.path.join(args.out, 'tl', 'types'),
-        os.path.join(args.out, 'tl', 'functions'),
+        os.path.join(out_dir, 'tl', 'types'),
+        os.path.join(out_dir, 'tl', 'functions'),
     ]
-    for check_dir in check_dirs:
-        for pyfile in _glob.glob(os.path.join(check_dir, '*.py')):
-            with open(pyfile, 'r', encoding='utf-8') as _f:
-                src = _f.read()
+    errors  = []
+    checked = 0
+    for d in check_dirs:
+        for pyfile in glob.glob(os.path.join(d, '*.py')):
+            checked += 1
+            with open(pyfile, 'r', encoding='utf-8') as fh:
+                src = fh.read()
             try:
-                _ast.parse(src)
+                ast.parse(src)
             except SyntaxError as e:
-                errors_found.append((pyfile, e))
+                errors.append((pyfile, e))
 
-    if errors_found:
-        print(f'\n❌  {len(errors_found)} generated file(s) have syntax errors:')
-        for path, err in errors_found:
+    if errors:
+        print(f'\n❌  {len(errors)} generated file(s) have syntax errors:')
+        for path, err in errors:
             print(f'   {path}: {err}')
-        print('\n   Fix: update snake_to_camel() in tglib_generator/parser.py')
-        print('        to sanitize invalid identifier characters (dots, digits, etc.)')
         sys.exit(1)
     else:
-        print(f'✅  All generated files pass AST validation.')
+        print(f'✅  {checked} files checked — all valid')
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# CLI
+# ══════════════════════════════════════════════════════════════════════════════
+
+def main():
+    p = argparse.ArgumentParser(
+        description='Generate tglib TL Python modules',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
+    p.add_argument(
+        '--mode', default=None, choices=list(MODES),
+        help='Generation mode: stable | beta | experimental  (default: stable)',
+    )
+    # Legacy --source kept for upgrade_layer.py backwards compat
+    p.add_argument(
+        '--source', default=None,
+        choices=list(LEGACY_SOURCE_MAP.keys()) + list(MODES),
+        help='[Legacy alias] main→beta  api→stable  both→experimental',
+    )
+    p.add_argument(
+        '--tl', dest='tl_files', action='append', metavar='FILE',
+        help='Explicit TL file path (can repeat; overrides --mode)',
+    )
+    p.add_argument(
+        '--out', default=DEFAULT_OUT, metavar='DIR',
+        help=f'tglib package root directory  (default: {DEFAULT_OUT})',
+    )
+    p.add_argument(
+        '--layer', type=int, default=None,
+        help='Force a TL layer number (auto-detected from file by default)',
+    )
+
+    args = p.parse_args()
+
+    # ── Resolve mode ───────────────────────────────────────────────────────
+    if args.tl_files:
+        mode = 'custom'
+    elif args.mode:
+        mode = args.mode
+    elif args.source:
+        mode = LEGACY_SOURCE_MAP.get(args.source, args.source)
+    else:
+        mode = DEFAULT_MODE
+
+    # ── Validate output dir ────────────────────────────────────────────────
+    if not os.path.isdir(args.out):
+        print(f'❌  Output directory not found: {args.out}', file=sys.stderr)
+        sys.exit(1)
+
+    print(f'\nMode  : {MODE_LABELS.get(mode, mode)}')
+
+    # ── Load objects ───────────────────────────────────────────────────────
+    all_objects: List[TLObject] = []
+
+    if mode == 'custom':
+        missing = [f for f in args.tl_files if not os.path.exists(f)]
+        if missing:
+            print(f'❌  File(s) not found: {", ".join(missing)}', file=sys.stderr)
+            sys.exit(1)
+        print(f'Parsing TL  : {", ".join(args.tl_files)}')
+        all_objects = _dedup([_load_file(f, args.layer) for f in args.tl_files])
+
+    elif mode == 'stable':
+        print(f'Parsing TL  : {TL_STABLE}')
+        all_objects = _dedup([_load_file(TL_STABLE, args.layer)])
+
+    elif mode == 'beta':
+        print(f'Parsing TL  : {TL_BETA}')
+        all_objects = _dedup([_load_file(TL_BETA, args.layer)])
+
+    elif mode == 'experimental':
+        print(f'Parsing TL  : {TL_STABLE}  +  {TL_BETA}')
+        raw_stable = _load_file(TL_STABLE, args.layer)
+        raw_beta   = _load_file(TL_BETA,   args.layer)
+
+        # Dedup primary (stable) first
+        seen_ids, seen_names = set(), set()
+        primary = []
+        for obj in raw_stable:
+            if obj.id not in seen_ids and obj.fullname not in seen_names:
+                primary.append(obj)
+                seen_ids.add(obj.id)
+                seen_names.add(obj.fullname)
+
+        print(f'   Primary (stable): {len(primary)} unique objects')
+        print(f'   Merging secondary (beta)...')
+        all_objects = _merge_experimental(primary, raw_beta)
+
+    print(f'\nTotal: {len(all_objects)} unique TL objects')
+    print(f'Output      : {args.out}/tl/')
+
+    # ── Wipe old generated files ───────────────────────────────────────────
+    _wipe_generated(args.out)
+
+    # ── Generate ───────────────────────────────────────────────────────────
+    from tglib_generator.generator import generate_tl_modules
+    generate_tl_modules(all_objects, out_dir=args.out, depth=2)
+
+    # ── Validate ───────────────────────────────────────────────────────────
+    _ast_validate(args.out)
 
     print('\nDone! You can now use tglib with the generated types.')
     print('   Example:')

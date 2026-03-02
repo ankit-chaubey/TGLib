@@ -2557,30 +2557,6 @@ class MessageEditData(TLObject):
         return cls(**_args)
 
 
-class MessageEmpty(TLObject):
-    """TL type: messages.messageEmpty"""
-    CONSTRUCTOR_ID = 0x3f4e0648
-    SUBCLASS_OF_ID = 0xd6824adf
-
-    def __init__(self):
-        pass
-
-    def to_dict(self):
-        return {
-            '_': 'MessageEmpty',
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        return cls()
-
-
 class MessageReactionsList(TLObject):
     """TL type: messages.messageReactionsList"""
     CONSTRUCTOR_ID = 0x31bd492d
@@ -4776,50 +4752,6 @@ class WebPagePreview(TLObject):
             _item_chats = reader.tgread_object()
             _list_chats.append(_item_chats)
         _args['chats'] = _list_chats
-        _vec_id = reader.read_int(signed=False)
-        if _vec_id != 0x1cb5c415:
-            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
-        _count_users = reader.read_int(signed=False)  # BUG6 fix: unsigned count
-        _list_users = []
-        for _ in range(_count_users):
-            _item_users = reader.tgread_object()
-            _list_users.append(_item_users)
-        _args['users'] = _list_users
-        return cls(**_args)
-
-
-class WebViewResult(TLObject):
-    """TL type: messages.webViewResult"""
-    CONSTRUCTOR_ID = 0xaadf159b
-    SUBCLASS_OF_ID = 0xd8597669
-
-    def __init__(self, result: 'TypeBotInlineResult', users: List['TypeUser']):
-        self.result = result
-        self.users = users
-
-    def to_dict(self):
-        return {
-            '_': 'WebViewResult',
-            'result': self.result,
-            'users': self.users,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(bytes(self.result))
-        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-        buf.write(struct.pack('<i', len(self.users)))
-        for item in self.users:
-            buf.write(bytes(item))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_result = reader.tgread_object()
-        _args['result'] = _val_result
         _vec_id = reader.read_int(signed=False)
         if _vec_id != 0x1cb5c415:
             raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')

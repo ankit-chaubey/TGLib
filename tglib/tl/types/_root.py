@@ -3659,6 +3659,7 @@ class Channel(TLObject):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
+        flags2 = 0
         if self.creator:
             flags |= (1 << 0)
         if self.left:
@@ -3713,7 +3714,6 @@ class Channel(TLObject):
             flags |= (1 << 18)
         if self.participants_count is not None:
             flags |= (1 << 17)
-        flags2 = 0
         if self.stories_hidden:
             flags2 |= (1 << 1)
         if self.stories_hidden_min:
@@ -4356,40 +4356,6 @@ class ChannelAdminLogEventActionChangeStickerSet(TLObject):
         _args['prev_stickerset'] = _val_prev_stickerset
         _val_new_stickerset = reader.tgread_object()
         _args['new_stickerset'] = _val_new_stickerset
-        return cls(**_args)
-
-
-class ChannelAdminLogEventActionChangeTheme(TLObject):
-    """TL type: channelAdminLogEventActionChangeTheme"""
-    CONSTRUCTOR_ID = 0xfe69018d
-    SUBCLASS_OF_ID = 0xb2b987f3
-
-    def __init__(self, prev_value: str, new_value: str):
-        self.prev_value = prev_value
-        self.new_value = new_value
-
-    def to_dict(self):
-        return {
-            '_': 'ChannelAdminLogEventActionChangeTheme',
-            'prev_value': self.prev_value,
-            'new_value': self.new_value,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(TLObject.serialize_bytes(self.prev_value))
-        buf.write(TLObject.serialize_bytes(self.new_value))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_prev_value = reader.tgread_string()
-        _args['prev_value'] = _val_prev_value
-        _val_new_value = reader.tgread_string()
-        _args['new_value'] = _val_new_value
         return cls(**_args)
 
 
@@ -6039,6 +6005,7 @@ class ChannelFull(TLObject):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
+        flags2 = 0
         if self.can_view_participants:
             flags |= (1 << 3)
         if self.can_set_username:
@@ -6107,7 +6074,6 @@ class ChannelFull(TLObject):
             flags |= (1 << 29)
         if self.available_reactions is not None:
             flags |= (1 << 30)
-        flags2 = 0
         if self.can_delete_channel:
             flags2 |= (1 << 0)
         if self.antispam:
@@ -9338,6 +9304,7 @@ class ConnectedBot(TLObject):
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
         buf.write(struct.pack('<I', flags))
         buf.write(struct.pack('<q', self.bot_id))
         buf.write(bytes(self.recipients))
@@ -12100,6 +12067,7 @@ class ExportedChatlistInvite(TLObject):
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
         buf.write(struct.pack('<I', flags))
         buf.write(TLObject.serialize_bytes(self.title))
         buf.write(TLObject.serialize_bytes(self.url))
@@ -18982,30 +18950,6 @@ class InputMessagesFilterPhotoVideo(TLObject):
         return cls()
 
 
-class InputMessagesFilterPhotoVideoDocuments(TLObject):
-    """TL type: inputMessagesFilterPhotoVideoDocuments"""
-    CONSTRUCTOR_ID = 0xd95e73bb
-    SUBCLASS_OF_ID = 0x8a36ec14
-
-    def __init__(self):
-        pass
-
-    def to_dict(self):
-        return {
-            '_': 'InputMessagesFilterPhotoVideoDocuments',
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        return cls()
-
-
 class InputMessagesFilterPhotos(TLObject):
     """TL type: inputMessagesFilterPhotos"""
     CONSTRUCTOR_ID = 0x9609a51c
@@ -25569,6 +25513,7 @@ class Message(TLObject):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
+        flags2 = 0
         if self.out:
             flags |= (1 << 1)
         if self.mentioned:
@@ -25629,7 +25574,6 @@ class Message(TLObject):
             flags |= (1 << 25)
         if self.quick_reply_shortcut_id is not None:
             flags |= (1 << 30)
-        flags2 = 0
         if self.offline:
             flags2 |= (1 << 1)
         if self.video_processing_pending:
@@ -26470,30 +26414,6 @@ class MessageActionContactSignUp(TLObject):
         return cls()
 
 
-class MessageActionCreatedBroadcastList(TLObject):
-    """TL type: messageActionCreatedBroadcastList"""
-    CONSTRUCTOR_ID = 0x55555557
-    SUBCLASS_OF_ID = 0x8680d126
-
-    def __init__(self):
-        pass
-
-    def to_dict(self):
-        return {
-            '_': 'MessageActionCreatedBroadcastList',
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        return cls()
-
-
 class MessageActionCustomAction(TLObject):
     """TL type: messageActionCustomAction"""
     CONSTRUCTOR_ID = 0xfae69f56
@@ -27166,40 +27086,6 @@ class MessageActionInviteToGroupCall(TLObject):
         return cls(**_args)
 
 
-class MessageActionLoginUnknownLocation(TLObject):
-    """TL type: messageActionLoginUnknownLocation"""
-    CONSTRUCTOR_ID = 0x555555f5
-    SUBCLASS_OF_ID = 0x8680d126
-
-    def __init__(self, title: str, address: str):
-        self.title = title
-        self.address = address
-
-    def to_dict(self):
-        return {
-            '_': 'MessageActionLoginUnknownLocation',
-            'title': self.title,
-            'address': self.address,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(TLObject.serialize_bytes(self.title))
-        buf.write(TLObject.serialize_bytes(self.address))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_title = reader.tgread_string()
-        _args['title'] = _val_title
-        _val_address = reader.tgread_string()
-        _args['address'] = _val_address
-        return cls(**_args)
-
-
 class MessageActionNewCreatorPending(TLObject):
     """TL type: messageActionNewCreatorPending"""
     CONSTRUCTOR_ID = 0xb07ed085
@@ -27650,30 +27536,6 @@ class MessageActionPhoneCall(TLObject):
         else:
             _args['duration'] = None
         return cls(**_args)
-
-
-class MessageActionPhoneNumberRequest(TLObject):
-    """TL type: messageActionPhoneNumberRequest"""
-    CONSTRUCTOR_ID = 0x01baa035
-    SUBCLASS_OF_ID = 0x8680d126
-
-    def __init__(self):
-        pass
-
-    def to_dict(self):
-        return {
-            '_': 'MessageActionPhoneNumberRequest',
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        return cls()
 
 
 class MessageActionPinMessage(TLObject):
@@ -28724,35 +28586,6 @@ class MessageActionSuggestedPostSuccess(TLObject):
         return cls(**_args)
 
 
-class MessageActionTtlchange(TLObject):
-    """TL type: messageActionTTLChange"""
-    CONSTRUCTOR_ID = 0x55555552
-    SUBCLASS_OF_ID = 0x8680d126
-
-    def __init__(self, ttl: int):
-        self.ttl = ttl
-
-    def to_dict(self):
-        return {
-            '_': 'MessageActionTtlchange',
-            'ttl': self.ttl,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(struct.pack('<i', self.ttl))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_ttl = reader.read_int()
-        _args['ttl'] = _val_ttl
-        return cls(**_args)
-
-
 class MessageActionTodoAppendTasks(TLObject):
     """TL type: messageActionTodoAppendTasks"""
     CONSTRUCTOR_ID = 0xc7edbc83
@@ -28967,59 +28800,6 @@ class MessageActionTopicEdit(TLObject):
             _args['hidden'] = _val_hidden
         else:
             _args['hidden'] = None
-        return cls(**_args)
-
-
-class MessageActionUserJoined(TLObject):
-    """TL type: messageActionUserJoined"""
-    CONSTRUCTOR_ID = 0x55555550
-    SUBCLASS_OF_ID = 0x8680d126
-
-    def __init__(self):
-        pass
-
-    def to_dict(self):
-        return {
-            '_': 'MessageActionUserJoined',
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        return cls()
-
-
-class MessageActionUserUpdatedPhoto(TLObject):
-    """TL type: messageActionUserUpdatedPhoto"""
-    CONSTRUCTOR_ID = 0x55555551
-    SUBCLASS_OF_ID = 0x8680d126
-
-    def __init__(self, new_user_photo: 'TypeUserProfilePhoto'):
-        self.new_user_photo = new_user_photo
-
-    def to_dict(self):
-        return {
-            '_': 'MessageActionUserUpdatedPhoto',
-            'new_user_photo': self.new_user_photo,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(bytes(self.new_user_photo))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_new_user_photo = reader.tgread_object()
-        _args['new_user_photo'] = _val_new_user_photo
         return cls(**_args)
 
 
@@ -37060,70 +36840,6 @@ class PremiumGiftCodeOption(TLObject):
         _args['currency'] = _val_currency
         _val_amount = reader.read_long()
         _args['amount'] = _val_amount
-        return cls(**_args)
-
-
-class PremiumGiftOption(TLObject):
-    """TL type: premiumGiftOption"""
-    CONSTRUCTOR_ID = 0x79c059f7
-    SUBCLASS_OF_ID = 0x5182b03e
-
-    def __init__(self, months: int, currency: str, amount: int, bot_url: Optional[str] = None, store_product: Optional[str] = None):
-        self.months = months
-        self.currency = currency
-        self.amount = amount
-        self.bot_url = bot_url
-        self.store_product = store_product
-
-    def to_dict(self):
-        return {
-            '_': 'PremiumGiftOption',
-            'months': self.months,
-            'currency': self.currency,
-            'amount': self.amount,
-            'bot_url': self.bot_url,
-            'store_product': self.store_product,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.bot_url is not None:
-            flags |= (1 << 1)
-        if self.store_product is not None:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(struct.pack('<i', self.months))
-        buf.write(TLObject.serialize_bytes(self.currency))
-        buf.write(struct.pack('<q', self.amount))
-        if self.bot_url is not None:
-            buf.write(TLObject.serialize_bytes(self.bot_url))
-        if self.store_product is not None:
-            buf.write(TLObject.serialize_bytes(self.store_product))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _val_months = reader.read_int()
-        _args['months'] = _val_months
-        _val_currency = reader.tgread_string()
-        _args['currency'] = _val_currency
-        _val_amount = reader.read_long()
-        _args['amount'] = _val_amount
-        if flags & (1 << 1):
-            _val_bot_url = reader.tgread_string()
-            _args['bot_url'] = _val_bot_url
-        else:
-            _args['bot_url'] = None
-        if flags & (1 << 0):
-            _val_store_product = reader.tgread_string()
-            _args['store_product'] = _val_store_product
-        else:
-            _args['store_product'] = None
         return cls(**_args)
 
 
@@ -48934,50 +48650,6 @@ class UpdateBotStopped(TLObject):
         return cls(**_args)
 
 
-class UpdateBotSubscriptionExpire(TLObject):
-    """TL type: updateBotSubscriptionExpire"""
-    CONSTRUCTOR_ID = 0xa8ae3eb1
-    SUBCLASS_OF_ID = 0x9f89304e
-
-    def __init__(self, user_id: int, payload: str, until_date: Optional[datetime], qts: int):
-        self.user_id = user_id
-        self.payload = payload
-        self.until_date = until_date
-        self.qts = qts
-
-    def to_dict(self):
-        return {
-            '_': 'UpdateBotSubscriptionExpire',
-            'user_id': self.user_id,
-            'payload': self.payload,
-            'until_date': self.until_date,
-            'qts': self.qts,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(struct.pack('<q', self.user_id))
-        buf.write(TLObject.serialize_bytes(self.payload))
-        buf.write(TLObject.serialize_datetime(self.until_date))
-        buf.write(struct.pack('<i', self.qts))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_user_id = reader.read_long()
-        _args['user_id'] = _val_user_id
-        _val_payload = reader.tgread_string()
-        _args['payload'] = _val_payload
-        _val_until_date = reader.tgread_date()
-        _args['until_date'] = _val_until_date
-        _val_qts = reader.read_int()
-        _args['qts'] = _val_qts
-        return cls(**_args)
-
-
 class UpdateBotWebhookJson(TLObject):
     """TL type: updateBotWebhookJSON"""
     CONSTRUCTOR_ID = 0x8317c0c3
@@ -54519,48 +54191,6 @@ class UpdateTheme(TLObject):
         return cls(**_args)
 
 
-class UpdateTranscribeAudio(TLObject):
-    """TL type: updateTranscribeAudio"""
-    CONSTRUCTOR_ID = 0x88617090
-    SUBCLASS_OF_ID = 0x9f89304e
-
-    def __init__(self, transcription_id: int, text: str, final: Optional[bool] = None):
-        self.transcription_id = transcription_id
-        self.text = text
-        self.final = final
-
-    def to_dict(self):
-        return {
-            '_': 'UpdateTranscribeAudio',
-            'transcription_id': self.transcription_id,
-            'text': self.text,
-            'final': self.final,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.final:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(struct.pack('<q', self.transcription_id))
-        buf.write(TLObject.serialize_bytes(self.text))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['final'] = bool(flags & (1 << 0))
-        _val_transcription_id = reader.read_long()
-        _args['transcription_id'] = _val_transcription_id
-        _val_text = reader.tgread_string()
-        _args['text'] = _val_text
-        return cls(**_args)
-
-
 class UpdateTranscribedAudio(TLObject):
     """TL type: updateTranscribedAudio"""
     CONSTRUCTOR_ID = 0x0084cd5a
@@ -55402,6 +55032,7 @@ class User(TLObject):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
+        flags2 = 0
         if self.is_self:
             flags |= (1 << 10)
         if self.contact:
@@ -55462,7 +55093,6 @@ class User(TLObject):
             flags |= (1 << 22)
         if self.emoji_status is not None:
             flags |= (1 << 30)
-        flags2 = 0
         if self.bot_can_edit:
             flags2 |= (1 << 1)
         if self.close_friend:
@@ -55848,6 +55478,7 @@ class UserFull(TLObject):
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
         flags = 0
+        flags2 = 0
         if self.blocked:
             flags |= (1 << 0)
         if self.phone_calls_available:
@@ -55902,7 +55533,6 @@ class UserFull(TLObject):
             flags |= (1 << 24)
         if self.stories is not None:
             flags |= (1 << 25)
-        flags2 = 0
         if self.sponsored_enabled:
             flags2 |= (1 << 7)
         if self.can_view_revenue:
@@ -56320,30 +55950,6 @@ class UserStatusEmpty(TLObject):
     def to_dict(self):
         return {
             '_': 'UserStatusEmpty',
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        return cls()
-
-
-class UserStatusHidden(TLObject):
-    """TL type: userStatusHidden"""
-    CONSTRUCTOR_ID = 0xcf7d64b1
-    SUBCLASS_OF_ID = 0x5b0b743e
-
-    def __init__(self):
-        pass
-
-    def to_dict(self):
-        return {
-            '_': 'UserStatusHidden',
         }
 
     def _bytes(self) -> bytes:
@@ -57739,35 +57345,6 @@ class WebPagePending(TLObject):
             _args['url'] = None
         _val_date = reader.tgread_date()
         _args['date'] = _val_date
-        return cls(**_args)
-
-
-class WebPageUrlPending(TLObject):
-    """TL type: webPageUrlPending"""
-    CONSTRUCTOR_ID = 0xd41a5167
-    SUBCLASS_OF_ID = 0x55a97481
-
-    def __init__(self, url: str):
-        self.url = url
-
-    def to_dict(self):
-        return {
-            '_': 'WebPageUrlPending',
-            'url': self.url,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(TLObject.serialize_bytes(self.url))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_url = reader.tgread_string()
-        _args['url'] = _val_url
         return cls(**_args)
 
 

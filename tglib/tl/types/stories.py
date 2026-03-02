@@ -186,6 +186,7 @@ class AllStoriesNotModified(TLObject):
         import io
         buf = io.BytesIO()
         buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
+        flags = 0
         buf.write(struct.pack('<I', flags))
         buf.write(TLObject.serialize_bytes(self.state))
         buf.write(bytes(self.stealth_mode))

@@ -2087,45 +2087,6 @@ class FaveStickerRequest(TLRequest):
         return cls(**_args)
 
 
-class ForwardMessageRequest(TLRequest):
-    """TL type: messages.forwardMessage"""
-    CONSTRUCTOR_ID = 0x33963bf9
-    SUBCLASS_OF_ID = 0x8af52aac
-
-    def __init__(self, peer: 'TypeInputPeer', id: int, random_id: int = None):
-        self.peer = peer
-        self.id = id
-        self.random_id = random_id
-
-    def to_dict(self):
-        return {
-            '_': 'ForwardMessageRequest',
-            'peer': self.peer,
-            'id': self.id,
-            'random_id': self.random_id,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(bytes(self.peer))
-        buf.write(struct.pack('<i', self.id))
-        buf.write(struct.pack('<q', self.random_id))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        _val_id = reader.read_int()
-        _args['id'] = _val_id
-        _val_random_id = reader.read_long()
-        _args['random_id'] = _val_random_id
-        return cls(**_args)
-
-
 class ForwardMessagesRequest(TLRequest):
     """TL type: messages.forwardMessages"""
     CONSTRUCTOR_ID = 0x13704a7c
@@ -2364,45 +2325,6 @@ class GetAdminsWithInvitesRequest(TLRequest):
         _args = {}
         _val_peer = reader.tgread_object()
         _args['peer'] = _val_peer
-        return cls(**_args)
-
-
-class GetAllChatsRequest(TLRequest):
-    """TL type: messages.getAllChats"""
-    CONSTRUCTOR_ID = 0x875f74be
-    SUBCLASS_OF_ID = 0x99d5cb14
-
-    def __init__(self, except_ids: List[int]):
-        self.except_ids = except_ids
-
-    def to_dict(self):
-        return {
-            '_': 'GetAllChatsRequest',
-            'except_ids': self.except_ids,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(struct.pack('<i', 0x1cb5c415))  # vector id
-        buf.write(struct.pack('<i', len(self.except_ids)))
-        for item in self.except_ids:
-            buf.write(struct.pack('<q', item))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _vec_id = reader.read_int(signed=False)
-        if _vec_id != 0x1cb5c415:
-            raise RuntimeError(f'Expected vector but got 0x{_vec_id:08x}')
-        _count_except_ids = reader.read_int(signed=False)  # BUG6 fix: unsigned count
-        _list_except_ids = []
-        for _ in range(_count_except_ids):
-            _item_except_ids = reader.read_long()
-            _list_except_ids.append(_item_except_ids)
-        _args['except_ids'] = _list_except_ids
         return cls(**_args)
 
 
@@ -5746,48 +5668,6 @@ class GetSponsoredMessagesRequest(TLRequest):
         return cls(**_args)
 
 
-class GetStatsUrlRequest(TLRequest):
-    """TL type: messages.getStatsURL"""
-    CONSTRUCTOR_ID = 0x812c2ae6
-    SUBCLASS_OF_ID = 0x8d4c94c0
-
-    def __init__(self, peer: 'TypeInputPeer', params: str, dark: Optional[bool] = None):
-        self.peer = peer
-        self.params = params
-        self.dark = dark
-
-    def to_dict(self):
-        return {
-            '_': 'GetStatsUrlRequest',
-            'peer': self.peer,
-            'params': self.params,
-            'dark': self.dark,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        flags = 0
-        if self.dark:
-            flags |= (1 << 0)
-        buf.write(struct.pack('<I', flags))
-        buf.write(bytes(self.peer))
-        buf.write(TLObject.serialize_bytes(self.params))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        flags = reader.read_int(signed=False)
-        _args['dark'] = bool(flags & (1 << 0))
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        _val_params = reader.tgread_string()
-        _args['params'] = _val_params
-        return cls(**_args)
-
-
 class GetStickerSetRequest(TLRequest):
     """TL type: messages.getStickerSet"""
     CONSTRUCTOR_ID = 0xc8a0ec74
@@ -6145,45 +6025,6 @@ class GetWebPagePreviewRequest(TLRequest):
             _args['entities'] = _list_entities
         else:
             _args['entities'] = None
-        return cls(**_args)
-
-
-class GetWebViewResultRequest(TLRequest):
-    """TL type: messages.getWebViewResult"""
-    CONSTRUCTOR_ID = 0x22b6c214
-    SUBCLASS_OF_ID = 0xd8597669
-
-    def __init__(self, peer: 'TypeInputPeer', bot: 'TypeInputUser', query_id: int):
-        self.peer = peer
-        self.bot = bot
-        self.query_id = query_id
-
-    def to_dict(self):
-        return {
-            '_': 'GetWebViewResultRequest',
-            'peer': self.peer,
-            'bot': self.bot,
-            'query_id': self.query_id,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(bytes(self.peer))
-        buf.write(bytes(self.bot))
-        buf.write(struct.pack('<q', self.query_id))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_peer = reader.tgread_object()
-        _args['peer'] = _val_peer
-        _val_bot = reader.tgread_object()
-        _args['bot'] = _val_bot
-        _val_query_id = reader.read_long()
-        _args['query_id'] = _val_query_id
         return cls(**_args)
 
 
@@ -10660,35 +10501,6 @@ class SetTypingRequest(TLRequest):
             _args['top_msg_id'] = None
         _val_action = reader.tgread_object()
         _args['action'] = _val_action
-        return cls(**_args)
-
-
-class SetWebViewResultRequest(TLRequest):
-    """TL type: messages.setWebViewResult"""
-    CONSTRUCTOR_ID = 0xe41cd11d
-    SUBCLASS_OF_ID = 0xf5b399ac
-
-    def __init__(self, query_id: int):
-        self.query_id = query_id
-
-    def to_dict(self):
-        return {
-            '_': 'SetWebViewResultRequest',
-            'query_id': self.query_id,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(struct.pack('<q', self.query_id))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_query_id = reader.read_long()
-        _args['query_id'] = _val_query_id
         return cls(**_args)
 
 

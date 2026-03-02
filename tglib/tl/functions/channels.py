@@ -468,45 +468,6 @@ class EditBannedRequest(TLRequest):
         return cls(**_args)
 
 
-class EditCreatorRequest(TLRequest):
-    """TL type: channels.editCreator"""
-    CONSTRUCTOR_ID = 0x8f38cd1f
-    SUBCLASS_OF_ID = 0x8af52aac
-
-    def __init__(self, channel: 'TypeInputChannel', user_id: 'TypeInputUser', password: 'TypeInputCheckPasswordSRP'):
-        self.channel = channel
-        self.user_id = user_id
-        self.password = password
-
-    def to_dict(self):
-        return {
-            '_': 'EditCreatorRequest',
-            'channel': self.channel,
-            'user_id': self.user_id,
-            'password': self.password,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(bytes(self.channel))
-        buf.write(bytes(self.user_id))
-        buf.write(bytes(self.password))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_channel = reader.tgread_object()
-        _args['channel'] = _val_channel
-        _val_user_id = reader.tgread_object()
-        _args['user_id'] = _val_user_id
-        _val_password = reader.tgread_object()
-        _args['password'] = _val_password
-        return cls(**_args)
-
-
 class EditLocationRequest(TLRequest):
     """TL type: channels.editLocation"""
     CONSTRUCTOR_ID = 0x58e63f6d
@@ -875,35 +836,6 @@ class GetFullChannelRequest(TLRequest):
     def to_dict(self):
         return {
             '_': 'GetFullChannelRequest',
-            'channel': self.channel,
-        }
-
-    def _bytes(self) -> bytes:
-        import io
-        buf = io.BytesIO()
-        buf.write(struct.pack('<I', self.CONSTRUCTOR_ID))
-        buf.write(bytes(self.channel))
-        return buf.getvalue()
-
-    @classmethod
-    def from_reader(cls, reader):
-        _args = {}
-        _val_channel = reader.tgread_object()
-        _args['channel'] = _val_channel
-        return cls(**_args)
-
-
-class GetFutureCreatorAfterLeaveRequest(TLRequest):
-    """TL type: channels.getFutureCreatorAfterLeave"""
-    CONSTRUCTOR_ID = 0xa00918af
-    SUBCLASS_OF_ID = 0x2da17977
-
-    def __init__(self, channel: 'TypeInputChannel'):
-        self.channel = channel
-
-    def to_dict(self):
-        return {
-            '_': 'GetFutureCreatorAfterLeaveRequest',
             'channel': self.channel,
         }
 

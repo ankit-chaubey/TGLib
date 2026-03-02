@@ -163,7 +163,7 @@ def download_tl(dry_run: bool) -> dict:
 # Step 2 — Generate
 # ══════════════════════════════════════════════════════════════════════════════
 
-def regenerate(tl_file: Path | None, dry_run: bool):
+def regenerate(tl_file, dry_run: bool, mode: str = 'experimental'):
     """Run generate_tl.py then patch_types.py."""
     _banner('Step 2 — Regenerating TL Python modules')
 
@@ -181,9 +181,11 @@ def regenerate(tl_file: Path | None, dry_run: bool):
         print(f'❌  generate_tl.py not found at {GEN_SCRIPT}')
         sys.exit(1)
 
-    cmd = [sys.executable, str(GEN_SCRIPT), '--source', 'both']
+    # --tl overrides mode entirely (single custom file)
     if tl_file:
         cmd = [sys.executable, str(GEN_SCRIPT), '--tl', str(tl_file)]
+    else:
+        cmd = [sys.executable, str(GEN_SCRIPT), '--mode', mode]
 
     _run(cmd)
 
@@ -332,8 +334,10 @@ def main():
                    help='Show what would happen without writing any files')
     p.add_argument('--bump-version', action='store_true',
                    help='Also bump __version__ in tglib/__init__.py')
-    p.add_argument('--source', choices=['api', 'main', 'both'], default='both',
-                   help='Which TL sources to merge (default: both)')
+    p.add_argument('--mode', choices=['stable', 'beta', 'experimental'], default='experimental',
+                   help='Generation mode: stable (api.tl), beta (main_api.tl), experimental (smart union, default)')
+    p.add_argument('--source', choices=['api', 'main', 'both'], default=None,
+                   help='[Legacy alias] api→stable  main→beta  both→experimental')
     args = p.parse_args()
 
     # ── Validate we are in the right directory ─────────────────────────────
@@ -393,7 +397,12 @@ def main():
             sys.exit(0)
 
     # ── Steps 2+3: Generate + validate ────────────────────────────────────
-    regenerate(tl_file_override, dry_run=args.dry_run)
+    # Resolve --source legacy alias
+    _legacy = {'api': 'stable', 'main': 'beta', 'both': 'experimental'}
+    gen_mode = args.mode
+    if args.source and not args.mode:
+        gen_mode = _legacy.get(args.source, args.source)
+    regenerate(tl_file_override, dry_run=args.dry_run, mode=gen_mode)
     validate(dry_run=args.dry_run)
 
     # ── Step 4: Bump constants ─────────────────────────────────────────────
